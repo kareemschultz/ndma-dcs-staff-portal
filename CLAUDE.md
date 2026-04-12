@@ -9,7 +9,7 @@ See `/docs/architecture/` for detailed reference docs.
 
 ## Monorepo Structure
 ```
-apps/web/          → React + TanStack Router frontend (Vite, port 5173)
+apps/web/          → React + TanStack Router frontend (Vite, port 3001)
 apps/server/       → Hono backend (port 3000)
 apps/docs/         → Fumadocs documentation (Next.js, port 4000)
 packages/api/      → oRPC procedures + context (shared by server)
@@ -118,10 +118,28 @@ The login page must show BOTH:
   For local dev, may need to change to `sameSite: "lax"` + `secure: false`.
 - When adding the Admin plugin, regenerate DB schema: `bunx @better-auth/cli generate`.
 
+### Base UI — `render` prop, NOT `asChild`
+- `packages/ui` uses **`@base-ui/react`** primitives (not Radix UI) for all interactive
+  components: DropdownMenu, AlertDialog, Collapsible, Sidebar, etc.
+- Base UI uses a `render` prop for element composition. `asChild` does NOT exist.
+- **Pattern:** `<DropdownMenuTrigger render={<Button />}>children</DropdownMenuTrigger>`
+- **NOT:** `<DropdownMenuTrigger asChild><Button>children</Button></DropdownMenuTrigger>`
+- Similarly: `<SidebarMenuButton render={<Link to="/" />}>` not `asChild`.
+- Base UI open state attributes: `data-open` / `data-closed` (not `data-[state=open]`).
+- Tailwind classes must use `data-open:` / `group-data-[open]/name:` variants accordingly.
+
 ### Tailwind CSS
 - This project uses **Tailwind CSS v4** (not v3).
 - v4 uses CSS-first config (`@import "tailwindcss"` in CSS, no `tailwind.config.ts`).
 - shadcn/ui components are configured for Tailwind v4.
+
+### Security Best Practices
+- Always validate on the server (oRPC procedures) even when validating on the client.
+- Use `protectedProcedure` for every endpoint that touches user/org data.
+- Never trust client-supplied role or permission claims — always read from session.
+- CORS_ORIGIN must be set to the exact web app origin (port 3001 locally).
+- Content Security Policy headers should be added at the Hono server level.
+- Audit log every mutation — who did what and when.
 
 ### Environment Variables
 - Server env: validated via `@ndma-dcs-staff-portal/env/server`

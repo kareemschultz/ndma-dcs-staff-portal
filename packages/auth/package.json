@@ -13,7 +13,7 @@
   "dependencies": {
     "@ndma-dcs-staff-portal/db": "workspace:*",
     "@ndma-dcs-staff-portal/env": "workspace:*",
-    "better-auth": "catalog:",
+    "better-auth": "^1.6.2",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },

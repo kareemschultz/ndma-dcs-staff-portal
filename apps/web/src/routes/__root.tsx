@@ -1,16 +1,11 @@
-import type { AppRouterClient } from "@ndma-dcs-staff-portal/api/routers/index";
-import { Toaster } from "@ndma-dcs-staff-portal/ui/components/sonner";
-import { createORPCClient } from "@orpc/client";
-import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { HeadContent, Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import { useState } from "react";
+import { Toaster } from "@ndma-dcs-staff-portal/ui/components/sonner";
 
-import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
-import { link, orpc } from "@/utils/orpc";
+import { orpc } from "@/utils/orpc";
 
 import "../index.css";
 
@@ -23,44 +18,36 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
   component: RootComponent,
   head: () => ({
     meta: [
-      {
-        title: "ndma-dcs-staff-portal",
-      },
+      { title: "NDMA DCS Staff Portal" },
       {
         name: "description",
-        content: "ndma-dcs-staff-portal is a web application",
+        content: "Data Centre Services Staff Portal — Staff, Operations & Compliance Management",
       },
     ],
-    links: [
-      {
-        rel: "icon",
-        href: "/favicon.ico",
-      },
-    ],
+    links: [{ rel: "icon", href: "/favicon.ico" }],
   }),
 });
 
 function RootComponent() {
-  const [client] = useState<AppRouterClient>(() => createORPCClient(link));
-  const [orpcUtils] = useState(() => createTanstackQueryUtils(client));
-
   return (
     <>
       <HeadContent />
       <ThemeProvider
         attribute="class"
-        defaultTheme="dark"
+        defaultTheme="system"
+        enableSystem
         disableTransitionOnChange
-        storageKey="vite-ui-theme"
+        storageKey="ndma-dcs-theme"
       >
-        <div className="grid grid-rows-[auto_1fr] h-svh">
-          <Header />
-          <Outlet />
-        </div>
-        <Toaster richColors />
+        <Outlet />
+        <Toaster richColors position="top-right" />
       </ThemeProvider>
-      <TanStackRouterDevtools position="bottom-left" />
-      <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
+      {import.meta.env.MODE === "development" && (
+        <>
+          <TanStackRouterDevtools position="bottom-right" />
+          <ReactQueryDevtools buttonPosition="bottom-left" />
+        </>
+      )}
     </>
   );
 }
