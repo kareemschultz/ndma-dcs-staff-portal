@@ -14,6 +14,7 @@
     "@ndma-dcs-staff-portal/auth": "workspace:*",
     "@ndma-dcs-staff-portal/db": "workspace:*",
     "@ndma-dcs-staff-portal/env": "workspace:*",
+    "drizzle-orm": "^0.45.1",
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",

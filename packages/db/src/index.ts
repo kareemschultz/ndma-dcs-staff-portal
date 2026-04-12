@@ -8,3 +8,6 @@ export function createDb() {
 }
 
 export const db = createDb();
+
+// Re-export all schema tables, enums, and relations for use in other packages
+export * from "./schema";
