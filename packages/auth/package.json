@@ -1,0 +1,24 @@
+{
+  "name": "@ndma-dcs-staff-portal/auth",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@ndma-dcs-staff-portal/db": "workspace:*",
+    "@ndma-dcs-staff-portal/env": "workspace:*",
+    "better-auth": "catalog:",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@ndma-dcs-staff-portal/config": "workspace:*",
+    "typescript": "^5"
+  }
+}

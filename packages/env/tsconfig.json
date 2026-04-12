@@ -1,0 +1,3 @@
+{
+  "extends": "@ndma-dcs-staff-portal/config/tsconfig.base.json"
+}

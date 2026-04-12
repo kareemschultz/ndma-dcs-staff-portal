@@ -1,0 +1,29 @@
+{
+  "name": "@ndma-dcs-staff-portal/api",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@ndma-dcs-staff-portal/auth": "workspace:*",
+    "@ndma-dcs-staff-portal/db": "workspace:*",
+    "@ndma-dcs-staff-portal/env": "workspace:*",
+    "@orpc/client": "catalog:",
+    "@orpc/openapi": "catalog:",
+    "@orpc/server": "catalog:",
+    "@orpc/zod": "catalog:",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@ndma-dcs-staff-portal/config": "workspace:*",
+    "hono": "catalog:",
+    "typescript": "^5"
+  }
+}

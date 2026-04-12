@@ -1,0 +1,23 @@
+name: ndma-dcs-staff-portal
+
+services:
+  postgres:
+    image: postgres
+    container_name: ndma-dcs-staff-portal-postgres
+    environment:
+      POSTGRES_DB: ndma-dcs-staff-portal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - ndma-dcs-staff-portal_postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  ndma-dcs-staff-portal_postgres_data:
