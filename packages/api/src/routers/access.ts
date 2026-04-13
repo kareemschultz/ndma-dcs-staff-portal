@@ -2,13 +2,17 @@ import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import {
   db,
+  accessGroups,
+  accessReviews,
+  accountGroupMemberships,
+  externalContacts,
   platformAccounts,
   platformIntegrations,
   reconciliationIssues,
   serviceOwners,
   syncJobs,
 } from "@ndma-dcs-staff-portal/db";
-import { and, eq, isNull, lte, sql } from "drizzle-orm";
+import { and, eq, isNull, isNotNull, lte, sql } from "drizzle-orm";
 
 import { protectedProcedure } from "../index";
 import { logAudit } from "../lib/audit";
@@ -22,7 +26,9 @@ const PLATFORM_VALUES = [
   "biometric",
   "ad",
   "ipam",
+  "phpipam",
   "radius",
+  "zabbix",
   "other",
 ] as const;
 
@@ -31,6 +37,8 @@ const ACCOUNT_STATUS_VALUES = [
   "suspended",
   "disabled",
   "pending_creation",
+  "orphaned",
+  "pending_review",
 ] as const;
 
 const AUTH_SOURCE_VALUES = [
@@ -46,6 +54,30 @@ const AUTH_SOURCE_VALUES = [
 
 const SYNC_MODE_VALUES = ["manual", "synced", "hybrid"] as const;
 
+const AFFILIATION_VALUES = [
+  "ndma_internal",
+  "external_agency",
+  "contractor",
+  "consultant",
+  "vendor",
+  "shared_service",
+] as const;
+
+const ACCESS_GROUP_TYPE_VALUES = [
+  "ad_group",
+  "vpn_group",
+  "platform_role",
+  "local_group",
+  "radius_group",
+] as const;
+
+const ACCESS_REVIEW_STATUS_VALUES = [
+  "pending",
+  "approved",
+  "revoked",
+  "escalated",
+] as const;
+
 export const accessRouter = {
   // ── Platform Accounts ───────────────────────────────────────────────────
 
@@ -54,16 +86,26 @@ export const accessRouter = {
       .input(
         z.object({
           staffProfileId: z.string().optional(),
+          externalContactId: z.string().optional(),
           platform: z.enum(PLATFORM_VALUES).optional(),
           status: z.enum(ACCOUNT_STATUS_VALUES).optional(),
           syncMode: z.enum(SYNC_MODE_VALUES).optional(),
           authSource: z.enum(AUTH_SOURCE_VALUES).optional(),
+          affiliationType: z.enum(AFFILIATION_VALUES).optional(),
+          vpnEnabled: z.boolean().optional(),
+          isOrphaned: z.boolean().optional(),
+          isStale: z.boolean().optional(),
+          reviewDue: z.boolean().optional(), // accounts with reviewDueDate <= today
+          limit: z.number().default(100),
+          offset: z.number().default(0),
         }),
       )
       .handler(async ({ input }) => {
         const conditions = [];
         if (input.staffProfileId)
           conditions.push(eq(platformAccounts.staffProfileId, input.staffProfileId));
+        if (input.externalContactId)
+          conditions.push(eq(platformAccounts.externalContactId, input.externalContactId));
         if (input.platform)
           conditions.push(eq(platformAccounts.platform, input.platform));
         if (input.status)
@@ -72,12 +114,57 @@ export const accessRouter = {
           conditions.push(eq(platformAccounts.syncMode, input.syncMode));
         if (input.authSource)
           conditions.push(eq(platformAccounts.authSource, input.authSource));
+        if (input.affiliationType)
+          conditions.push(eq(platformAccounts.affiliationType, input.affiliationType));
+        if (input.vpnEnabled !== undefined)
+          conditions.push(eq(platformAccounts.vpnEnabled, input.vpnEnabled));
+        if (input.isOrphaned !== undefined)
+          conditions.push(eq(platformAccounts.isOrphaned, input.isOrphaned));
+        if (input.isStale !== undefined)
+          conditions.push(eq(platformAccounts.isStale, input.isStale));
+        if (input.reviewDue) {
+          const today = new Date().toISOString().split("T")[0];
+          conditions.push(
+            and(
+              isNotNull(platformAccounts.reviewDueDate),
+              lte(platformAccounts.reviewDueDate, today),
+            )!,
+          );
+        }
 
         return db.query.platformAccounts.findMany({
           where: conditions.length > 0 ? and(...conditions) : undefined,
-          with: { staffProfile: { with: { user: true, department: true } } },
+          with: {
+            staffProfile: { with: { user: true, department: true } },
+            externalContact: true,
+          },
           orderBy: (t, { desc }) => [desc(t.createdAt)],
+          limit: input.limit,
+          offset: input.offset,
         });
+      }),
+
+    get: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .handler(async ({ input }) => {
+        const account = await db.query.platformAccounts.findFirst({
+          where: eq(platformAccounts.id, input.id),
+          with: {
+            staffProfile: { with: { user: true, department: true } },
+            externalContact: true,
+            groupMemberships: {
+              where: isNull(accountGroupMemberships.removedAt),
+              with: { accessGroup: true },
+            },
+            reviews: {
+              orderBy: (t, { desc }) => [desc(t.createdAt)],
+              limit: 10,
+              with: { reviewer: true },
+            },
+          },
+        });
+        if (!account) throw new ORPCError("NOT_FOUND");
+        return account;
       }),
 
     getByStaff: protectedProcedure
@@ -94,7 +181,10 @@ export const accessRouter = {
       .handler(async ({ input }) => {
         return db.query.platformAccounts.findMany({
           where: eq(platformAccounts.platform, input.platform),
-          with: { staffProfile: { with: { user: true, department: true } } },
+          with: {
+            staffProfile: { with: { user: true, department: true } },
+            externalContact: true,
+          },
         });
       }),
 
@@ -107,34 +197,59 @@ export const accessRouter = {
 
         return db.query.platformAccounts.findMany({
           where: and(
-            sql`${platformAccounts.expiresAt} IS NOT NULL`,
+            isNotNull(platformAccounts.expiresAt),
             lte(platformAccounts.expiresAt, cutoffStr),
             eq(platformAccounts.status, "active"),
           ),
-          with: { staffProfile: { with: { user: true, department: true } } },
+          with: {
+            staffProfile: { with: { user: true, department: true } },
+            externalContact: true,
+          },
         });
       }),
 
-    /** Accounts with no linked staff profile — potential orphans. */
     getOrphaned: protectedProcedure.handler(async () => {
       return db.query.platformAccounts.findMany({
-        where: and(
-          // synced records with no staff link (staffProfileId is always set by FK,
-          // but we can find stale ones via reconciliation_issues)
-          eq(platformAccounts.syncMode, "synced"),
-          eq(platformAccounts.status, "active"),
-        ),
-        with: { staffProfile: { with: { user: true } } },
+        where: eq(platformAccounts.isOrphaned, true),
+        with: {
+          staffProfile: { with: { user: true } },
+          externalContact: true,
+        },
+      });
+    }),
+
+    getStale: protectedProcedure.handler(async () => {
+      return db.query.platformAccounts.findMany({
+        where: eq(platformAccounts.isStale, true),
+        with: {
+          staffProfile: { with: { user: true } },
+          externalContact: true,
+        },
+      });
+    }),
+
+    getVpnEnabled: protectedProcedure.handler(async () => {
+      return db.query.platformAccounts.findMany({
+        where: eq(platformAccounts.vpnEnabled, true),
+        with: {
+          staffProfile: { with: { user: true, department: true } },
+          externalContact: true,
+        },
+        orderBy: (t, { asc }) => [asc(t.vpnGroup)],
       });
     }),
 
     create: protectedProcedure
       .input(
         z.object({
-          staffProfileId: z.string(),
+          // One of these two should be provided
+          staffProfileId: z.string().optional(),
+          externalContactId: z.string().optional(),
           platform: z.enum(PLATFORM_VALUES),
           accountIdentifier: z.string().min(1),
           displayName: z.string().optional(),
+          email: z.string().email().optional(),
+          affiliationType: z.enum(AFFILIATION_VALUES).default("ndma_internal"),
           authSource: z.enum(AUTH_SOURCE_VALUES).default("local"),
           privilegeLevel: z.string().optional(),
           status: z.enum(ACCOUNT_STATUS_VALUES).default("active"),
@@ -143,16 +258,27 @@ export const accessRouter = {
           syncSourceSystem: z.string().optional(),
           provisionedAt: z.string().optional(),
           expiresAt: z.string().optional(),
+          reviewDueDate: z.string().optional(),
+          vpnEnabled: z.boolean().default(false),
+          vpnGroup: z.string().optional(),
+          vpnProfile: z.string().optional(),
           notes: z.string().optional(),
         }),
       )
       .handler(async ({ input, context }) => {
+        if (!input.staffProfileId && !input.externalContactId) {
+          throw new ORPCError("BAD_REQUEST", {
+            message: "Either staffProfileId or externalContactId is required",
+          });
+        }
+
         const [account] = await db
           .insert(platformAccounts)
           .values({
             ...input,
             provisionedAt: input.provisionedAt ?? null,
             expiresAt: input.expiresAt ?? null,
+            reviewDueDate: input.reviewDueDate ?? null,
             notes: input.notes ?? null,
             createdByUserId: context.session.user.id,
           })
@@ -178,12 +304,20 @@ export const accessRouter = {
         z.object({
           id: z.string(),
           displayName: z.string().optional(),
+          email: z.string().email().optional(),
+          affiliationType: z.enum(AFFILIATION_VALUES).optional(),
           authSource: z.enum(AUTH_SOURCE_VALUES).optional(),
           privilegeLevel: z.string().optional(),
           status: z.enum(ACCOUNT_STATUS_VALUES).optional(),
           syncMode: z.enum(SYNC_MODE_VALUES).optional(),
           expiresAt: z.string().optional(),
+          reviewDueDate: z.string().optional(),
           lastVerifiedAt: z.string().optional(),
+          vpnEnabled: z.boolean().optional(),
+          vpnGroup: z.string().optional(),
+          vpnProfile: z.string().optional(),
+          isOrphaned: z.boolean().optional(),
+          isStale: z.boolean().optional(),
           notes: z.string().optional(),
         }),
       )
@@ -196,7 +330,7 @@ export const accessRouter = {
 
         const [updated] = await db
           .update(platformAccounts)
-          .set(updates)
+          .set({ ...updates, updatedByUserId: context.session.user.id })
           .where(eq(platformAccounts.id, id))
           .returning();
 
@@ -216,24 +350,587 @@ export const accessRouter = {
         return updated;
       }),
 
-    markReviewed: protectedProcedure
-      .input(z.object({ id: z.string() }))
+    disable: protectedProcedure
+      .input(z.object({ id: z.string(), reason: z.string().optional() }))
       .handler(async ({ input, context }) => {
-        const today = new Date().toISOString().split("T")[0];
+        const before = await db.query.platformAccounts.findFirst({
+          where: eq(platformAccounts.id, input.id),
+        });
+        if (!before) throw new ORPCError("NOT_FOUND");
+
         const [updated] = await db
           .update(platformAccounts)
-          .set({ lastReviewedAt: today })
+          .set({
+            status: "disabled",
+            disabledAt: new Date(),
+            updatedByUserId: context.session.user.id,
+            notes: input.reason
+              ? `${before.notes ? before.notes + "\n" : ""}Disabled: ${input.reason}`
+              : before.notes,
+          })
           .where(eq(platformAccounts.id, input.id))
           .returning();
 
         await logAudit({
           actorId: context.session.user.id,
           actorName: context.session.user.name,
-          action: "access.account.review",
+          action: "access.account.disable",
           module: "access",
           resourceType: "platform_account",
           resourceId: input.id,
-          afterValue: { lastReviewedAt: today } as Record<string, unknown>,
+          beforeValue: before as Record<string, unknown>,
+          afterValue: updated as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return updated;
+      }),
+
+    markReviewed: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .handler(async ({ input, context }) => {
+        const today = new Date().toISOString().split("T")[0];
+        // Set next review date 90 days out
+        const nextReview = new Date();
+        nextReview.setDate(nextReview.getDate() + 90);
+        const nextReviewStr = nextReview.toISOString().split("T")[0];
+
+        const [updated] = await db
+          .update(platformAccounts)
+          .set({
+            lastReviewedAt: today,
+            reviewDueDate: nextReviewStr,
+            updatedByUserId: context.session.user.id,
+          })
+          .where(eq(platformAccounts.id, input.id))
+          .returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "access.account.mark_reviewed",
+          module: "access",
+          resourceType: "platform_account",
+          resourceId: input.id,
+          afterValue: { lastReviewedAt: today, reviewDueDate: nextReviewStr } as Record<
+            string,
+            unknown
+          >,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return updated;
+      }),
+  },
+
+  // ── External Contacts ───────────────────────────────────────────────────
+
+  externalContacts: {
+    list: protectedProcedure
+      .input(
+        z.object({
+          affiliationType: z.enum(AFFILIATION_VALUES).optional(),
+          isActive: z.boolean().optional(),
+        }),
+      )
+      .handler(async ({ input }) => {
+        const conditions = [];
+        if (input.affiliationType)
+          conditions.push(eq(externalContacts.affiliationType, input.affiliationType));
+        if (input.isActive !== undefined)
+          conditions.push(eq(externalContacts.isActive, input.isActive));
+
+        return db.query.externalContacts.findMany({
+          where: conditions.length > 0 ? and(...conditions) : undefined,
+          with: {
+            linkedStaffProfile: { with: { user: true } },
+            platformAccounts: true,
+          },
+          orderBy: (t, { asc }) => [asc(t.name)],
+        });
+      }),
+
+    get: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .handler(async ({ input }) => {
+        const contact = await db.query.externalContacts.findFirst({
+          where: eq(externalContacts.id, input.id),
+          with: {
+            linkedStaffProfile: { with: { user: true } },
+            platformAccounts: true,
+          },
+        });
+        if (!contact) throw new ORPCError("NOT_FOUND");
+        return contact;
+      }),
+
+    create: protectedProcedure
+      .input(
+        z.object({
+          name: z.string().min(1),
+          email: z.string().email().optional(),
+          organization: z.string().optional(),
+          phone: z.string().optional(),
+          affiliationType: z.enum(AFFILIATION_VALUES).default("external_agency"),
+          linkedStaffProfileId: z.string().optional(),
+          notes: z.string().optional(),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const [contact] = await db
+          .insert(externalContacts)
+          .values({ ...input, createdByUserId: context.session.user.id })
+          .returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "access.external_contact.create",
+          module: "access",
+          resourceType: "external_contact",
+          resourceId: contact.id,
+          afterValue: contact as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return contact;
+      }),
+
+    update: protectedProcedure
+      .input(
+        z.object({
+          id: z.string(),
+          name: z.string().optional(),
+          email: z.string().email().optional(),
+          organization: z.string().optional(),
+          phone: z.string().optional(),
+          affiliationType: z.enum(AFFILIATION_VALUES).optional(),
+          linkedStaffProfileId: z.string().optional(),
+          isActive: z.boolean().optional(),
+          notes: z.string().optional(),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const { id, ...updates } = input;
+        const before = await db.query.externalContacts.findFirst({
+          where: eq(externalContacts.id, id),
+        });
+        if (!before) throw new ORPCError("NOT_FOUND");
+
+        const [updated] = await db
+          .update(externalContacts)
+          .set(updates)
+          .where(eq(externalContacts.id, id))
+          .returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "access.external_contact.update",
+          module: "access",
+          resourceType: "external_contact",
+          resourceId: id,
+          beforeValue: before as Record<string, unknown>,
+          afterValue: updated as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return updated;
+      }),
+  },
+
+  // ── Access Groups ───────────────────────────────────────────────────────
+
+  groups: {
+    list: protectedProcedure
+      .input(
+        z.object({
+          platform: z.enum(PLATFORM_VALUES).optional(),
+          groupType: z.enum(ACCESS_GROUP_TYPE_VALUES).optional(),
+          isActive: z.boolean().optional(),
+        }),
+      )
+      .handler(async ({ input }) => {
+        const conditions = [];
+        if (input.platform) conditions.push(eq(accessGroups.platform, input.platform));
+        if (input.groupType) conditions.push(eq(accessGroups.groupType, input.groupType));
+        if (input.isActive !== undefined)
+          conditions.push(eq(accessGroups.isActive, input.isActive));
+
+        return db.query.accessGroups.findMany({
+          where: conditions.length > 0 ? and(...conditions) : undefined,
+          orderBy: (t, { asc }) => [asc(t.name)],
+        });
+      }),
+
+    get: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .handler(async ({ input }) => {
+        const group = await db.query.accessGroups.findFirst({
+          where: eq(accessGroups.id, input.id),
+          with: {
+            memberships: {
+              where: isNull(accountGroupMemberships.removedAt),
+              with: {
+                platformAccount: {
+                  with: {
+                    staffProfile: { with: { user: true } },
+                    externalContact: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+        if (!group) throw new ORPCError("NOT_FOUND");
+        return group;
+      }),
+
+    create: protectedProcedure
+      .input(
+        z.object({
+          name: z.string().min(1),
+          platform: z.enum(PLATFORM_VALUES),
+          groupType: z.enum(ACCESS_GROUP_TYPE_VALUES),
+          description: z.string().optional(),
+          externalId: z.string().optional(),
+          syncMode: z.enum(SYNC_MODE_VALUES).default("manual"),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const [group] = await db.insert(accessGroups).values(input).returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "access.group.create",
+          module: "access",
+          resourceType: "access_group",
+          resourceId: group.id,
+          afterValue: group as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return group;
+      }),
+
+    update: protectedProcedure
+      .input(
+        z.object({
+          id: z.string(),
+          name: z.string().optional(),
+          description: z.string().optional(),
+          externalId: z.string().optional(),
+          syncMode: z.enum(SYNC_MODE_VALUES).optional(),
+          isActive: z.boolean().optional(),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const { id, ...updates } = input;
+        const before = await db.query.accessGroups.findFirst({
+          where: eq(accessGroups.id, id),
+        });
+        if (!before) throw new ORPCError("NOT_FOUND");
+
+        const [updated] = await db
+          .update(accessGroups)
+          .set(updates)
+          .where(eq(accessGroups.id, id))
+          .returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "access.group.update",
+          module: "access",
+          resourceType: "access_group",
+          resourceId: id,
+          beforeValue: before as Record<string, unknown>,
+          afterValue: updated as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return updated;
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .handler(async ({ input, context }) => {
+        const group = await db.query.accessGroups.findFirst({
+          where: eq(accessGroups.id, input.id),
+        });
+        if (!group) throw new ORPCError("NOT_FOUND");
+
+        await db.delete(accessGroups).where(eq(accessGroups.id, input.id));
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "access.group.delete",
+          module: "access",
+          resourceType: "access_group",
+          resourceId: input.id,
+          beforeValue: group as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return { success: true };
+      }),
+
+    listMembers: protectedProcedure
+      .input(z.object({ groupId: z.string(), includeRemoved: z.boolean().default(false) }))
+      .handler(async ({ input }) => {
+        return db.query.accountGroupMemberships.findMany({
+          where: and(
+            eq(accountGroupMemberships.accessGroupId, input.groupId),
+            input.includeRemoved ? undefined : isNull(accountGroupMemberships.removedAt),
+          ),
+          with: {
+            platformAccount: {
+              with: {
+                staffProfile: { with: { user: true } },
+                externalContact: true,
+              },
+            },
+            addedBy: true,
+          },
+          orderBy: (t, { desc }) => [desc(t.addedAt)],
+        });
+      }),
+
+    addMember: protectedProcedure
+      .input(
+        z.object({
+          groupId: z.string(),
+          platformAccountId: z.string(),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const [membership] = await db
+          .insert(accountGroupMemberships)
+          .values({
+            accessGroupId: input.groupId,
+            platformAccountId: input.platformAccountId,
+            addedByUserId: context.session.user.id,
+          })
+          .onConflictDoUpdate({
+            target: [
+              accountGroupMemberships.platformAccountId,
+              accountGroupMemberships.accessGroupId,
+            ],
+            // Re-add if previously removed
+            set: { removedAt: null, addedByUserId: context.session.user.id },
+          })
+          .returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "access.group.add_member",
+          module: "access",
+          resourceType: "account_group_membership",
+          resourceId: membership.id,
+          afterValue: { groupId: input.groupId, platformAccountId: input.platformAccountId },
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return membership;
+      }),
+
+    removeMember: protectedProcedure
+      .input(
+        z.object({
+          groupId: z.string(),
+          platformAccountId: z.string(),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const [updated] = await db
+          .update(accountGroupMemberships)
+          .set({ removedAt: new Date() })
+          .where(
+            and(
+              eq(accountGroupMemberships.accessGroupId, input.groupId),
+              eq(accountGroupMemberships.platformAccountId, input.platformAccountId),
+              isNull(accountGroupMemberships.removedAt),
+            ),
+          )
+          .returning();
+
+        if (!updated) throw new ORPCError("NOT_FOUND");
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "access.group.remove_member",
+          module: "access",
+          resourceType: "account_group_membership",
+          resourceId: updated.id,
+          afterValue: { groupId: input.groupId, platformAccountId: input.platformAccountId, removedAt: new Date() },
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return updated;
+      }),
+  },
+
+  // ── Access Reviews ──────────────────────────────────────────────────────
+
+  reviews: {
+    list: protectedProcedure
+      .input(
+        z.object({
+          status: z.enum(ACCESS_REVIEW_STATUS_VALUES).optional(),
+          platformAccountId: z.string().optional(),
+          limit: z.number().default(50),
+          offset: z.number().default(0),
+        }),
+      )
+      .handler(async ({ input }) => {
+        const conditions = [];
+        if (input.status) conditions.push(eq(accessReviews.status, input.status));
+        if (input.platformAccountId)
+          conditions.push(eq(accessReviews.platformAccountId, input.platformAccountId));
+
+        return db.query.accessReviews.findMany({
+          where: conditions.length > 0 ? and(...conditions) : undefined,
+          with: {
+            platformAccount: {
+              with: {
+                staffProfile: { with: { user: true } },
+                externalContact: true,
+              },
+            },
+            reviewer: true,
+          },
+          orderBy: (t, { desc }) => [desc(t.createdAt)],
+          limit: input.limit,
+          offset: input.offset,
+        });
+      }),
+
+    getPending: protectedProcedure.handler(async () => {
+      return db.query.accessReviews.findMany({
+        where: eq(accessReviews.status, "pending"),
+        with: {
+          platformAccount: {
+            with: {
+              staffProfile: { with: { user: true } },
+              externalContact: true,
+            },
+          },
+          reviewer: true,
+        },
+        orderBy: (t, { asc }) => [asc(t.createdAt)],
+      });
+    }),
+
+    getOverdue: protectedProcedure.handler(async () => {
+      const today = new Date().toISOString().split("T")[0];
+      return db.query.accessReviews.findMany({
+        where: and(
+          eq(accessReviews.status, "pending"),
+          isNotNull(accessReviews.nextReviewDate),
+          lte(accessReviews.nextReviewDate, today),
+        ),
+        with: {
+          platformAccount: {
+            with: {
+              staffProfile: { with: { user: true } },
+              externalContact: true,
+            },
+          },
+          reviewer: true,
+        },
+      });
+    }),
+
+    create: protectedProcedure
+      .input(
+        z.object({
+          platformAccountId: z.string(),
+          reviewerId: z.string().optional(),
+          nextReviewDate: z.string().optional(),
+          notes: z.string().optional(),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const [review] = await db
+          .insert(accessReviews)
+          .values({
+            ...input,
+            reviewerId: input.reviewerId ?? context.session.user.id,
+          })
+          .returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "access.review.create",
+          module: "access",
+          resourceType: "access_review",
+          resourceId: review.id,
+          afterValue: review as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return review;
+      }),
+
+    complete: protectedProcedure
+      .input(
+        z.object({
+          id: z.string(),
+          status: z.enum(["approved", "revoked", "escalated"]),
+          notes: z.string().optional(),
+          nextReviewDate: z.string().optional(),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const before = await db.query.accessReviews.findFirst({
+          where: eq(accessReviews.id, input.id),
+        });
+        if (!before) throw new ORPCError("NOT_FOUND");
+
+        const [updated] = await db
+          .update(accessReviews)
+          .set({
+            status: input.status,
+            reviewedAt: new Date(),
+            reviewerId: context.session.user.id,
+            notes: input.notes ?? before.notes,
+            nextReviewDate: input.nextReviewDate ?? before.nextReviewDate,
+          })
+          .where(eq(accessReviews.id, input.id))
+          .returning();
+
+        // If revoked, disable the account
+        if (input.status === "revoked") {
+          await db
+            .update(platformAccounts)
+            .set({ status: "disabled", disabledAt: new Date() })
+            .where(eq(platformAccounts.id, before.platformAccountId));
+        }
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "access.review.complete",
+          module: "access",
+          resourceType: "access_review",
+          resourceId: input.id,
+          beforeValue: before as Record<string, unknown>,
+          afterValue: updated as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
         });
@@ -247,7 +944,10 @@ export const accessRouter = {
   integrations: {
     list: protectedProcedure.handler(async () => {
       return db.query.platformIntegrations.findMany({
-        with: { syncJobs: { limit: 1, orderBy: (t, { desc }) => [desc(t.createdAt)] } },
+        with: {
+          ownerStaff: { with: { user: true } },
+          syncJobs: { limit: 1, orderBy: (t, { desc }) => [desc(t.createdAt)] },
+        },
         orderBy: (t, { asc }) => [asc(t.platform)],
       });
     }),
@@ -258,6 +958,7 @@ export const accessRouter = {
         const integration = await db.query.platformIntegrations.findFirst({
           where: eq(platformIntegrations.id, input.id),
           with: {
+            ownerStaff: { with: { user: true } },
             syncJobs: {
               limit: 10,
               orderBy: (t, { desc }) => [desc(t.createdAt)],
@@ -278,6 +979,10 @@ export const accessRouter = {
           name: z.string().min(1),
           platform: z.enum(PLATFORM_VALUES),
           description: z.string().optional(),
+          ownerStaffId: z.string().optional(),
+          supportTeam: z.string().optional(),
+          runbookUrl: z.string().url().optional(),
+          documentationUrl: z.string().url().optional(),
           hasApi: z.boolean().default(false),
           syncEnabled: z.boolean().default(false),
           syncDirection: z.enum(["inbound", "outbound", "bidirectional"]).default("inbound"),
@@ -314,6 +1019,10 @@ export const accessRouter = {
           id: z.string(),
           name: z.string().optional(),
           description: z.string().optional(),
+          ownerStaffId: z.string().optional(),
+          supportTeam: z.string().optional(),
+          runbookUrl: z.string().url().optional(),
+          documentationUrl: z.string().url().optional(),
           syncEnabled: z.boolean().optional(),
           syncFrequencyMinutes: z.number().optional(),
           manualFallbackAllowed: z.boolean().optional(),
@@ -344,7 +1053,6 @@ export const accessRouter = {
         return updated;
       }),
 
-    /** Manually trigger a sync run (stub — actual sync logic is a future connector). */
     triggerSync: protectedProcedure
       .input(z.object({ integrationId: z.string() }))
       .handler(async ({ input, context }) => {
@@ -353,9 +1061,10 @@ export const accessRouter = {
         });
         if (!integration) throw new ORPCError("NOT_FOUND");
         if (!integration.syncEnabled)
-          throw new ORPCError("BAD_REQUEST", { message: "Sync is not enabled for this integration" });
+          throw new ORPCError("BAD_REQUEST", {
+            message: "Sync is not enabled for this integration",
+          });
 
-        // Create a pending job record — the actual sync worker picks this up
         const [job] = await db
           .insert(syncJobs)
           .values({
@@ -423,6 +1132,10 @@ export const accessRouter = {
               "no_staff_link",
               "username_mismatch",
               "duplicate",
+              "disabled_staff_active_account",
+              "expired_contractor",
+              "missing_internally",
+              "missing_externally",
             ])
             .optional(),
           resolved: z.boolean().default(false),
@@ -434,14 +1147,18 @@ export const accessRouter = {
           conditions.push(eq(reconciliationIssues.integrationId, input.integrationId));
         if (input.issueType)
           conditions.push(eq(reconciliationIssues.issueType, input.issueType));
-        if (!input.resolved)
-          conditions.push(isNull(reconciliationIssues.resolvedAt));
+        if (!input.resolved) conditions.push(isNull(reconciliationIssues.resolvedAt));
 
         return db.query.reconciliationIssues.findMany({
           where: conditions.length > 0 ? and(...conditions) : undefined,
           with: {
             integration: true,
-            platformAccount: { with: { staffProfile: { with: { user: true } } } },
+            platformAccount: {
+              with: {
+                staffProfile: { with: { user: true } },
+                externalContact: true,
+              },
+            },
             staffProfile: { with: { user: true } },
           },
           orderBy: (t, { desc }) => [desc(t.createdAt)],
@@ -473,7 +1190,10 @@ export const accessRouter = {
           module: "access",
           resourceType: "reconciliation_issue",
           resourceId: input.id,
-          afterValue: { resolvedAt: new Date(), note: input.resolutionNote },
+          afterValue: {
+            resolvedAt: new Date(),
+            note: input.resolutionNote,
+          },
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
         });
@@ -535,14 +1255,12 @@ export const accessRouter = {
     remove: protectedProcedure
       .input(z.object({ serviceId: z.string(), staffProfileId: z.string() }))
       .handler(async ({ input, context }) => {
-        await db
-          .delete(serviceOwners)
-          .where(
-            and(
-              eq(serviceOwners.serviceId, input.serviceId),
-              eq(serviceOwners.staffProfileId, input.staffProfileId),
-            ),
-          );
+        await db.delete(serviceOwners).where(
+          and(
+            eq(serviceOwners.serviceId, input.serviceId),
+            eq(serviceOwners.staffProfileId, input.staffProfileId),
+          ),
+        );
 
         await logAudit({
           actorId: context.session.user.id,

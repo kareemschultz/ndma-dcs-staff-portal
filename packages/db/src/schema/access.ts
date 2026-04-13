@@ -25,7 +25,9 @@ export const platformTypeEnum = pgEnum("platform_type", [
   "biometric",
   "ad",
   "ipam",
+  "phpipam",
   "radius",
+  "zabbix",
   "other",
 ]);
 
@@ -34,6 +36,8 @@ export const accountStatusEnum = pgEnum("account_status", [
   "suspended",
   "disabled",
   "pending_creation",
+  "orphaned",
+  "pending_review",
 ]);
 
 /**
@@ -81,11 +85,82 @@ export const reconciliationIssueTypeEnum = pgEnum("reconciliation_issue_type", [
   "no_staff_link",
   "username_mismatch",
   "duplicate",
+  "disabled_staff_active_account",
+  "expired_contractor",
+  "missing_internally",
+  "missing_externally",
 ]);
+
+/** Who the person/identity belongs to. */
+export const userAffiliationEnum = pgEnum("user_affiliation", [
+  "ndma_internal",
+  "external_agency",
+  "contractor",
+  "consultant",
+  "vendor",
+  "shared_service",
+]);
+
+/** Status of a periodic access review. */
+export const accessReviewStatusEnum = pgEnum("access_review_status", [
+  "pending",
+  "approved",
+  "revoked",
+  "escalated",
+]);
+
+/** Type of access group. */
+export const accessGroupTypeEnum = pgEnum("access_group_type", [
+  "ad_group",
+  "vpn_group",
+  "platform_role",
+  "local_group",
+  "radius_group",
+]);
+
+// ── External Contacts ─────────────────────────────────────────────────────
+// Non-staff identities — external agency users, contractors, consultants,
+// vendors, or shared/service accounts not tied to an NDMA staff profile.
+
+export const externalContacts = pgTable(
+  "external_contacts",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    name: text("name").notNull(),
+    email: text("email"),
+    organization: text("organization"),
+    phone: text("phone"),
+    affiliationType: userAffiliationEnum("affiliation_type")
+      .notNull()
+      .default("external_agency"),
+    // Optional link to an NDMA staff profile if they also have internal records
+    linkedStaffProfileId: text("linked_staff_profile_id").references(
+      () => staffProfiles.id,
+      { onDelete: "set null" },
+    ),
+    isActive: boolean("is_active").notNull().default(true),
+    notes: text("notes"),
+    createdByUserId: text("created_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("external_contacts_affiliationType_idx").on(table.affiliationType),
+    index("external_contacts_email_idx").on(table.email),
+  ],
+);
 
 // ── Platform Accounts ─────────────────────────────────────────────────────
 // Cybersecurity compliance — auditable record of who has access to what.
 // Supports both manually-entered records and records synced from external APIs.
+// staffProfileId is nullable: NDMA staff OR external contacts may hold accounts.
 
 export const platformAccounts = pgTable(
   "platform_accounts",
@@ -93,15 +168,29 @@ export const platformAccounts = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    staffProfileId: text("staff_profile_id")
-      .notNull()
-      .references(() => staffProfiles.id, { onDelete: "cascade" }),
+
+    // One of these two must be set — either an NDMA staff or an external contact
+    staffProfileId: text("staff_profile_id").references(() => staffProfiles.id, {
+      onDelete: "cascade",
+    }),
+    externalContactId: text("external_contact_id").references(
+      () => externalContacts.id,
+      { onDelete: "cascade" },
+    ),
+
     platform: platformTypeEnum("platform").notNull(),
 
     // The login name / badge number / AD sAMAccountName etc.
     accountIdentifier: text("account_identifier").notNull(),
     // Friendly display name (e.g. Full Name in AD)
     displayName: text("display_name"),
+    // Email linked to the account on this platform
+    email: text("email"),
+
+    // Who this person/identity belongs to
+    affiliationType: userAffiliationEnum("affiliation_type")
+      .notNull()
+      .default("ndma_internal"),
 
     // How this user authenticates to the platform
     authSource: authSourceEnum("auth_source").notNull().default("local"),
@@ -110,6 +199,13 @@ export const platformAccounts = pgTable(
     privilegeLevel: text("privilege_level"),
 
     status: accountStatusEnum("status").notNull().default("active"),
+
+    // ── VPN-specific fields ──────────────────────────────────────────────
+    vpnEnabled: boolean("vpn_enabled").notNull().default(false),
+    // VPN group/profile the user belongs to (e.g. "NDMA-Staff-VPN", "Contractor-VPN")
+    vpnGroup: text("vpn_group"),
+    // Named VPN access profile/policy
+    vpnProfile: text("vpn_profile"),
 
     // Whether this record is managed manually or via API sync
     syncMode: syncModeEnum("sync_mode").notNull().default("manual"),
@@ -123,13 +219,25 @@ export const platformAccounts = pgTable(
 
     provisionedAt: date("provisioned_at"),
     expiresAt: date("expires_at"),
+    // When access is due for review
+    reviewDueDate: date("review_due_date"),
     // Date of last formal access review — for compliance audit trail
     lastReviewedAt: date("last_reviewed_at"),
     // When the account was last manually verified against the platform
     lastVerifiedAt: date("last_verified_at"),
 
-    // Who created this record (for manually-entered records)
+    // Soft-disable timestamp
+    disabledAt: timestamp("disabled_at"),
+
+    // Computed flags — set by reconciliation jobs or admin
+    isOrphaned: boolean("is_orphaned").notNull().default(false),
+    isStale: boolean("is_stale").notNull().default(false),
+
+    // Who created / last updated this record
     createdByUserId: text("created_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    updatedByUserId: text("updated_by_user_id").references(() => user.id, {
       onDelete: "set null",
     }),
 
@@ -141,16 +249,109 @@ export const platformAccounts = pgTable(
       .notNull(),
   },
   (table) => [
-    unique("platform_accounts_unique").on(
-      table.staffProfileId,
+    // Platform + accountIdentifier must be unique — the account identity on the platform
+    unique("platform_accounts_platform_identifier_unique").on(
       table.platform,
       table.accountIdentifier,
     ),
     index("platform_accounts_staffProfileId_idx").on(table.staffProfileId),
+    index("platform_accounts_externalContactId_idx").on(table.externalContactId),
     index("platform_accounts_platform_idx").on(table.platform),
     index("platform_accounts_status_idx").on(table.status),
     index("platform_accounts_syncMode_idx").on(table.syncMode),
+    index("platform_accounts_affiliationType_idx").on(table.affiliationType),
+    index("platform_accounts_vpnEnabled_idx").on(table.vpnEnabled),
+    index("platform_accounts_isOrphaned_idx").on(table.isOrphaned),
     index("platform_accounts_externalAccountId_idx").on(table.externalAccountId),
+  ],
+);
+
+// ── Access Groups ─────────────────────────────────────────────────────────
+// AD/LDAP groups, VPN groups, platform roles, local groups.
+
+export const accessGroups = pgTable(
+  "access_groups",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    name: text("name").notNull(),
+    platform: platformTypeEnum("platform").notNull(),
+    groupType: accessGroupTypeEnum("group_type").notNull(),
+    description: text("description"),
+    // External identifier (e.g. AD group objectGuid or CN)
+    externalId: text("external_id"),
+    syncMode: syncModeEnum("sync_mode").notNull().default("manual"),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("access_groups_platform_idx").on(table.platform),
+    index("access_groups_groupType_idx").on(table.groupType),
+  ],
+);
+
+// ── Account Group Memberships ─────────────────────────────────────────────
+// Which platform accounts belong to which groups.
+
+export const accountGroupMemberships = pgTable(
+  "account_group_memberships",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    platformAccountId: text("platform_account_id")
+      .notNull()
+      .references(() => platformAccounts.id, { onDelete: "cascade" }),
+    accessGroupId: text("access_group_id")
+      .notNull()
+      .references(() => accessGroups.id, { onDelete: "cascade" }),
+    addedAt: timestamp("added_at").defaultNow().notNull(),
+    // Nullable — set when membership is removed (soft delete)
+    removedAt: timestamp("removed_at"),
+    addedByUserId: text("added_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+  },
+  (table) => [
+    unique("account_group_memberships_unique").on(
+      table.platformAccountId,
+      table.accessGroupId,
+    ),
+    index("account_group_memberships_accountId_idx").on(table.platformAccountId),
+    index("account_group_memberships_groupId_idx").on(table.accessGroupId),
+  ],
+);
+
+// ── Access Reviews ─────────────────────────────────────────────────────────
+// Periodic review/certification records — who reviewed whose access and the outcome.
+
+export const accessReviews = pgTable(
+  "access_reviews",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    platformAccountId: text("platform_account_id")
+      .notNull()
+      .references(() => platformAccounts.id, { onDelete: "cascade" }),
+    reviewerId: text("reviewer_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    status: accessReviewStatusEnum("status").notNull().default("pending"),
+    reviewedAt: timestamp("reviewed_at"),
+    nextReviewDate: date("next_review_date"),
+    notes: text("notes"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("access_reviews_accountId_idx").on(table.platformAccountId),
+    index("access_reviews_status_idx").on(table.status),
+    index("access_reviews_nextReviewDate_idx").on(table.nextReviewDate),
   ],
 );
 
@@ -168,6 +369,16 @@ export const platformIntegrations = pgTable(
     name: text("name").notNull(),
     platform: platformTypeEnum("platform").notNull(),
     description: text("description"),
+
+    // Platform ownership & support
+    ownerStaffId: text("owner_staff_id").references(() => staffProfiles.id, {
+      onDelete: "set null",
+    }),
+    supportTeam: text("support_team"),
+    // Auth models this platform supports (e.g. ["local", "active_directory", "radius"])
+    authModelsSupported: jsonb("auth_models_supported"),
+    runbookUrl: text("runbook_url"),
+    documentationUrl: text("documentation_url"),
 
     hasApi: boolean("has_api").notNull().default(false),
     syncEnabled: boolean("sync_enabled").notNull().default(false),
@@ -319,23 +530,86 @@ export const serviceOwners = pgTable(
 
 // ── Relations ─────────────────────────────────────────────────────────────────
 
+export const externalContactsRelations = relations(
+  externalContacts,
+  ({ one, many }) => ({
+    linkedStaffProfile: one(staffProfiles, {
+      fields: [externalContacts.linkedStaffProfileId],
+      references: [staffProfiles.id],
+    }),
+    createdBy: one(user, {
+      fields: [externalContacts.createdByUserId],
+      references: [user.id],
+    }),
+    platformAccounts: many(platformAccounts),
+  }),
+);
+
 export const platformAccountsRelations = relations(
   platformAccounts,
-  ({ one }) => ({
+  ({ one, many }) => ({
     staffProfile: one(staffProfiles, {
       fields: [platformAccounts.staffProfileId],
       references: [staffProfiles.id],
+    }),
+    externalContact: one(externalContacts, {
+      fields: [platformAccounts.externalContactId],
+      references: [externalContacts.id],
     }),
     createdBy: one(user, {
       fields: [platformAccounts.createdByUserId],
       references: [user.id],
     }),
+    updatedBy: one(user, {
+      fields: [platformAccounts.updatedByUserId],
+      references: [user.id],
+      relationName: "updatedBy",
+    }),
+    groupMemberships: many(accountGroupMemberships),
+    reviews: many(accessReviews),
   }),
 );
 
+export const accessGroupsRelations = relations(accessGroups, ({ many }) => ({
+  memberships: many(accountGroupMemberships),
+}));
+
+export const accountGroupMembershipsRelations = relations(
+  accountGroupMemberships,
+  ({ one }) => ({
+    platformAccount: one(platformAccounts, {
+      fields: [accountGroupMemberships.platformAccountId],
+      references: [platformAccounts.id],
+    }),
+    accessGroup: one(accessGroups, {
+      fields: [accountGroupMemberships.accessGroupId],
+      references: [accessGroups.id],
+    }),
+    addedBy: one(user, {
+      fields: [accountGroupMemberships.addedByUserId],
+      references: [user.id],
+    }),
+  }),
+);
+
+export const accessReviewsRelations = relations(accessReviews, ({ one }) => ({
+  platformAccount: one(platformAccounts, {
+    fields: [accessReviews.platformAccountId],
+    references: [platformAccounts.id],
+  }),
+  reviewer: one(user, {
+    fields: [accessReviews.reviewerId],
+    references: [user.id],
+  }),
+}));
+
 export const platformIntegrationsRelations = relations(
   platformIntegrations,
-  ({ many }) => ({
+  ({ one, many }) => ({
+    ownerStaff: one(staffProfiles, {
+      fields: [platformIntegrations.ownerStaffId],
+      references: [staffProfiles.id],
+    }),
     syncJobs: many(syncJobs),
     reconciliationIssues: many(reconciliationIssues),
   }),

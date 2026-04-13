@@ -41,6 +41,7 @@ import { Route as AuthenticatedRotaPlannerRouteImport } from './routes/_authenti
 import { Route as AuthenticatedRotaHistoryRouteImport } from './routes/_authenticated/rota/history'
 import { Route as AuthenticatedProcurementNewRouteImport } from './routes/_authenticated/procurement/new'
 import { Route as AuthenticatedLeaveNewRouteImport } from './routes/_authenticated/leave/new'
+import { Route as AuthenticatedLeaveCalendarRouteImport } from './routes/_authenticated/leave/calendar'
 import { Route as AuthenticatedIncidentsNewRouteImport } from './routes/_authenticated/incidents/new'
 import { Route as AuthenticatedIncidentsIncidentIdRouteImport } from './routes/_authenticated/incidents/$incidentId'
 import { Route as AuthenticatedComplianceTrainingRouteImport } from './routes/_authenticated/compliance/training'
@@ -48,6 +49,7 @@ import { Route as AuthenticatedCompliancePpeRouteImport } from './routes/_authen
 import { Route as AuthenticatedComplianceItemsRouteImport } from './routes/_authenticated/compliance/items'
 import { Route as AuthenticatedChangesNewRouteImport } from './routes/_authenticated/changes/new'
 import { Route as AuthenticatedChangesChangeIdRouteImport } from './routes/_authenticated/changes/$changeId'
+import { Route as AuthenticatedAccessAccountIdRouteImport } from './routes/_authenticated/access/$accountId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -229,6 +231,12 @@ const AuthenticatedLeaveNewRoute = AuthenticatedLeaveNewRouteImport.update({
   path: '/leave/new',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLeaveCalendarRoute =
+  AuthenticatedLeaveCalendarRouteImport.update({
+    id: '/leave/calendar',
+    path: '/leave/calendar',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedIncidentsNewRoute =
   AuthenticatedIncidentsNewRouteImport.update({
     id: '/incidents/new',
@@ -270,10 +278,17 @@ const AuthenticatedChangesChangeIdRoute =
     path: '/changes/$changeId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAccessAccountIdRoute =
+  AuthenticatedAccessAccountIdRouteImport.update({
+    id: '/access/$accountId',
+    path: '/access/$accountId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
+  '/access/$accountId': typeof AuthenticatedAccessAccountIdRoute
   '/changes/$changeId': typeof AuthenticatedChangesChangeIdRoute
   '/changes/new': typeof AuthenticatedChangesNewRoute
   '/compliance/items': typeof AuthenticatedComplianceItemsRoute
@@ -281,6 +296,7 @@ export interface FileRoutesByFullPath {
   '/compliance/training': typeof AuthenticatedComplianceTrainingRoute
   '/incidents/$incidentId': typeof AuthenticatedIncidentsIncidentIdRoute
   '/incidents/new': typeof AuthenticatedIncidentsNewRoute
+  '/leave/calendar': typeof AuthenticatedLeaveCalendarRoute
   '/leave/new': typeof AuthenticatedLeaveNewRoute
   '/procurement/new': typeof AuthenticatedProcurementNewRoute
   '/rota/history': typeof AuthenticatedRotaHistoryRoute
@@ -314,6 +330,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/': typeof AuthenticatedIndexRoute
+  '/access/$accountId': typeof AuthenticatedAccessAccountIdRoute
   '/changes/$changeId': typeof AuthenticatedChangesChangeIdRoute
   '/changes/new': typeof AuthenticatedChangesNewRoute
   '/compliance/items': typeof AuthenticatedComplianceItemsRoute
@@ -321,6 +338,7 @@ export interface FileRoutesByTo {
   '/compliance/training': typeof AuthenticatedComplianceTrainingRoute
   '/incidents/$incidentId': typeof AuthenticatedIncidentsIncidentIdRoute
   '/incidents/new': typeof AuthenticatedIncidentsNewRoute
+  '/leave/calendar': typeof AuthenticatedLeaveCalendarRoute
   '/leave/new': typeof AuthenticatedLeaveNewRoute
   '/procurement/new': typeof AuthenticatedProcurementNewRoute
   '/rota/history': typeof AuthenticatedRotaHistoryRoute
@@ -356,6 +374,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/access/$accountId': typeof AuthenticatedAccessAccountIdRoute
   '/_authenticated/changes/$changeId': typeof AuthenticatedChangesChangeIdRoute
   '/_authenticated/changes/new': typeof AuthenticatedChangesNewRoute
   '/_authenticated/compliance/items': typeof AuthenticatedComplianceItemsRoute
@@ -363,6 +382,7 @@ export interface FileRoutesById {
   '/_authenticated/compliance/training': typeof AuthenticatedComplianceTrainingRoute
   '/_authenticated/incidents/$incidentId': typeof AuthenticatedIncidentsIncidentIdRoute
   '/_authenticated/incidents/new': typeof AuthenticatedIncidentsNewRoute
+  '/_authenticated/leave/calendar': typeof AuthenticatedLeaveCalendarRoute
   '/_authenticated/leave/new': typeof AuthenticatedLeaveNewRoute
   '/_authenticated/procurement/new': typeof AuthenticatedProcurementNewRoute
   '/_authenticated/rota/history': typeof AuthenticatedRotaHistoryRoute
@@ -398,6 +418,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/access/$accountId'
     | '/changes/$changeId'
     | '/changes/new'
     | '/compliance/items'
@@ -405,6 +426,7 @@ export interface FileRouteTypes {
     | '/compliance/training'
     | '/incidents/$incidentId'
     | '/incidents/new'
+    | '/leave/calendar'
     | '/leave/new'
     | '/procurement/new'
     | '/rota/history'
@@ -438,6 +460,7 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/'
+    | '/access/$accountId'
     | '/changes/$changeId'
     | '/changes/new'
     | '/compliance/items'
@@ -445,6 +468,7 @@ export interface FileRouteTypes {
     | '/compliance/training'
     | '/incidents/$incidentId'
     | '/incidents/new'
+    | '/leave/calendar'
     | '/leave/new'
     | '/procurement/new'
     | '/rota/history'
@@ -479,6 +503,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/_authenticated/'
+    | '/_authenticated/access/$accountId'
     | '/_authenticated/changes/$changeId'
     | '/_authenticated/changes/new'
     | '/_authenticated/compliance/items'
@@ -486,6 +511,7 @@ export interface FileRouteTypes {
     | '/_authenticated/compliance/training'
     | '/_authenticated/incidents/$incidentId'
     | '/_authenticated/incidents/new'
+    | '/_authenticated/leave/calendar'
     | '/_authenticated/leave/new'
     | '/_authenticated/procurement/new'
     | '/_authenticated/rota/history'
@@ -748,6 +774,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeaveNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/leave/calendar': {
+      id: '/_authenticated/leave/calendar'
+      path: '/leave/calendar'
+      fullPath: '/leave/calendar'
+      preLoaderRoute: typeof AuthenticatedLeaveCalendarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/incidents/new': {
       id: '/_authenticated/incidents/new'
       path: '/incidents/new'
@@ -797,11 +830,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChangesChangeIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/access/$accountId': {
+      id: '/_authenticated/access/$accountId'
+      path: '/access/$accountId'
+      fullPath: '/access/$accountId'
+      preLoaderRoute: typeof AuthenticatedAccessAccountIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedAccessAccountIdRoute: typeof AuthenticatedAccessAccountIdRoute
   AuthenticatedChangesChangeIdRoute: typeof AuthenticatedChangesChangeIdRoute
   AuthenticatedChangesNewRoute: typeof AuthenticatedChangesNewRoute
   AuthenticatedComplianceItemsRoute: typeof AuthenticatedComplianceItemsRoute
@@ -809,6 +850,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedComplianceTrainingRoute: typeof AuthenticatedComplianceTrainingRoute
   AuthenticatedIncidentsIncidentIdRoute: typeof AuthenticatedIncidentsIncidentIdRoute
   AuthenticatedIncidentsNewRoute: typeof AuthenticatedIncidentsNewRoute
+  AuthenticatedLeaveCalendarRoute: typeof AuthenticatedLeaveCalendarRoute
   AuthenticatedLeaveNewRoute: typeof AuthenticatedLeaveNewRoute
   AuthenticatedProcurementNewRoute: typeof AuthenticatedProcurementNewRoute
   AuthenticatedRotaHistoryRoute: typeof AuthenticatedRotaHistoryRoute
@@ -842,6 +884,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedAccessAccountIdRoute: AuthenticatedAccessAccountIdRoute,
   AuthenticatedChangesChangeIdRoute: AuthenticatedChangesChangeIdRoute,
   AuthenticatedChangesNewRoute: AuthenticatedChangesNewRoute,
   AuthenticatedComplianceItemsRoute: AuthenticatedComplianceItemsRoute,
@@ -849,6 +892,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedComplianceTrainingRoute: AuthenticatedComplianceTrainingRoute,
   AuthenticatedIncidentsIncidentIdRoute: AuthenticatedIncidentsIncidentIdRoute,
   AuthenticatedIncidentsNewRoute: AuthenticatedIncidentsNewRoute,
+  AuthenticatedLeaveCalendarRoute: AuthenticatedLeaveCalendarRoute,
   AuthenticatedLeaveNewRoute: AuthenticatedLeaveNewRoute,
   AuthenticatedProcurementNewRoute: AuthenticatedProcurementNewRoute,
   AuthenticatedRotaHistoryRoute: AuthenticatedRotaHistoryRoute,

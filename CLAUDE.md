@@ -189,7 +189,7 @@ The login page must show BOTH:
 | `leave.ts` | leave_types, leave_balances, leave_requests + leave_request_status enum |
 | `procurement.ts` | purchase_requisitions, pr_line_items, pr_approvals + pr_status / pr_priority enums |
 | `temp-changes.ts` | temporary_changes + temp_change_status enum |
-| `access.ts` | platform_accounts, platform_integrations, sync_jobs, reconciliation_issues, service_owners + platform_type / account_status / auth_source / sync_mode / sync_direction / integration_status / sync_job_status / reconciliation_issue_type enums |
+| `access.ts` | external_contacts, platform_accounts (staffProfileId nullable), access_groups, account_group_memberships (soft-delete via removedAt), access_reviews, platform_integrations, sync_jobs, reconciliation_issues, service_owners + enums: platform_type (vpn/fortigate/uportal/biometric/ad/ipam/phpipam/radius/zabbix/other), account_status (+orphaned/pending_review), auth_source, sync_mode, sync_direction, integration_status, sync_job_status, reconciliation_issue_type (+disabled_staff_active_account/expired_contractor/missing_internally/missing_externally), user_affiliation, access_review_status, access_group_type |
 | `contracts.ts` | contracts + contract_status enum |
 | `appraisals.ts` | appraisals + appraisal_status enum |
 | `compliance.ts` | training_records, ppe_records, policy_acknowledgements + compliance_item_status enum |
@@ -210,7 +210,7 @@ The login page must show BOTH:
 | `leave.ts` | types.{list,create,update}, balances.{getByStaff,adjust}, requests.{list,create,approve,reject,cancel}, getTeamCalendar |
 | `procurement.ts` | list, get, create, update, submit, approve, reject, markOrdered, markReceived, getMyRequests, getPendingApprovals, stats |
 | `temp-changes.ts` | list, get, create, update, markRemoved, getOverdue, stats |
-| `access.ts` | accounts.{list,getByStaff,getByPlatform,getExpiring,create,update,markReviewed,getOrphaned}, integrations.{list,get,create,update,triggerSync}, syncJobs.list, reconciliation.{list,resolve}, serviceOwners.{list,assign,remove,getByService} |
+| `access.ts` | accounts.{list,get,getByStaff,getByPlatform,getExpiring,getOrphaned,getStale,getVpnEnabled,create,update,disable,markReviewed}, externalContacts.{list,get,create,update}, groups.{list,get,create,update,delete,listMembers,addMember,removeMember}, reviews.{list,getPending,getOverdue,create,complete}, integrations.{list,get,create,update,triggerSync}, syncJobs.list, reconciliation.{list,resolve}, serviceOwners.{list,assign,remove,getByService} |
 | `staff.ts` | list, get, create, update, deactivate, getDepartments |
 | `contracts.ts` | list, get, create, update, getExpiringSoon |
 | `appraisals.ts` | list, get, create, update, getOverdue, getByStaff |
@@ -228,6 +228,35 @@ The login page must show BOTH:
 ## RBAC Resources (packages/auth/src/index.ts)
 
 13 resources: `staff`, `work`, `leave`, `rota`, `compliance`, `contract`, `appraisal`, `report`, `audit`, `settings`, `procurement`, `notification`, `access`
+
+---
+
+## Deployment
+
+### Docker (production)
+
+```bash
+# Build and start (copy .env.example → .env, fill in secrets first)
+docker compose -f docker-compose.prod.yml up -d --build
+
+# Apply DB schema on first run
+docker compose -f docker-compose.prod.yml exec app bun run db:push
+```
+
+**Key files:**
+- `Dockerfile` — multi-stage build (deps → web-builder → server-builder → runner); final image is `oven/bun:1.3-slim` running as non-root `bun` user
+- `docker-compose.prod.yml` — PostgreSQL 16-alpine + app container; no external ports on postgres
+- Static web assets are built in CI and served directly by the Hono server
+
+**Required env vars (production):**
+- `DATABASE_URL` — full PostgreSQL connection string
+- `BETTER_AUTH_SECRET` — 32+ char random secret
+- `BETTER_AUTH_URL` — the public URL of the server (e.g. `https://ops.ndma.gov.gh`)
+- `CORS_ORIGIN` — exact web app origin
+
+### CI/CD
+
+GitHub Actions: `.github/workflows/ci.yml` — type-check + build on every push/PR to `main`.
 
 ---
 

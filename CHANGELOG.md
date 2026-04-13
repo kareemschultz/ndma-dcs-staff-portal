@@ -8,6 +8,21 @@ All notable changes to DCS Ops Center are documented here.
 
 ### Added
 
+#### Access & Accounts v3 — Identity Governance + VPN (2026-04-12)
+- **`external_contacts` table** — non-NDMA identities (contractors, consultants, vendors, external agencies) that hold platform accounts; optional FK to a staff profile for dual affiliation
+- **`platform_accounts.staffProfileId` made nullable** — accounts can now belong to an `external_contact` OR a staff profile (exclusive FK pattern); unique constraint changed to `(platform, accountIdentifier)`
+- **VPN fields on `platform_accounts`** — `vpnEnabled`, `vpnGroup`, `vpnProfile` columns; new `access.accounts.getVpnEnabled` API and VPN tab on the access page
+- **`access_groups` table** — AD groups, VPN groups, platform roles, RADIUS groups; `access_group_type` enum (ad_group/vpn_group/platform_role/local_group/radius_group)
+- **`account_group_memberships` table** — soft-delete via `removedAt`; tracks which platform accounts belong to which groups, with audit trail
+- **`access_reviews` table** — periodic certification workflow; `access_review_status` enum (pending/approved/revoked/escalated); completing a review with `revoked` automatically disables the account
+- **`user_affiliation` enum** — classifies identities as ndma_internal/external_agency/contractor/consultant/vendor/shared_service; stored on both `platform_accounts` and `external_contacts`
+- **Extended `platform_integrations`** — `ownerStaffId`, `supportTeam`, `authModelsSupported` (jsonb), `runbookUrl`, `documentationUrl` columns; runbook link rendered in integrations tab
+- **Extended reconciliation issue types** — `disabled_staff_active_account`, `expired_contractor`, `missing_internally`, `missing_externally`
+- **New API procedures** — `access.externalContacts.{list,get,create,update}`, `access.groups.{list,get,create,update,delete,listMembers,addMember,removeMember}`, `access.reviews.{list,getPending,getOverdue,create,complete}`, `access.accounts.{get,disable,getStale,getVpnEnabled}`
+- **Expanded Access frontend** — 7-tab UI: Accounts · VPN Access · Groups · External Contacts · Access Reviews · Integrations · Reconciliation; alert banners for expiring accounts + pending reviews + open issues
+- **Account detail page** (`/access/$accountId`) — overview, group memberships, review history tabs; disable button; VPN card if VPN-enabled
+- **Docker deployment** — multi-stage `Dockerfile` (oven/bun:1.3-slim, non-root user, health check); `docker-compose.prod.yml` with postgres + app containers and no exposed DB ports
+
 #### Phase D — On-Call Expansion + Phase J — Dashboard (2026-04-12)
 - **Escalation router** (`packages/api/src/routers/escalation.ts`) — full CRUD for escalation policies, timed steps, and on-call overrides; all mutations audit-logged
 - **`rota.getEffectiveOnCall`** — resolves active overrides on top of base schedule assignments for a given date

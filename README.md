@@ -91,14 +91,17 @@ Every action in the system is captured in an append-only audit log — who did w
 - Appraisal scheduling and performance ratings
 - Leave requests, leave balances, team availability calendar
 
-**🔌 Platform Access & Accounts**
-- Account registry across all managed platforms (VPN, Fortigate, IPAM, RADIUS, AD, uPortal, biometric)
+**🔌 Platform Access & Identity Governance**
+- Account registry for VPN, Fortigate, phpIPAM, RADIUS, AD, uPortal, Zabbix, biometric and more
+- **External contacts** — contractors, consultants, vendors, and agency users with platform access (not just NDMA staff)
+- **User affiliation** — ndma_internal / external_agency / contractor / consultant / vendor / shared_service
+- **VPN management** — per-account VPN enable flag, group, and profile; dedicated VPN Access tab
+- **Access groups** — AD groups, VPN groups, platform roles, RADIUS groups; soft-delete membership history
+- **Access review (certification)** workflow — approve/revoke/escalate; revoking automatically disables the account
 - Multi-source auth tracking: Local · AD/LDAP · RADIUS · SAML · OAuth/OIDC · Service Accounts · API-only
-- Three sync modes: Manual (staff-entered), Synced (connector-owned), Hybrid (synced + local annotations)
-- Platform integration connectors with live status, sync frequency, and "Sync now" triggers
-- Sync job history with record counts and error logs
-- Reconciliation engine: detect orphaned accounts, unmatched externals, policy violations
-- Access review workflow for periodic cybersecurity audits
+- Three sync modes: Manual, Synced (API-owned), Hybrid (synced + local annotations)
+- Platform integration connectors with owner, support team, runbook URL, and "Sync now"
+- Reconciliation engine: orphaned accounts, disabled-staff-active-account, expired-contractor, mismatches
 
 **🛡️ Compliance**
 - Training records with provider, completion date, expiry, and certificate URL
@@ -180,9 +183,13 @@ ndma-dcs-staff-portal/
 │   └── config/                 # Shared TypeScript config
 ├── docs/                       # Developer reference (architecture, ADRs)
 ├── CHANGELOG.md                # Release history
-├── docker-compose.yml          # PostgreSQL container
+├── Dockerfile                  # Multi-stage production build
+├── docker-compose.yml          # PostgreSQL container (dev)
+├── docker-compose.prod.yml     # Full stack (PostgreSQL + app, production)
 ├── turbo.json                  # Turborepo task config
-└── CLAUDE.md                   # AI assistant context + critical gotchas
+├── CLAUDE.md                   # Claude AI context + critical gotchas
+├── AGENTS.md                   # OpenAI/Copilot agent context
+└── GEMINI.md                   # Gemini CLI context
 ```
 
 ---
@@ -297,7 +304,7 @@ graph TB
 | Leave | `leave_types`, `leave_balances`, `leave_requests` |
 | Procurement | `purchase_requisitions`, `pr_line_items`, `pr_approvals` |
 | Temp Changes | `temporary_changes` |
-| Access | `platform_accounts`, `service_owners`, `platform_integrations`, `sync_jobs`, `reconciliation_issues` |
+| Access | `external_contacts`, `platform_accounts`, `access_groups`, `account_group_memberships`, `access_reviews`, `platform_integrations`, `sync_jobs`, `reconciliation_issues`, `service_owners` |
 | Contracts | `contracts` |
 | Appraisals | `appraisals` |
 | Compliance | `training_records`, `ppe_records`, `policy_acknowledgements` |
@@ -324,6 +331,57 @@ bun run db:stop          # Stop Docker PostgreSQL
 bun run check-types      # TypeScript check all packages
 bun run build            # Build all apps
 ```
+
+---
+
+## Deployment
+
+### Docker Compose (recommended)
+
+The project ships with a production-optimised multi-stage Dockerfile and a `docker-compose.prod.yml` for single-server deployment.
+
+**Image characteristics:**
+- Base: `oven/bun:1.3-slim` (Alpine-derived, ~80 MB final image)
+- Non-root user (`bun`) — no privilege escalation
+- Static web assets compiled at build time and served by the Hono server
+- Health check endpoint at `/health`
+
+```bash
+# 1. Configure secrets
+cp .env.example .env
+# Edit .env — set POSTGRES_PASSWORD, BETTER_AUTH_SECRET, BETTER_AUTH_URL, CORS_ORIGIN
+
+# 2. Build and start
+docker compose -f docker-compose.prod.yml up -d --build
+
+# 3. Push schema on first boot
+docker compose -f docker-compose.prod.yml exec app bun run db:push
+
+# 4. (Optional) seed demo data
+docker compose -f docker-compose.prod.yml exec app bun run db:seed
+```
+
+**Production env vars:**
+
+| Variable | Required | Notes |
+|----------|----------|-------|
+| `POSTGRES_PASSWORD` | Yes | Strong random password |
+| `BETTER_AUTH_SECRET` | Yes | ≥32-char random string (`openssl rand -base64 32`) |
+| `BETTER_AUTH_URL` | Yes | Public URL of the API server (e.g. `https://ops.ndma.gov.gh`) |
+| `CORS_ORIGIN` | Yes | Exact frontend origin (same as `BETTER_AUTH_URL` in a single-domain deploy) |
+| `APP_PORT` | No | Host port to bind (default `3000`) |
+| `POSTGRES_DB` | No | Database name (default `dcs_ops`) |
+
+### Reverse Proxy (Nginx/Caddy)
+
+In production, place a reverse proxy in front to:
+- Terminate TLS
+- Route `/` → app container port 3000
+- Set `X-Forwarded-For` for accurate IP audit logging
+
+### CI/CD
+
+GitHub Actions workflow at `.github/workflows/ci.yml` runs type-check and build on every push/PR to `main`.
 
 ---
 
