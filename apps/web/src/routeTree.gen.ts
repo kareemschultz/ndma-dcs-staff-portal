@@ -28,6 +28,7 @@ import { Route as AuthenticatedContractsIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedChangesIndexRouteImport } from './routes/_authenticated/changes/index'
 import { Route as AuthenticatedAuditIndexRouteImport } from './routes/_authenticated/audit/index'
 import { Route as AuthenticatedAppraisalsIndexRouteImport } from './routes/_authenticated/appraisals/index'
+import { Route as AuthenticatedAnalyticsIndexRouteImport } from './routes/_authenticated/analytics/index'
 import { Route as AuthenticatedAccessIndexRouteImport } from './routes/_authenticated/access/index'
 import { Route as AuthenticatedWorkWorkloadRouteImport } from './routes/_authenticated/work/workload'
 import { Route as AuthenticatedWorkNewRouteImport } from './routes/_authenticated/work/new'
@@ -53,6 +54,9 @@ import { Route as AuthenticatedComplianceItemsRouteImport } from './routes/_auth
 import { Route as AuthenticatedChangesNewRouteImport } from './routes/_authenticated/changes/new'
 import { Route as AuthenticatedChangesChangeIdRouteImport } from './routes/_authenticated/changes/$changeId'
 import { Route as AuthenticatedAccessAccountIdRouteImport } from './routes/_authenticated/access/$accountId'
+import { Route as AuthenticatedRotaWarningsIndexRouteImport } from './routes/_authenticated/rota/warnings/index'
+import { Route as AuthenticatedRotaFairnessIndexRouteImport } from './routes/_authenticated/rota/fairness/index'
+import { Route as AuthenticatedRotaCalendarIndexRouteImport } from './routes/_authenticated/rota/calendar/index'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -157,6 +161,12 @@ const AuthenticatedAppraisalsIndexRoute =
   AuthenticatedAppraisalsIndexRouteImport.update({
     id: '/appraisals/',
     path: '/appraisals/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAnalyticsIndexRoute =
+  AuthenticatedAnalyticsIndexRouteImport.update({
+    id: '/analytics/',
+    path: '/analytics/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAccessIndexRoute =
@@ -305,6 +315,24 @@ const AuthenticatedAccessAccountIdRoute =
     path: '/access/$accountId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedRotaWarningsIndexRoute =
+  AuthenticatedRotaWarningsIndexRouteImport.update({
+    id: '/rota/warnings/',
+    path: '/rota/warnings/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRotaFairnessIndexRoute =
+  AuthenticatedRotaFairnessIndexRouteImport.update({
+    id: '/rota/fairness/',
+    path: '/rota/fairness/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRotaCalendarIndexRoute =
+  AuthenticatedRotaCalendarIndexRouteImport.update({
+    id: '/rota/calendar/',
+    path: '/rota/calendar/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -334,6 +362,7 @@ export interface FileRoutesByFullPath {
   '/work/new': typeof AuthenticatedWorkNewRoute
   '/work/workload': typeof AuthenticatedWorkWorkloadRoute
   '/access/': typeof AuthenticatedAccessIndexRoute
+  '/analytics/': typeof AuthenticatedAnalyticsIndexRoute
   '/appraisals/': typeof AuthenticatedAppraisalsIndexRoute
   '/audit/': typeof AuthenticatedAuditIndexRoute
   '/changes/': typeof AuthenticatedChangesIndexRoute
@@ -350,6 +379,9 @@ export interface FileRoutesByFullPath {
   '/services/': typeof AuthenticatedServicesIndexRoute
   '/staff/': typeof AuthenticatedStaffIndexRoute
   '/work/': typeof AuthenticatedWorkIndexRoute
+  '/rota/calendar/': typeof AuthenticatedRotaCalendarIndexRoute
+  '/rota/fairness/': typeof AuthenticatedRotaFairnessIndexRoute
+  '/rota/warnings/': typeof AuthenticatedRotaWarningsIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -379,6 +411,7 @@ export interface FileRoutesByTo {
   '/work/new': typeof AuthenticatedWorkNewRoute
   '/work/workload': typeof AuthenticatedWorkWorkloadRoute
   '/access': typeof AuthenticatedAccessIndexRoute
+  '/analytics': typeof AuthenticatedAnalyticsIndexRoute
   '/appraisals': typeof AuthenticatedAppraisalsIndexRoute
   '/audit': typeof AuthenticatedAuditIndexRoute
   '/changes': typeof AuthenticatedChangesIndexRoute
@@ -395,6 +428,9 @@ export interface FileRoutesByTo {
   '/services': typeof AuthenticatedServicesIndexRoute
   '/staff': typeof AuthenticatedStaffIndexRoute
   '/work': typeof AuthenticatedWorkIndexRoute
+  '/rota/calendar': typeof AuthenticatedRotaCalendarIndexRoute
+  '/rota/fairness': typeof AuthenticatedRotaFairnessIndexRoute
+  '/rota/warnings': typeof AuthenticatedRotaWarningsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -426,6 +462,7 @@ export interface FileRoutesById {
   '/_authenticated/work/new': typeof AuthenticatedWorkNewRoute
   '/_authenticated/work/workload': typeof AuthenticatedWorkWorkloadRoute
   '/_authenticated/access/': typeof AuthenticatedAccessIndexRoute
+  '/_authenticated/analytics/': typeof AuthenticatedAnalyticsIndexRoute
   '/_authenticated/appraisals/': typeof AuthenticatedAppraisalsIndexRoute
   '/_authenticated/audit/': typeof AuthenticatedAuditIndexRoute
   '/_authenticated/changes/': typeof AuthenticatedChangesIndexRoute
@@ -442,6 +479,9 @@ export interface FileRoutesById {
   '/_authenticated/services/': typeof AuthenticatedServicesIndexRoute
   '/_authenticated/staff/': typeof AuthenticatedStaffIndexRoute
   '/_authenticated/work/': typeof AuthenticatedWorkIndexRoute
+  '/_authenticated/rota/calendar/': typeof AuthenticatedRotaCalendarIndexRoute
+  '/_authenticated/rota/fairness/': typeof AuthenticatedRotaFairnessIndexRoute
+  '/_authenticated/rota/warnings/': typeof AuthenticatedRotaWarningsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -473,6 +513,7 @@ export interface FileRouteTypes {
     | '/work/new'
     | '/work/workload'
     | '/access/'
+    | '/analytics/'
     | '/appraisals/'
     | '/audit/'
     | '/changes/'
@@ -489,6 +530,9 @@ export interface FileRouteTypes {
     | '/services/'
     | '/staff/'
     | '/work/'
+    | '/rota/calendar/'
+    | '/rota/fairness/'
+    | '/rota/warnings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -518,6 +562,7 @@ export interface FileRouteTypes {
     | '/work/new'
     | '/work/workload'
     | '/access'
+    | '/analytics'
     | '/appraisals'
     | '/audit'
     | '/changes'
@@ -534,6 +579,9 @@ export interface FileRouteTypes {
     | '/services'
     | '/staff'
     | '/work'
+    | '/rota/calendar'
+    | '/rota/fairness'
+    | '/rota/warnings'
   id:
     | '__root__'
     | '/_authenticated'
@@ -564,6 +612,7 @@ export interface FileRouteTypes {
     | '/_authenticated/work/new'
     | '/_authenticated/work/workload'
     | '/_authenticated/access/'
+    | '/_authenticated/analytics/'
     | '/_authenticated/appraisals/'
     | '/_authenticated/audit/'
     | '/_authenticated/changes/'
@@ -580,6 +629,9 @@ export interface FileRouteTypes {
     | '/_authenticated/services/'
     | '/_authenticated/staff/'
     | '/_authenticated/work/'
+    | '/_authenticated/rota/calendar/'
+    | '/_authenticated/rota/fairness/'
+    | '/_authenticated/rota/warnings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -720,6 +772,13 @@ declare module '@tanstack/react-router' {
       path: '/appraisals'
       fullPath: '/appraisals/'
       preLoaderRoute: typeof AuthenticatedAppraisalsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/analytics/': {
+      id: '/_authenticated/analytics/'
+      path: '/analytics'
+      fullPath: '/analytics/'
+      preLoaderRoute: typeof AuthenticatedAnalyticsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/access/': {
@@ -897,6 +956,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccessAccountIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/rota/warnings/': {
+      id: '/_authenticated/rota/warnings/'
+      path: '/rota/warnings'
+      fullPath: '/rota/warnings/'
+      preLoaderRoute: typeof AuthenticatedRotaWarningsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rota/fairness/': {
+      id: '/_authenticated/rota/fairness/'
+      path: '/rota/fairness'
+      fullPath: '/rota/fairness/'
+      preLoaderRoute: typeof AuthenticatedRotaFairnessIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rota/calendar/': {
+      id: '/_authenticated/rota/calendar/'
+      path: '/rota/calendar'
+      fullPath: '/rota/calendar/'
+      preLoaderRoute: typeof AuthenticatedRotaCalendarIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -927,6 +1007,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedWorkNewRoute: typeof AuthenticatedWorkNewRoute
   AuthenticatedWorkWorkloadRoute: typeof AuthenticatedWorkWorkloadRoute
   AuthenticatedAccessIndexRoute: typeof AuthenticatedAccessIndexRoute
+  AuthenticatedAnalyticsIndexRoute: typeof AuthenticatedAnalyticsIndexRoute
   AuthenticatedAppraisalsIndexRoute: typeof AuthenticatedAppraisalsIndexRoute
   AuthenticatedAuditIndexRoute: typeof AuthenticatedAuditIndexRoute
   AuthenticatedChangesIndexRoute: typeof AuthenticatedChangesIndexRoute
@@ -943,6 +1024,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedServicesIndexRoute: typeof AuthenticatedServicesIndexRoute
   AuthenticatedStaffIndexRoute: typeof AuthenticatedStaffIndexRoute
   AuthenticatedWorkIndexRoute: typeof AuthenticatedWorkIndexRoute
+  AuthenticatedRotaCalendarIndexRoute: typeof AuthenticatedRotaCalendarIndexRoute
+  AuthenticatedRotaFairnessIndexRoute: typeof AuthenticatedRotaFairnessIndexRoute
+  AuthenticatedRotaWarningsIndexRoute: typeof AuthenticatedRotaWarningsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -972,6 +1056,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedWorkNewRoute: AuthenticatedWorkNewRoute,
   AuthenticatedWorkWorkloadRoute: AuthenticatedWorkWorkloadRoute,
   AuthenticatedAccessIndexRoute: AuthenticatedAccessIndexRoute,
+  AuthenticatedAnalyticsIndexRoute: AuthenticatedAnalyticsIndexRoute,
   AuthenticatedAppraisalsIndexRoute: AuthenticatedAppraisalsIndexRoute,
   AuthenticatedAuditIndexRoute: AuthenticatedAuditIndexRoute,
   AuthenticatedChangesIndexRoute: AuthenticatedChangesIndexRoute,
@@ -988,6 +1073,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedServicesIndexRoute: AuthenticatedServicesIndexRoute,
   AuthenticatedStaffIndexRoute: AuthenticatedStaffIndexRoute,
   AuthenticatedWorkIndexRoute: AuthenticatedWorkIndexRoute,
+  AuthenticatedRotaCalendarIndexRoute: AuthenticatedRotaCalendarIndexRoute,
+  AuthenticatedRotaFairnessIndexRoute: AuthenticatedRotaFairnessIndexRoute,
+  AuthenticatedRotaWarningsIndexRoute: AuthenticatedRotaWarningsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
