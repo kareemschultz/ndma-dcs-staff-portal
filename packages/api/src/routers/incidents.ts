@@ -12,7 +12,6 @@ import { and, desc, eq, sql } from "drizzle-orm";
 
 import { protectedProcedure } from "../index";
 import { logAudit } from "../lib/audit";
-import { createNotification } from "../lib/notify";
 
 // ── Input Schemas ──────────────────────────────────────────────────────────
 
@@ -24,6 +23,7 @@ const CreateIncidentInput = z.object({
   severity: SeveritySchema,
   commanderId: z.string().optional(),
   detectedAt: z.string().optional(), // ISO timestamp — defaults to now
+  linkedWorkItemId: z.string().optional(),
 });
 
 const UpdateIncidentInput = z.object({
@@ -34,6 +34,7 @@ const UpdateIncidentInput = z.object({
   commanderId: z.string().optional(),
   impactSummary: z.string().optional(),
   rootCause: z.string().optional(),
+  linkedWorkItemId: z.string().optional(),
   status: z
     .enum([
       "detected",
@@ -154,8 +155,10 @@ export const incidentsRouter = {
           commanderId: input.commanderId ?? null,
           reportedById: context.session.user.id,
           detectedAt: input.detectedAt ? new Date(input.detectedAt) : new Date(),
+          linkedWorkItemId: input.linkedWorkItemId ?? null,
         })
         .returning();
+      if (!incident) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       // Auto-add first timeline entry
       await db.insert(incidentTimeline).values({
@@ -349,6 +352,7 @@ export const incidentsRouter = {
           },
         })
         .returning();
+      if (!pir) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       await logAudit({
         actorId: context.session.user.id,

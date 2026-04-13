@@ -11,6 +11,7 @@ import { relations } from "drizzle-orm";
 import { user } from "./auth";
 import { services } from "./incidents";
 import { staffProfiles } from "./staff";
+import { workItems } from "./work";
 
 export const tempChangeStatusEnum = pgEnum("temp_change_status", [
   "planned",
@@ -45,6 +46,10 @@ export const temporaryChanges = pgTable(
     approvedById: text("approved_by_id").references(() => user.id, {
       onDelete: "set null",
     }),
+    linkedWorkItemId: text("linked_work_item_id").references(
+      () => workItems.id,
+      { onDelete: "set null" },
+    ),
     createdById: text("created_by_id").references(() => user.id, {
       onDelete: "set null",
     }),
