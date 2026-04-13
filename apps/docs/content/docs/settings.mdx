@@ -1,0 +1,71 @@
+---
+title: Settings
+description: System configuration — departments, leave types, and user management
+---
+
+# Settings
+
+The Settings section is accessible to `admin` and `hrAdminOps` roles. It controls the reference data that other modules depend on.
+
+## Departments
+
+Departments group staff for reporting, filtering, and workload visibility.
+
+To manage departments: **Settings → Departments**
+
+- **Add a department** — give it a name (e.g., "Network Services (ASN)", "Core Infrastructure", "Security")
+- **Edit** — rename a department; all linked staff profiles update automatically
+- Staff are assigned to a department on their profile
+
+Current DCS departments:
+- Network Services (ASN)
+- Core Infrastructure
+- Security
+- Support
+
+## Leave types
+
+Leave types define the categories of absence that staff can request.
+
+To manage leave types: **Settings → Leave Types**
+
+Each leave type has:
+- **Name** — displayed to staff when creating a request (e.g., "Annual Leave", "Sick Leave")
+- **Slug** — the identifier used in CSV imports (e.g., `annual`, `sick`)
+- **Description** — optional, shown in the leave request form
+
+Common leave types:
+- Annual Leave
+- Sick Leave
+- Emergency / Compassionate Leave
+- Unpaid Leave
+- Maternity / Paternity Leave
+- Study Leave
+
+Leave types can be added at any time. Removing a leave type does not affect existing requests that used it.
+
+## Automation rules
+
+Automation rules are managed under **Settings → Automation**. See the [Automation Rules](/docs/automation) page for full documentation.
+
+## User management
+
+User accounts are not managed through the Settings UI — they are created via:
+1. **Import Data** — bulk create staff from CSV
+2. **Staff Directory → New Staff** — manual creation
+
+Self-signup is disabled. Admins control who has access to the system. Role assignments (`admin`, `manager`, `hrAdminOps`, `staff`, `readOnly`) are set when creating or editing a user account.
+
+## Roles
+
+The five system roles and their access levels:
+
+| Role | Access |
+|------|--------|
+| `admin` | Full access — all modules, settings, user creation |
+| `hrAdminOps` | Staff, leave, compliance, contracts, appraisals, imports, settings |
+| `manager` | Work items, leave approvals, roster, reporting, audit |
+| `staff` | Own work items, leave requests, compliance self-service |
+| `readOnly` | View-only across all modules — no create/edit/delete |
+
+Roles are enforced at the API level. Users cannot escalate their own permissions.

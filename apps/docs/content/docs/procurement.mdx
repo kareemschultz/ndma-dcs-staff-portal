@@ -1,27 +1,80 @@
 ---
 title: Procurement
-description: Purchase requisitions and approval workflow
+description: Purchase requisitions, line items, and approval workflow
 ---
 
 # Procurement
 
-The Procurement module manages Purchase Requisitions (PRs) from creation through to delivery.
+The Procurement module manages Purchase Requisitions (PRs) from initial request through to delivery. It provides a structured, auditable alternative to email-based purchase requests.
 
 ## PR lifecycle
 
 `draft` → `submitted` → `approved` / `rejected` → `ordered` → `received`
 
+| Status | Meaning |
+|--------|---------|
+| `draft` | Being prepared — not yet submitted for approval |
+| `submitted` | Awaiting manager review |
+| `approved` | Approved — ready for the procurement team to order |
+| `rejected` | Rejected with a reason — requester should revise and resubmit |
+| `ordered` | Items have been ordered with the vendor |
+| `received` | Items received and confirmed |
+
+## Priority levels
+
+`low` · `medium` · `high` · `urgent`
+
+Priority helps the approver and procurement team sequence their work. Urgent PRs for operational items (e.g., failed hardware replacement) should be flagged clearly in the justification.
+
 ## Creating a PR
 
 1. Go to **Procurement** → **New Requisition**
-2. Add line items (description, quantity, estimated cost, vendor)
-3. Set priority and justification
-4. Submit for approval
+2. Set the title, priority, and justification (why this purchase is needed)
+3. Add **line items** — one row per product or service:
+   - Description
+   - Quantity
+   - Estimated unit cost (GHS)
+   - Vendor name (where known)
+4. Save as `draft` to continue editing, or **Submit** immediately for review
+
+## Line items
+
+A PR can have multiple line items. The total cost shown on the PR is the sum of all line item estimates. Line items can be updated while the PR is in `draft` status.
 
 ## Approvals
 
-Managers review submitted PRs and either approve or reject with a reason. Approved PRs move to procurement for ordering.
+Managers (`manager`, `hrAdminOps`, or `admin` role) review submitted PRs. They can:
+- **Approve** — moves the PR to `approved` and notifies the requester
+- **Reject** — requires a reason; the requester is notified and can revise
 
-## Tracking
+All approval decisions are recorded in the PR's history and in the audit log.
 
-Track when items are ordered and received. The system maintains a full history of all PRs for audit purposes.
+## After approval
+
+Once approved, the procurement team or admin:
+1. Orders the items and clicks **Mark as Ordered** — sets status to `ordered`
+2. When goods arrive, clicks **Mark as Received** — sets status to `received`
+
+## My Requests
+
+The **My Requests** tab shows all PRs created by the currently logged-in user, regardless of status. Use this to track the progress of your own purchase requests without searching the full list.
+
+## Pending Approvals
+
+Managers see a **Pending Approvals** tab listing all submitted PRs that require their review.
+
+## Stats
+
+The procurement stats panel shows:
+- Total PRs by status
+- Total value of approved PRs
+- PRs by priority breakdown
+- Average time from submission to approval
+
+## Access
+
+| Action | Roles |
+|--------|-------|
+| Create and view own PRs | All authenticated roles |
+| Approve / Reject | `manager`, `hrAdminOps`, `admin` |
+| Mark as Ordered / Received | `hrAdminOps`, `admin` |

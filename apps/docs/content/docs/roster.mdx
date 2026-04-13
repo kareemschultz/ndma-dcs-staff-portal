@@ -5,31 +5,75 @@ description: Schedule management, swaps, and on-call history
 
 # On-Call Roster
 
-The Roster module manages who is on-call for each week.
+The Roster module manages who is on-call for each week across all DCS engineering teams.
 
 ## Viewing the current roster
 
-The **Current Roster** shows who is on-call right now and for the current week, including their roles and contact details.
+The **Current Roster** tab shows who is on-call right now and for the current week, including each role and the assigned engineer's contact details.
+
+The **Upcoming Roster** tab shows published schedules for future weeks so engineers can plan ahead.
 
 ## Roles
 
-| Role | Responsibility |
-|------|---------------|
-| **Primary** | First point of contact for incidents |
-| **Secondary** | Backup if primary is unavailable |
-| **Manager on Call** | Escalation point for P1/P2 incidents |
+Each on-call schedule assigns one engineer per role. All four roles should be filled before publishing.
+
+| Role | Description |
+|------|------------|
+| **Lead Engineer** (`lead_engineer`) | Primary escalation contact — first call for any severity incident |
+| **ASN Support** (`asn_support`) | ASN (Autonomous Systems Network) team on-call |
+| **Core Support** (`core_support`) | Core routing and infrastructure team on-call |
+| **Enterprise Support** (`enterprise_support`) | Enterprise services team on-call |
+
+## Schedule lifecycle
+
+Schedules follow a `draft` → `published` → `archived` flow.
+
+| Status | Meaning |
+|--------|---------|
+| `draft` | Being built — not visible to staff yet |
+| `published` | Active schedule, staff have been notified |
+| `archived` | Past week, kept for history |
 
 ## Publishing a schedule
 
 1. Go to **Roster Planner**
-2. Assign engineers to each role for the week
-3. The system validates all required roles are filled
-4. Click **Publish** to make the schedule live
+2. Create a new schedule for the target week (Sunday–Saturday)
+3. Assign an engineer to each role using the **Eligible Staff** list
+4. The system warns if an assigned engineer is on approved leave during that week
+5. Click **Publish** to make the schedule live and notify the on-call team
+
+Only one published schedule should exist per week. Drafts can coexist without conflict.
+
+## Effective on-call lookup
+
+The **Effective On-Call** query resolves the actual engineer on-call for a given moment, accounting for any approved swaps. Use this to answer "who is currently on-call?" — do not manually check the schedule for this, as swaps may have changed the assignment.
 
 ## Swaps
 
-Engineers can request a swap if they are unavailable. The other engineer must accept before the swap takes effect.
+An engineer can request a swap when they are unavailable for a scheduled week.
+
+1. The requester submits a swap request, naming the proposed replacement
+2. The replacement engineer accepts or declines
+3. A manager approves or rejects the swap
+4. If approved, the roster is automatically updated — the swap shows in history
+
+Swap statuses: `pending` → `approved` / `rejected` / `cancelled`
 
 ## History
 
-**Roster History** shows all past on-call assignments for audit and reporting.
+**Roster History** is a searchable record of all past on-call assignments. It shows who was on-call for any given week and what role they held. Use this for fairness analysis and incident retrospectives.
+
+## Assignment fairness
+
+The **Assignment Counts** view aggregates how many on-call shifts each engineer has carried in a given period. Use this when building new schedules to distribute load evenly.
+
+## Conflicts
+
+The system detects and flags the following conflicts on assignment:
+
+| Conflict | Description |
+|----------|-------------|
+| `approved_leave` | Engineer has approved leave overlapping the schedule week |
+| `duplicate_assignment` | Engineer is already assigned to another role this week |
+| `contract_expired` | Engineer's contract ends before the scheduled week |
+| `manually_unavailable` | Engineer has been manually marked as unavailable |

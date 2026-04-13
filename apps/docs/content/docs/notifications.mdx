@@ -1,0 +1,43 @@
+---
+title: Notifications
+description: In-app alerts and notification management
+---
+
+# Notifications
+
+DCS Ops Center delivers in-app notifications for key events across all modules. Notifications appear in the bell icon in the top navigation bar.
+
+## What triggers a notification
+
+Notifications are generated automatically by the system when:
+
+| Event | Who is notified |
+|-------|----------------|
+| Leave request submitted | Manager / HR Ops |
+| Leave request approved or rejected | The requester |
+| Work item assigned | The new assignee |
+| Work item overdue | The assignee |
+| Incident declared (sev1 / sev2) | On-call engineer (lead) |
+| Swap request submitted | The proposed replacement |
+| Swap approved or rejected | The requester |
+| Procurement PR approved or rejected | The requester |
+| Access review due | The reviewer |
+| Training/PPE expiring within 30 days | HR Ops and the staff member |
+| Automation rule fired | As configured in the rule |
+
+## Managing notifications
+
+Click the **bell icon** in the top navigation to open the notification panel. From there you can:
+- **Mark as read** — clears the unread indicator for a notification
+- **Mark all as read** — clears all unread indicators at once
+- **Dismiss** — removes a notification from the list
+
+Notifications do not disappear automatically — dismiss them once actioned.
+
+## Automation-generated notifications
+
+Automation rules (Settings → Automation) can generate notifications based on any system event. For example: notify a manager when a critical work item goes overdue, or alert the team when a high-risk temp change is created. See the [Automation Rules](/docs/automation) page for details.
+
+## Notification delivery
+
+Currently, notifications are **in-app only** (visible in the notification panel). Email and SMS delivery are not yet configured. Ensure staff check the system regularly for operational alerts.

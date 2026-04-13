@@ -1,36 +1,85 @@
 ---
 title: Incident Management
-description: Incident response, timelines, and post-incident reviews
+description: Incident response, timelines, responders, and post-incident reviews
 ---
 
 # Incident Management
 
-The Incidents module tracks all service disruptions and outages.
+The Incidents module tracks all service disruptions and outages from declaration through to post-incident review. Every incident is linked to the affected services, the responding team, and a full timeline of actions.
 
 ## Declaring an incident
 
 1. Go to **Incidents**
 2. Click **Declare Incident**
-3. Set severity, affected services, and description
-4. Add responders from the on-call roster
+3. Set severity, title, and description
+4. Select the affected services (from the Services registry)
+5. Add responders from the on-call roster
+6. The incident is created with status `open` and the timeline is started automatically
 
 ## Severity levels
 
-| Severity | Description |
-|---------|------------|
-| **P1 — Critical** | Complete service outage, data loss |
-| **P2 — High** | Major feature degraded |
-| **P3 — Medium** | Partial degradation, workaround available |
-| **P4 — Low** | Minor issue, no user impact |
+Severity drives escalation and response SLAs.
+
+| Severity | Label | Description |
+|----------|-------|-------------|
+| `sev1` | Critical | Complete service outage or data loss — all hands, immediate escalation |
+| `sev2` | High | Major service degraded, significant user impact |
+| `sev3` | Medium | Partial degradation, workaround available, limited user impact |
+| `sev4` | Low | Minor issue, no significant user impact — can be handled in business hours |
+
+## Incident statuses
+
+`open` → `investigating` → `identified` → `monitoring` → `resolved`
+
+| Status | Meaning |
+|--------|---------|
+| `open` | Just declared, cause unknown |
+| `investigating` | Team is actively diagnosing |
+| `identified` | Root cause found, fix being applied |
+| `monitoring` | Fix applied, watching for recurrence |
+| `resolved` | Service restored, incident closed |
+
+## Services
+
+Incidents are linked to one or more services from the **Services** registry. Services represent systems or platforms DCS operates (e.g., "NDMA WAN", "CoreNet BGP Peering", "uPortal", "Zabbix Monitoring"). Linking services lets you filter incidents by affected system and track historical outages per service.
+
+## Responders
+
+Responders are the engineers actively working the incident. Add responders from the on-call roster or staff directory. Each responder is notified when added. Responders can be removed if they hand off.
 
 ## Timeline
 
-Add timeline entries as the incident progresses. Every update, decision, and action should be recorded.
+The timeline is the incident log. Every update, action, and decision should be recorded as a timeline entry during the incident. Include:
+- What was tried and the result
+- When the root cause was identified
+- When the fix was applied
+- Any external communications made
+
+Timeline entries are append-only and timestamped automatically.
 
 ## Post-Incident Review (PIR)
 
-Once an incident is resolved, create a PIR documenting:
-- Root cause
-- Impact assessment
-- Timeline of events
-- Action items to prevent recurrence
+Once an incident is resolved, a **PIR** (post-incident review) should be created within 48–72 hours for sev1 and sev2 incidents.
+
+A PIR records:
+- **Root cause** — what actually caused the incident
+- **Impact** — how many users/services were affected and for how long
+- **Timeline** — key events from detection to resolution
+- **Action items** — what changes will prevent recurrence (with owners and due dates)
+
+PIRs are created from the incident detail page. They are stored permanently alongside the incident and are accessible in the audit trail.
+
+## Linking services
+
+From the incident detail page, use **Link Service** / **Unlink Service** to manage which services are marked as affected. This is useful when the scope of an incident expands or contracts during the investigation.
+
+## Active incidents
+
+The **Active Incidents** view shows all open, investigating, identified, or monitoring incidents in a single list sorted by severity. Check this view at the start of every shift.
+
+## Stats
+
+The incidents stats panel shows:
+- Total incidents by severity (this year)
+- Incidents by status (open vs resolved)
+- Mean time to resolve (MTTR) per severity

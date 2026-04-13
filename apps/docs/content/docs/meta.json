@@ -14,9 +14,11 @@
     "appraisals",
     "contracts",
     "staff",
+    "notifications",
     "analytics",
     "audit",
     "import",
-    "automation"
+    "automation",
+    "settings"
   ]
 }

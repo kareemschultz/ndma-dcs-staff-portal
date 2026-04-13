@@ -1,24 +1,82 @@
 ---
 title: Compliance
-description: Training records, PPE logs, and policy acknowledgements
+description: Training records, PPE logs, and policy acknowledgements for DCS staff
 ---
 
 # Compliance
 
-The Compliance module tracks health and safety obligations for DCS staff.
+The Compliance module tracks health, safety, and regulatory obligations for all DCS staff. It replaces spreadsheet-based tracking for training certifications, PPE issuance, and policy acknowledgement records.
 
 ## Training records
 
-Log all mandatory and optional training courses completed by staff. Track expiry dates for certifications that require renewal.
+Log all mandatory and optional training completed by staff.
+
+Each training record contains:
+- **Staff member** — who attended
+- **Training name** — course or certification title
+- **Provider** — who delivered the training
+- **Completion date** — when it was completed
+- **Expiry date** — when re-certification is required (if applicable)
+- **Status** — `completed`, `expired`, or `pending`
+- **Notes** — certificate number, score, or other details
+
+### Common training types tracked
+- OSH (Occupational Safety and Health) induction
+- Fire safety and evacuation
+- Data centre operations certification
+- Cybersecurity awareness
+- Vendor-specific certifications (Huawei, Cisco, etc.)
 
 ## PPE records
 
-Record Personal Protective Equipment issued to staff — type, quantity, issue date, and condition.
+Record Personal Protective Equipment issued to staff.
+
+Each PPE record contains:
+- **Staff member** — who received the equipment
+- **Item** — type of PPE (e.g., safety shoes, hi-vis vest, helmet, gloves)
+- **Quantity** — number of items issued
+- **Issue date** — when it was given out
+- **Condition** — `new`, `used`, or `damaged`
+- **Notes** — serial numbers or special notes
+
+PPE records help DCS confirm that all staff operating in the data centre have appropriate protective equipment and that issued items are tracked.
 
 ## Policy acknowledgements
 
-Staff acknowledge policies (OSH, data protection, acceptable use, etc.) through the system. Track who has acknowledged each policy and when.
+Staff must formally acknowledge key operational and HR policies. Each acknowledgement records:
+- **Staff member** — who acknowledged
+- **Policy name** — e.g., "Acceptable Use Policy", "Data Protection Policy", "OSH Policy"
+- **Acknowledged at** — timestamp of acknowledgement
+- **Notes** — any exceptions or comments
+
+To acknowledge a policy, a staff member navigates to the Compliance section and clicks **Acknowledge** on a pending policy. Acknowledgements are permanent and auditable.
+
+## Record statuses
+
+| Status | Meaning |
+|--------|---------|
+| `active` | Current and valid |
+| `expired` | Past the expiry date — action required |
+| `pending` | Scheduled but not yet completed |
 
 ## Expiry alerts
 
-The system surfaces items expiring within 30 days — training certifications, PPE requiring inspection, etc. — on the dashboard and in the Compliance module.
+The system surfaces items expiring within 30 days in two places:
+1. **Compliance module** — the **Expiring Items** view
+2. **Dashboard** — the ops readiness panel flags expired training and PPE gaps
+
+Review this view weekly to avoid compliance lapses. When a certification expires, the staff member and their manager receive an in-app notification.
+
+## Adding a record
+
+All three record types (training, PPE, policy acknowledgement) are managed by `hrAdminOps` or `admin` roles. Staff can view their own records but cannot create or modify them directly.
+
+To add a training record:
+1. Navigate to **Compliance → Training**
+2. Click **Add Training Record**
+3. Select the staff member and fill in course details
+4. Set an expiry date if the certification has a renewal period
+
+## Bulk view
+
+The main Compliance page shows all records across training, PPE, and policy acknowledgements with filters by staff member, status, and type. Use the **Expiring Items** tab to prioritise renewal actions.

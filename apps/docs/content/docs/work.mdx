@@ -1,46 +1,96 @@
 ---
 title: Work Management
-description: Task tracking, weekly updates, and engineer workload
+description: Task tracking, weekly updates, work cycles, and engineer workload
 ---
 
 # Work Management
 
-The Work module tracks all tasks and projects for the DCS team.
+The Work module is the operational task board for DCS. Every piece of work the team does — from routine daily checks to multi-month projects — lives here.
+
+## Work item types
+
+| Type | When to use |
+|------|-------------|
+| `routine` | Day-to-day operational tasks — config changes, monitoring, scheduled maintenance |
+| `project` | Planned multi-step work tied to an initiative or deliverable |
+| `external_request` | Tasks raised by another team, agency, or external partner |
+| `ad_hoc` | Unplanned work that came up and needs tracking |
+
+## Statuses
+
+Work items move through the following pipeline:
+
+`backlog` → `todo` → `in_progress` → `review` → `done`
+
+Items can also be moved to `blocked` (waiting on an external dependency) or `cancelled` at any point.
+
+| Status | Meaning |
+|--------|---------|
+| `backlog` | Not yet scheduled — low priority or future work |
+| `todo` | Queued for the current period |
+| `in_progress` | Actively being worked |
+| `blocked` | Waiting on something external — add a comment explaining the blocker |
+| `review` | Work is done, awaiting verification or sign-off |
+| `done` | Completed. `completedAt` timestamp is automatically set |
+| `cancelled` | Will not be done — add a reason in the comments |
+
+## Priorities
+
+`low` · `medium` · `high` · `critical`
+
+Critical items appear highlighted in all views and trigger automation rules.
 
 ## Creating a work item
 
 1. Navigate to **Work Register**
 2. Click **New Work Item**
-3. Fill in the title, type, priority, and assignee
-4. Set a deadline (optional but recommended)
+3. Fill in title, type, priority, and assignee
+4. Link to an **Initiative** if the item is part of a larger goal
+5. Set a due date (recommended — items without deadlines can't appear in the Overdue view)
+6. Save — the item starts in `todo` status
 
-## Work item types
+## Subtasks
 
-- **Task** — standalone piece of work
-- **Bug** — defect to fix
-- **Feature** — new capability to build
-- **Maintenance** — routine upkeep
-- **Investigation** — research or diagnosis
+Work items support a parent–child relationship. Open a work item and use **Add Subtask** to create child items. Subtasks appear nested below the parent in list view.
 
-## Statuses
+## Dependencies
 
-`todo` → `in_progress` → `done`
+Items can declare dependencies on other items (e.g., "this cannot start until X is done"). Add dependencies from the item detail page. Circular dependencies are blocked.
 
-Items can also be marked `cancelled` or put `on_hold`.
+## Comments
+
+Add comments to an item to document progress, decisions, or blockers. Comments are visible to everyone with access to the module and are included in the audit trail.
 
 ## Weekly updates
 
-Engineers add a weekly update each Friday to record progress. This replaces the weekly status spreadsheet.
+Engineers add a weekly update each Friday to record what was done on the item. These updates feed the **Weekly Report** view, which replaces the manual status spreadsheet.
 
-## Overdue items
+## Initiatives
 
-Items past their deadline appear in the **Overdue** view. The system sends a notification to the assignee when a deadline is missed.
+Initiatives are major departmental goals that group related work items (e.g., "Network Upgrade Q2 2026"). Use initiatives to:
+- Group all work items related to a goal
+- Track progress at the initiative level
+- Filter the work register by initiative
 
 ## Views
 
-The work register supports multiple views:
-- **List** — default table view
-- **Kanban** — grouped by status
-- **Grid** — card layout
-- **Calendar** — items on a monthly calendar
-- **Analytics** — bar chart of open items per engineer
+The work register supports multiple views — switch between them using the view toggle in the top-right corner:
+
+| View | Description |
+|------|-------------|
+| **List** | Default table view — sortable, filterable |
+| **Kanban** | Columns grouped by status — drag-friendly |
+| **Grid** | Card layout — good for a quick visual scan |
+| **Calendar** | Items placed on a monthly calendar by due date |
+
+## Overdue items
+
+Items past their `dueDate` with status not `done` or `cancelled` appear in the **Overdue** view. The system sends a notification to the assignee when a deadline is missed, and automation rules can trigger additional alerts.
+
+## Templates
+
+Work item templates store common sets of fields for recurring work types (e.g., "Monthly Firewall Audit"). Generating from a template creates a pre-filled item, saving setup time for routine tasks.
+
+## Workload view
+
+The **Workload View** (under Staff Directory) shows every active engineer's load score — open items + overdue items + on-call role + leave status — as a single indicator. Use it when deciding who to assign a new item to.
