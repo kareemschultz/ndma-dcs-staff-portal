@@ -1,0 +1,24 @@
+{
+  "name": "docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --turbopack -p 4000",
+    "build": "next build",
+    "start": "next start -p 4000"
+  },
+  "dependencies": {
+    "fumadocs-core": "^15.0.0",
+    "fumadocs-mdx": "^11.0.0",
+    "fumadocs-ui": "^15.0.0",
+    "next": "^15.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5"
+  }
+}

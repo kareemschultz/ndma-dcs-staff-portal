@@ -1,0 +1,45 @@
+---
+title: Access & Accounts
+description: Platform account management, VPN access, and identity governance
+---
+
+# Access & Accounts
+
+The Access module is the identity governance layer for all DCS-managed platforms.
+
+## Covered platforms
+
+VPN (Fortigate/MikroTik), uPortal, phpIPAM, RADIUS, Zabbix, eSight, IVSNeteco, NCE FAN ATP, Neteco, Grafana, Plum, Kibana, Biometrics, Active Directory
+
+## Account types
+
+| Affiliation | Description |
+|------------|-------------|
+| NDMA Internal | Full-time NDMA staff |
+| External Agency | Government agency users |
+| Contractor | Project-based contractors |
+| Consultant | Advisory engagements |
+| Vendor | Equipment/software vendors (e.g. Huawei) |
+| Service Account | Non-human accounts (integrations, bots) |
+
+## VPN access
+
+The **VPN Access** tab shows all users with Forticlient or MikroTik VPN access, their groups/profiles, and expiry status.
+
+## Access reviews
+
+Quarterly access certifications — managers review each account and either:
+- **Approve** — confirms access is still needed
+- **Revoke** — immediately disables the account
+
+## Integrations
+
+Platform integrations enable automatic account sync from external systems (phpIPAM, AD/LDAP, etc.). Configure credentials, sync frequency, and direction per integration.
+
+## Reconciliation
+
+The system automatically detects:
+- Orphaned accounts (no linked staff member)
+- Disabled staff with active platform accounts
+- Expired contractor accounts still active
+- Stale accounts not used for 90+ days

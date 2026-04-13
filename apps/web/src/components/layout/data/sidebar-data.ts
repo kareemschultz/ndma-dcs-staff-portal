@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   BarChart3,
   Bell,
+  BookOpen,
   Bot,
   Building2,
   CalendarClock,
@@ -182,6 +183,11 @@ export const sidebarData: Omit<SidebarData, "user"> = {
           title: "Notifications",
           url: "/notifications",
           icon: Bell,
+        },
+        {
+          title: "Documentation",
+          url: "http://localhost:4000",
+          icon: BookOpen,
         },
         {
           title: "Settings",

@@ -1,0 +1,12 @@
+// @ts-nocheck -- skip type checking
+import * as docs_7 from "../content/docs/work.mdx?collection=docs&hash=1776054612035"
+import * as docs_6 from "../content/docs/roster.mdx?collection=docs&hash=1776054612035"
+import * as docs_5 from "../content/docs/procurement.mdx?collection=docs&hash=1776054612035"
+import * as docs_4 from "../content/docs/leave.mdx?collection=docs&hash=1776054612035"
+import * as docs_3 from "../content/docs/index.mdx?collection=docs&hash=1776054612035"
+import * as docs_2 from "../content/docs/incidents.mdx?collection=docs&hash=1776054612035"
+import * as docs_1 from "../content/docs/compliance.mdx?collection=docs&hash=1776054612035"
+import * as docs_0 from "../content/docs/access.mdx?collection=docs&hash=1776054612035"
+import { _runtime } from "fumadocs-mdx"
+import * as _source from "../source.config"
+export const docs = _runtime.docs<typeof _source.docs>([{ info: {"path":"access.mdx","absolutePath":"/home/karetech/projects/ndma-dcs-staff-portal/apps/docs/content/docs/access.mdx"}, data: docs_0 }, { info: {"path":"compliance.mdx","absolutePath":"/home/karetech/projects/ndma-dcs-staff-portal/apps/docs/content/docs/compliance.mdx"}, data: docs_1 }, { info: {"path":"incidents.mdx","absolutePath":"/home/karetech/projects/ndma-dcs-staff-portal/apps/docs/content/docs/incidents.mdx"}, data: docs_2 }, { info: {"path":"index.mdx","absolutePath":"/home/karetech/projects/ndma-dcs-staff-portal/apps/docs/content/docs/index.mdx"}, data: docs_3 }, { info: {"path":"leave.mdx","absolutePath":"/home/karetech/projects/ndma-dcs-staff-portal/apps/docs/content/docs/leave.mdx"}, data: docs_4 }, { info: {"path":"procurement.mdx","absolutePath":"/home/karetech/projects/ndma-dcs-staff-portal/apps/docs/content/docs/procurement.mdx"}, data: docs_5 }, { info: {"path":"roster.mdx","absolutePath":"/home/karetech/projects/ndma-dcs-staff-portal/apps/docs/content/docs/roster.mdx"}, data: docs_6 }, { info: {"path":"work.mdx","absolutePath":"/home/karetech/projects/ndma-dcs-staff-portal/apps/docs/content/docs/work.mdx"}, data: docs_7 }], [{"info":{"path":"meta.json","absolutePath":"/home/karetech/projects/ndma-dcs-staff-portal/apps/docs/content/docs/meta.json"},"data":{"title":"DCS Ops Center","pages":["index","work","incidents","roster","leave","access","procurement","compliance"]}}])

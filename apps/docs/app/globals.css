@@ -1,0 +1,42 @@
+@import "fumadocs-ui/style.css";
+
+/* ── DCS Ops Center theme ──────────────────────────────────────────────────
+   Matches the web app's neutral palette (packages/ui/src/styles/globals.css)
+   so docs feel like part of the same product family.
+*/
+
+:root {
+  /* Fumadocs uses hsl() for its CSS variables */
+  --fd-primary: 0 0% 9%;            /* ~oklch(0.205 0 0) — near black */
+  --fd-primary-foreground: 0 0% 98%;
+  --fd-background: 0 0% 100%;
+  --fd-foreground: 0 0% 9%;
+  --fd-card: 0 0% 100%;
+  --fd-card-foreground: 0 0% 9%;
+  --fd-muted: 0 0% 97%;
+  --fd-muted-foreground: 0 0% 45%;
+  --fd-accent: 0 0% 97%;
+  --fd-accent-foreground: 0 0% 9%;
+  --fd-border: 0 0% 91%;
+  --fd-ring: 0 0% 71%;
+  --fd-secondary: 0 0% 97%;
+  --fd-secondary-foreground: 0 0% 9%;
+  --fd-radius: 0.625rem;
+}
+
+.dark {
+  --fd-primary: 0 0% 87%;           /* ~oklch(0.87 0 0) — near white */
+  --fd-primary-foreground: 0 0% 9%;
+  --fd-background: 0 0% 9%;
+  --fd-foreground: 0 0% 98%;
+  --fd-card: 0 0% 9%;
+  --fd-card-foreground: 0 0% 98%;
+  --fd-muted: 0 0% 17%;
+  --fd-muted-foreground: 0 0% 64%;
+  --fd-accent: 0 0% 24%;
+  --fd-accent-foreground: 0 0% 98%;
+  --fd-border: 0 0% 100% / 10%;
+  --fd-ring: 0 0% 45%;
+  --fd-secondary: 0 0% 17%;
+  --fd-secondary-foreground: 0 0% 98%;
+}
