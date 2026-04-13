@@ -68,6 +68,43 @@ const SEV_OPTIONS = [
   { value: "sev4", label: "Sev4 — Low" },
 ];
 
+const STATUS_LABELS: Record<IncidentStatus, string> = {
+  detected: "Detected",
+  investigating: "Investigating",
+  identified: "Identified",
+  mitigating: "Mitigating",
+  resolved: "Resolved",
+  post_mortem: "Post-Mortem",
+  closed: "Closed",
+};
+
+const SEV_LABELS: Record<IncidentSeverity, string> = {
+  sev1: "Sev1 — Critical",
+  sev2: "Sev2 — High",
+  sev3: "Sev3 — Medium",
+  sev4: "Sev4 — Low",
+};
+
+function SeverityBadge({ severity }: { severity: string }) {
+  const cls = SEV_COLORS[severity as IncidentSeverity] ?? "bg-muted text-muted-foreground";
+  const label = SEV_LABELS[severity as IncidentSeverity] ?? severity.toUpperCase();
+  return (
+    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cls}`}>
+      {label}
+    </span>
+  );
+}
+
+function IncidentStatusBadge({ status }: { status: string }) {
+  const cls = STATUS_COLORS[status as IncidentStatus] ?? "bg-muted text-muted-foreground";
+  const label = STATUS_LABELS[status as IncidentStatus] ?? status.replace("_", " ");
+  return (
+    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cls}`}>
+      {label}
+    </span>
+  );
+}
+
 function IncidentsPage() {
   const [status, setStatus] = useState("");
   const [severity, setSeverity] = useState("");
@@ -215,22 +252,10 @@ function IncidentsPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <span
-                        className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium uppercase ${
-                          SEV_COLORS[inc.severity as IncidentSeverity] ?? ""
-                        }`}
-                      >
-                        {inc.severity}
-                      </span>
+                      <SeverityBadge severity={inc.severity} />
                     </TableCell>
                     <TableCell>
-                      <span
-                        className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
-                          STATUS_COLORS[inc.status as IncidentStatus] ?? ""
-                        }`}
-                      >
-                        {inc.status.replace("_", " ")}
-                      </span>
+                      <IncidentStatusBadge status={inc.status} />
                     </TableCell>
                     <TableCell>
                       {inc.commander?.user?.name ?? (

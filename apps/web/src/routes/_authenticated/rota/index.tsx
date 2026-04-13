@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
-import { CalendarClock, ArrowLeftRight } from "lucide-react";
-import { Card, CardContent } from "@ndma-dcs-staff-portal/ui/components/card";
+import { CalendarClock, ArrowLeftRight, AlertTriangle, CheckCircle2, ClipboardList } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@ndma-dcs-staff-portal/ui/components/card";
 import { Skeleton } from "@ndma-dcs-staff-portal/ui/components/skeleton";
+import { Badge } from "@ndma-dcs-staff-portal/ui/components/badge";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -36,6 +37,12 @@ function RotaPage() {
   const { data: upcoming } = useQuery(orpc.rota.getUpcoming.queryOptions());
   const { data: pendingSwaps } = useQuery(
     orpc.rota.swap.list.queryOptions({ input: { status: "pending" as const } })
+  );
+  const { data: importWarnings } = useQuery(
+    orpc.rota.listImportWarnings.queryOptions({ input: { status: "pending" } })
+  );
+  const { data: overlaySchedules } = useQuery(
+    orpc.overlays.list.queryOptions({ input: {} })
   );
 
   return (
@@ -79,14 +86,24 @@ function RotaPage() {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {REQUIRED_ROLES.map((role) => {
                   const assignment = current.assignments.find((a) => a.role === role);
+                  const acknowledged = !!(assignment as Record<string, unknown>)?.acknowledgedAt;
                   return (
                     <Card key={role} className="p-3">
                       <CardContent className="p-0">
-                        <span
-                          className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium mb-2 ${ROLE_COLORS[role]}`}
-                        >
-                          {ROLE_LABELS[role]}
-                        </span>
+                        <div className="flex items-start justify-between mb-2">
+                          <span
+                            className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[role]}`}
+                          >
+                            {ROLE_LABELS[role]}
+                          </span>
+                          {assignment && (
+                            acknowledged ? (
+                              <CheckCircle2 className="size-3.5 text-green-500 mt-0.5" />
+                            ) : (
+                              <span className="text-xs text-amber-500 font-medium">Pending ACK</span>
+                            )
+                          )}
+                        </div>
                         <p className="font-semibold text-sm">
                           {assignment?.staffProfile?.user?.name ?? (
                             <span className="text-muted-foreground italic">Unassigned</span>
@@ -141,7 +158,7 @@ function RotaPage() {
 
         {/* Pending Swaps */}
         {pendingSwaps && pendingSwaps.length > 0 && (
-          <div>
+          <div className="mb-8">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
               <ArrowLeftRight className="size-3.5" />
               Pending Swap Requests ({pendingSwaps.length})
@@ -164,6 +181,92 @@ function RotaPage() {
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Import Warnings — flagged ambiguous entries from legacy spreadsheet */}
+        {importWarnings && importWarnings.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+              <AlertTriangle className="size-3.5 text-amber-500" />
+              Import Warnings ({importWarnings.length})
+            </h2>
+            <div className="space-y-2">
+              {importWarnings.map((w) => {
+                const warn = w as unknown as { role: string; rawValue: string; weekStart: string; weekEnd: string };
+                return (
+                <div key={w.id} className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 px-4 py-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-medium">
+                        {ROLE_LABELS[warn.role] ?? warn.role}
+                        {" — "}
+                        <span className="text-amber-700 dark:text-amber-400">&ldquo;{warn.rawValue}&rdquo;</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Week {warn.weekStart} – {warn.weekEnd}
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="text-amber-600 border-amber-300 shrink-0">
+                      Needs Review
+                    </Badge>
+                  </div>
+                </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Operational Overlays — quarterly duties */}
+        {overlaySchedules && overlaySchedules.length > 0 && (
+          <div>
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+              <ClipboardList className="size-3.5" />
+              Operational Overlays
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {overlaySchedules.slice(0, 4).map((schedule) => {
+                const s = schedule as unknown as {
+                  overlayType?: { name: string };
+                  quarter: string;
+                  year: string;
+                  assignments: Array<{
+                    staffProfile?: { user?: { name?: string } };
+                    externalLabel?: string;
+                  }>;
+                  tasks?: unknown[];
+                };
+                return (
+                <Card key={schedule.id}>
+                  <CardHeader className="pb-2 pt-4 px-4">
+                    <CardTitle className="text-sm font-medium">
+                      {s.overlayType?.name}
+                      <span className="text-muted-foreground font-normal ml-1">
+                        {s.quarter} {s.year}
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-4 pb-4">
+                    {s.assignments?.length ? (
+                      <div className="flex flex-wrap gap-1">
+                        {s.assignments.map((a, i) => (
+                          <span key={i} className="text-xs bg-muted px-2 py-0.5 rounded-full">
+                            {a.staffProfile?.user?.name ?? a.externalLabel ?? "—"}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground italic">No assignees</p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {s.tasks?.length ?? 0} tasks
+                    </p>
+                  </CardContent>
+                </Card>
+                );
+              })}
             </div>
           </div>
         )}

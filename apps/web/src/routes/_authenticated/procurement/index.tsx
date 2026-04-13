@@ -54,6 +54,44 @@ const PRIORITY_COLORS: Record<PRPriority, string> = {
   urgent: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
 };
 
+const STATUS_LABELS: Record<PRStatus, string> = {
+  draft: "Draft",
+  submitted: "Submitted",
+  under_review: "Under Review",
+  approved: "Approved",
+  rejected: "Rejected",
+  ordered: "Ordered",
+  received: "Received",
+  cancelled: "Cancelled",
+};
+
+const PRIORITY_LABELS: Record<PRPriority, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+  urgent: "Urgent",
+};
+
+function PRStatusBadge({ status }: { status: string }) {
+  const cls = STATUS_COLORS[status as PRStatus] ?? "bg-muted text-muted-foreground";
+  const label = STATUS_LABELS[status as PRStatus] ?? status.replace("_", " ");
+  return (
+    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cls}`}>
+      {label}
+    </span>
+  );
+}
+
+function PriorityBadge({ priority }: { priority: string }) {
+  const cls = PRIORITY_COLORS[priority as PRPriority] ?? "bg-muted text-muted-foreground";
+  const label = PRIORITY_LABELS[priority as PRPriority] ?? priority;
+  return (
+    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cls}`}>
+      {label}
+    </span>
+  );
+}
+
 const STATUS_OPTIONS = [
   { value: "", label: "All Statuses" },
   { value: "draft", label: "Draft" },
@@ -140,22 +178,10 @@ function PRTable({
                 </TableCell>
                 <TableCell>{pr.department?.name ?? "—"}</TableCell>
                 <TableCell>
-                  <span
-                    className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
-                      PRIORITY_COLORS[pr.priority as PRPriority] ?? ""
-                    }`}
-                  >
-                    {pr.priority}
-                  </span>
+                  <PriorityBadge priority={pr.priority} />
                 </TableCell>
                 <TableCell>
-                  <span
-                    className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
-                      STATUS_COLORS[pr.status as PRStatus] ?? ""
-                    }`}
-                  >
-                    {pr.status.replace("_", " ")}
-                  </span>
+                  <PRStatusBadge status={pr.status} />
                 </TableCell>
                 <TableCell className="font-mono text-sm">
                   {pr.totalEstimatedCost

@@ -23,12 +23,17 @@ export const Route = createFileRoute("/_authenticated/compliance/training")({
 
 type TrainingStatus = "current" | "expiring_soon" | "expired" | "not_applicable";
 
-const STATUS_COLORS: Record<TrainingStatus, string> = {
-  current: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-  expiring_soon: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-  expired: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-  not_applicable: "bg-muted text-muted-foreground",
-};
+function ComplianceStatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; cls: string }> = {
+    current: { label: "Current", cls: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
+    expiring_soon: { label: "Expiring Soon", cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" },
+    expired: { label: "Expired", cls: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 font-semibold" },
+    not_started: { label: "Not Started", cls: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300" },
+    not_applicable: { label: "N/A", cls: "bg-muted text-muted-foreground" },
+  };
+  const cfg = map[status] ?? { label: status, cls: "bg-muted text-muted-foreground" };
+  return <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cfg.cls}`}>{cfg.label}</span>;
+}
 
 function TrainingPage() {
   const [status, setStatus] = useState<TrainingStatus | "">("");
@@ -55,7 +60,7 @@ function TrainingPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight">Training Records</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Staff training completions, certifications, and expiry tracking.
+            Track staff training completion, expiry dates, and compliance status.
           </p>
         </div>
 
@@ -146,13 +151,7 @@ function TrainingPage() {
                         {isExpired && " ⚠️"}
                       </TableCell>
                       <TableCell>
-                        <span
-                          className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
-                            STATUS_COLORS[record.status as TrainingStatus] ?? ""
-                          }`}
-                        >
-                          {record.status.replace("_", " ")}
-                        </span>
+                        <ComplianceStatusBadge status={record.status} />
                       </TableCell>
                     </TableRow>
                   );

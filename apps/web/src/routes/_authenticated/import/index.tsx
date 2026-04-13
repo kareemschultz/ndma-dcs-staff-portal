@@ -7,6 +7,7 @@ import {
   GraduationCap,
   FileText,
   ClipboardList,
+  CalendarOff,
   CheckCircle,
   ChevronRight,
   ChevronLeft,
@@ -49,7 +50,7 @@ export const Route = createFileRoute("/_authenticated/import/")({
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-type ImportType = "staff" | "training" | "contracts" | "work";
+type ImportType = "staff" | "training" | "contracts" | "work" | "leave";
 
 interface ImportTarget {
   id: ImportType;
@@ -125,6 +126,20 @@ const IMPORT_TARGETS: ImportTarget[] = [
     sampleRows: [
       ["Quarterly server audit", "routine", "medium"],
       ["Network upgrade Phase 2", "project", "high"],
+    ],
+  },
+  {
+    id: "leave",
+    title: "Leave Records (2026)",
+    description: "Import 2026 approved leave records for existing staff. Only 2026 dates accepted.",
+    icon: CalendarOff,
+    columns: ["staffEmail", "leaveTypeCode", "startDate", "endDate", "totalDays", "reason"],
+    requiredColumns: ["staffEmail", "leaveTypeCode", "startDate", "endDate", "totalDays"],
+    notes:
+      "Dates MUST be 2026 (YYYY-MM-DD). leaveTypeCode: AL, SL, ML, STL. Staff must already exist — no new staff created.",
+    sampleRows: [
+      ["alice.mensah@ndma.gov.gh", "AL", "2026-03-03", "2026-03-07", "5", "Annual leave"],
+      ["bob.asante@ndma.gov.gh", "SL", "2026-02-10", "2026-02-12", "3", ""],
     ],
   },
 ];

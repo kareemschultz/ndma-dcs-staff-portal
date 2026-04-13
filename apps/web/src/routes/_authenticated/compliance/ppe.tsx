@@ -28,6 +28,17 @@ const CONDITION_COLORS: Record<string, string> = {
   replaced: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
 };
 
+function ComplianceStatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; cls: string }> = {
+    current: { label: "Current", cls: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
+    expiring_soon: { label: "Expiring Soon", cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" },
+    expired: { label: "Expired", cls: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 font-semibold" },
+    not_started: { label: "Not Started", cls: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300" },
+  };
+  const cfg = map[status] ?? { label: status, cls: "bg-muted text-muted-foreground" };
+  return <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cfg.cls}`}>{cfg.label}</span>;
+}
+
 function PPEPage() {
   const { data, isLoading } = useQuery(
     orpc.compliance.ppe.list.queryOptions({ input: {} })
@@ -49,7 +60,7 @@ function PPEPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight">PPE Management</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Personal protective equipment issued to staff — issue dates, condition, and expiry.
+            Monitor personal protective equipment issuance and compliance.
           </p>
         </div>
 

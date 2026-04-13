@@ -34,6 +34,25 @@ const MODULE_OPTIONS = [
   { value: "contracts", label: "Contracts" },
 ];
 
+function ModuleBadge({ module }: { module: string }) {
+  const map: Record<string, string> = {
+    work: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+    leave: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+    incidents: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+    staff: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300",
+    procurement: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+    rota: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+    compliance: "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300",
+    access: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+    import: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+  };
+  return (
+    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium capitalize ${map[module] ?? "bg-muted text-muted-foreground"}`}>
+      {module}
+    </span>
+  );
+}
+
 function DiffViewer({ before, after }: { before?: unknown; after?: unknown }) {
   if (!before && !after) return null;
   return (
@@ -75,7 +94,7 @@ function AuditRow({ log }: { log: any }) {
         <TableCell>
           <span className="font-mono text-xs bg-muted rounded px-1.5 py-0.5">{log.action}</span>
         </TableCell>
-        <TableCell className="text-muted-foreground text-xs capitalize">{log.module}</TableCell>
+        <TableCell><ModuleBadge module={log.module} /></TableCell>
         <TableCell className="text-muted-foreground text-xs">{log.resourceType}</TableCell>
         <TableCell className="text-muted-foreground text-xs">
           {log.actorRole}
@@ -125,7 +144,7 @@ function AuditPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight">Audit Log</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Append-only record of every mutation — who did what, when, and what changed.
+            Complete audit trail of all system actions and changes.
           </p>
         </div>
 

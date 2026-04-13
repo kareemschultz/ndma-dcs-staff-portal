@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, AlertTriangle, Clock } from "lucide-react";
+import { BarChart3, AlertTriangle, Clock, Printer } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -21,6 +21,7 @@ import {
   CardTitle,
 } from "@ndma-dcs-staff-portal/ui/components/card";
 import { Skeleton } from "@ndma-dcs-staff-portal/ui/components/skeleton";
+import { Button } from "@ndma-dcs-staff-portal/ui/components/button";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -642,7 +643,7 @@ const STAFF_STATUS_CONFIG: Record<
 
 function StaffByStatusSection() {
   const { data, isLoading } = useQuery(
-    orpc.staff.list.queryOptions({ input: { limit: 500, offset: 0 } })
+    orpc.staff.list.queryOptions({ input: { limit: 200, offset: 0 } })
   );
 
   const staffArray = Array.isArray(data) ? data : [];
@@ -749,11 +750,20 @@ function ReportsPage() {
           <span className="text-sm font-medium">Reports</span>
         </div>
         <div className="ms-auto flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => window.print()} className="print-hidden">
+            <Printer className="size-3.5 mr-1.5" />
+            Export PDF
+          </Button>
           <ThemeSwitch />
         </div>
       </Header>
 
       <Main>
+        <div className="print-header hidden mb-4">
+          <h1 className="text-xl font-bold">DCS Ops Center — Reports</h1>
+          <p className="text-sm text-muted-foreground">NDMA Data Centre Services · Printed {new Date().toLocaleDateString()}</p>
+        </div>
+
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
           <p className="text-sm text-muted-foreground mt-1">

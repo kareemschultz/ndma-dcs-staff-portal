@@ -8,7 +8,9 @@ import {
   CalendarClock,
   CalendarOff,
   CheckCircle,
+  CheckCircle2,
   ClipboardCheck,
+  ClipboardList,
   LayoutDashboard,
   RefreshCw,
   ShoppingCart,
@@ -106,6 +108,10 @@ function DashboardPage() {
   );
   const { data: workload, isLoading: workloadLoading } = useQuery(
     orpc.workload.get.queryOptions({ input: { weekStart, weekEnd } })
+  );
+  const { data: currentRota } = useQuery(orpc.rota.getCurrent.queryOptions());
+  const { data: overlaySchedules } = useQuery(
+    orpc.overlays.list.queryOptions({ input: {} })
   );
 
   const onCallCount = data?.currentSchedule?.assignments?.length ?? 0;
@@ -513,6 +519,127 @@ function DashboardPage() {
                         ))
                     )}
                   </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+        </div>
+
+        {/* On-Call ACK + Operational Overlays */}
+        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+
+          {/* On-Call Acknowledgement Status */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <CalendarClock className="size-4 text-blue-500" />
+                On-Call ACK — This Week
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!currentRota ? (
+                <p className="py-4 text-center text-sm text-muted-foreground">
+                  No roster published for this week.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {(["lead_engineer", "asn_support", "core_support", "enterprise_support"] as const).map((role) => {
+                    const assignment = currentRota.assignments.find((a) => a.role === role);
+                    const acked = !!(assignment as Record<string, unknown> | undefined)?.acknowledgedAt;
+                    const roleLabels: Record<string, string> = {
+                      lead_engineer: "Lead Engineer",
+                      asn_support: "ASN Support",
+                      core_support: "Core Support",
+                      enterprise_support: "Enterprise Support",
+                    };
+                    return (
+                      <div key={role} className="flex items-center justify-between text-sm">
+                        <div>
+                          <span className="font-medium">{roleLabels[role]}</span>
+                          {assignment?.staffProfile?.user?.name && (
+                            <span className="text-muted-foreground ml-2 text-xs">
+                              {assignment.staffProfile.user.name}
+                            </span>
+                          )}
+                        </div>
+                        {!assignment ? (
+                          <span className="text-xs text-muted-foreground italic">Unassigned</span>
+                        ) : acked ? (
+                          <span className="flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400">
+                            <CheckCircle2 className="size-3.5" /> Acknowledged
+                          </span>
+                        ) : (
+                          <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                            Pending ACK
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Operational Overlays — current quarter */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <ClipboardList className="size-4 text-purple-500" />
+                Operational Overlays
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!overlaySchedules || overlaySchedules.length === 0 ? (
+                <p className="py-4 text-center text-sm text-muted-foreground">
+                  No operational overlays scheduled.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {overlaySchedules.slice(0, 3).map((schedule) => {
+                    const s = schedule as unknown as {
+                      overlayType?: { name: string };
+                      quarter: string;
+                      year: string;
+                      assignments: Array<{
+                        staffProfile?: { user?: { name?: string } };
+                        externalLabel?: string;
+                      }>;
+                      tasks?: Array<{ status: string }>;
+                    };
+                    const totalTasks = s.tasks?.length ?? 0;
+                    const doneTasks = s.tasks?.filter((t) => t.status === "completed").length ?? 0;
+                    const pct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+                    return (
+                      <div key={schedule.id} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-medium truncate max-w-[60%]">
+                            {s.overlayType?.name ?? "Overlay"}
+                          </span>
+                          <span className="text-xs text-muted-foreground shrink-0">
+                            {s.quarter} {s.year}
+                          </span>
+                        </div>
+                        {s.assignments?.length > 0 && (
+                          <p className="text-xs text-muted-foreground">
+                            {s.assignments
+                              .map((a) => a.staffProfile?.user?.name ?? a.externalLabel ?? "—")
+                              .join(", ")}
+                          </p>
+                        )}
+                        <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-purple-500 transition-all"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {doneTasks}/{totalTasks} tasks · {pct}%
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

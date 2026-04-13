@@ -124,6 +124,44 @@ const INTEGRATION_STATUS_COLORS: Record<string, string> = {
   pending: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
 };
 
+// ── Platform type config (full enum, all 18 types) ────────────────────────
+
+type PlatformType =
+  | "vpn" | "fortigate" | "uportal" | "biometric" | "ad"
+  | "ipam" | "phpipam" | "radius" | "zabbix" | "esight"
+  | "ivs_neteco" | "nce_fan_atp" | "neteco" | "lte_grafana"
+  | "gen_grafana" | "plum" | "kibana" | "other";
+
+const PLATFORMS: Record<PlatformType, { label: string; description: string; icon: string; category: string }> = {
+  vpn: { label: "VPN (Forticlient)", description: "MikroTik / Forticlient VPN access control", icon: "🔒", category: "Network" },
+  fortigate: { label: "Fortigate", description: "Fortigate firewall management", icon: "🛡️", category: "Network" },
+  ad: { label: "Active Directory", description: "Windows AD / LDAP user directory", icon: "🏢", category: "Identity" },
+  ipam: { label: "IPAM", description: "IP Address Management", icon: "🌐", category: "Network" },
+  phpipam: { label: "phpIPAM", description: "Open-source IP address management", icon: "🌐", category: "Network" },
+  uportal: { label: "Uportal", description: "User portal access management", icon: "👤", category: "Identity" },
+  biometric: { label: "Biometrics", description: "Biometric fingerprint registration", icon: "🔍", category: "Physical" },
+  radius: { label: "RADIUS", description: "Remote Authentication Dial-In service", icon: "📡", category: "Network" },
+  zabbix: { label: "Zabbix", description: "Network monitoring platform", icon: "📊", category: "Monitoring" },
+  esight: { label: "eSight", description: "Huawei eSight network management", icon: "👁️", category: "Monitoring" },
+  ivs_neteco: { label: "IVS Neteco", description: "IVS network ecosystem management", icon: "🔧", category: "Monitoring" },
+  nce_fan_atp: { label: "NCE FAN ATP", description: "NCE FAN Advanced Threat Protection", icon: "🛡️", category: "Security" },
+  neteco: { label: "NeTeco", description: "NeTeco network management", icon: "🔧", category: "Monitoring" },
+  lte_grafana: { label: "LTE Grafana", description: "LTE network Grafana dashboards", icon: "📈", category: "Monitoring" },
+  gen_grafana: { label: "Generator Grafana", description: "Generator monitoring dashboards", icon: "📈", category: "Monitoring" },
+  plum: { label: "Plum", description: "Plum platform management", icon: "🍇", category: "Other" },
+  kibana: { label: "Kibana", description: "Elasticsearch Kibana dashboards", icon: "📋", category: "Monitoring" },
+  other: { label: "Other", description: "Other platform integration", icon: "⚙️", category: "Other" },
+};
+
+const CATEGORY_STYLES: Record<string, { border: string; bg: string; badge: string }> = {
+  Network:    { border: "border-blue-200 dark:border-blue-800",   bg: "bg-blue-50 dark:bg-blue-950/30",    badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" },
+  Identity:   { border: "border-indigo-200 dark:border-indigo-800", bg: "bg-indigo-50 dark:bg-indigo-950/30",  badge: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300" },
+  Monitoring: { border: "border-green-200 dark:border-green-800",  bg: "bg-green-50 dark:bg-green-950/30",   badge: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
+  Security:   { border: "border-red-200 dark:border-red-800",     bg: "bg-red-50 dark:bg-red-950/30",      badge: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" },
+  Physical:   { border: "border-orange-200 dark:border-orange-800", bg: "bg-orange-50 dark:bg-orange-950/30",  badge: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300" },
+  Other:      { border: "border-gray-200 dark:border-gray-700",   bg: "bg-gray-50 dark:bg-gray-900/30",    badge: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" },
+};
+
 type Tab = "accounts" | "vpn" | "groups" | "external" | "reviews" | "integrations" | "reconciliation";
 
 // ── Badge helpers ─────────────────────────────────────────────────────────
@@ -611,7 +649,7 @@ function GroupDialog({ open, onClose, onSave, isPending, editData }: GroupDialog
   );
 }
 
-// ── Integration dialog ────────────────────────────────────────────────────
+// ── Integration dialog (2-step wizard for create, flat form for edit) ────
 
 type IntegrationDialogProps = {
   open: boolean;
@@ -621,65 +659,162 @@ type IntegrationDialogProps = {
   editData?: Record<string, unknown> | null;
 };
 
+// Group platforms by category preserving order
+const PLATFORM_CATEGORIES = ["Network", "Identity", "Monitoring", "Security", "Physical", "Other"] as const;
+type PlatformCategory = typeof PLATFORM_CATEGORIES[number];
+
+const PLATFORMS_BY_CATEGORY: Record<PlatformCategory, PlatformType[]> = {
+  Network:    ["vpn", "fortigate", "ipam", "phpipam", "radius"],
+  Identity:   ["ad", "uportal"],
+  Monitoring: ["zabbix", "esight", "ivs_neteco", "neteco", "lte_grafana", "gen_grafana", "kibana"],
+  Security:   ["nce_fan_atp"],
+  Physical:   ["biometric"],
+  Other:      ["plum", "other"],
+};
+
 function IntegrationDialog({ open, onClose, onSave, isPending, editData }: IntegrationDialogProps) {
   const isEdit = !!editData;
+  // For create: step 1 = select platform type, step 2 = fill config fields
+  const [step, setStep] = useState<1 | 2>(isEdit ? 2 : 1);
+  const [selectedPlatform, setSelectedPlatform] = useState<PlatformType>(
+    (editData?.platform as PlatformType) ?? "phpipam"
+  );
   const [form, setForm] = useState({
     name: (editData?.name as string) ?? "",
-    platform: (editData?.platform as string) ?? "phpipam",
-    description: (editData?.description as string) ?? "",
-    supportTeam: (editData?.supportTeam as string) ?? "",
-    apiBaseUrl: (editData?.apiBaseUrl as string) ?? "",
-    runbookUrl: (editData?.runbookUrl as string) ?? "",
+    baseUrl: (editData?.baseUrl as string) ?? (editData?.apiBaseUrl as string) ?? "",
+    notes: (editData?.notes as string) ?? (editData?.description as string) ?? "",
     syncEnabled: (editData?.syncEnabled as boolean) ?? false,
-    hasApi: (editData?.hasApi as boolean) ?? false,
     syncDirection: (editData?.syncDirection as string) ?? "inbound",
-    syncFrequencyMinutes: String((editData?.syncFrequencyMinutes as number) ?? ""),
+    syncFrequency: String((editData?.syncFrequency as number) ?? (editData?.syncFrequencyMinutes as number) ?? ""),
+    // edit-only
     status: (editData?.status as string) ?? "pending",
   });
+
+  // Reset step when dialog opens/closes
+  const handleOpenChange = (o: boolean) => {
+    if (!o) {
+      onClose();
+      if (!isEdit) setStep(1);
+    }
+  };
 
   const set = (k: string, v: unknown) => setForm((f) => ({ ...f, [k]: v }));
 
   const handleSave = () => {
     const payload: Record<string, unknown> = {
       name: form.name.trim(),
-      platform: form.platform,
       syncEnabled: form.syncEnabled,
-      hasApi: form.hasApi,
       syncDirection: form.syncDirection,
     };
-    if (isEdit && editData?.id) { payload.id = editData.id as string; payload.status = form.status; }
-    if (form.description.trim()) payload.description = form.description.trim();
-    if (form.supportTeam.trim()) payload.supportTeam = form.supportTeam.trim();
-    if (form.apiBaseUrl.trim()) payload.apiBaseUrl = form.apiBaseUrl.trim();
-    if (form.runbookUrl.trim()) payload.runbookUrl = form.runbookUrl.trim();
-    if (form.syncFrequencyMinutes) payload.syncFrequencyMinutes = Number(form.syncFrequencyMinutes);
+    if (!isEdit) {
+      payload.platformType = selectedPlatform;
+    } else {
+      payload.id = editData!.id as string;
+      payload.status = form.status;
+    }
+    if (form.baseUrl.trim()) payload.baseUrl = form.baseUrl.trim();
+    if (form.notes.trim()) payload.notes = form.notes.trim();
+    if (form.syncFrequency) payload.syncFrequency = Number(form.syncFrequency);
     onSave(payload);
   };
 
+  const platformInfo = PLATFORMS[selectedPlatform];
+  const catStyle = CATEGORY_STYLES[platformInfo?.category ?? "Other"];
+
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit Integration" : "Add Platform Integration"}</DialogTitle>
+          <DialogTitle>
+            {isEdit
+              ? "Edit Integration"
+              : step === 1
+              ? "Add Platform Integration — Step 1: Select Platform"
+              : `Add Platform Integration — Step 2: Configure ${platformInfo?.label}`}
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-3 py-2">
-          <Field label="Integration name *">
-            <Input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="phpIPAM — DC Network" className="text-sm" />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Platform">
-              <select
-                value={form.platform}
-                onChange={(e) => set("platform", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                disabled={isEdit}
-              >
-                {(Object.keys(PLATFORM_LABELS) as Platform[]).map((p) => (
-                  <option key={p} value={p}>{PLATFORM_LABELS[p]}</option>
-                ))}
-              </select>
+        {/* ── Step 1: Platform type card grid ────────────────────────── */}
+        {!isEdit && step === 1 && (
+          <div className="space-y-4 py-2">
+            {PLATFORM_CATEGORIES.map((cat) => {
+              const catPlatforms = PLATFORMS_BY_CATEGORY[cat];
+              if (!catPlatforms.length) return null;
+              const cs = CATEGORY_STYLES[cat];
+              return (
+                <div key={cat}>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{cat}</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {catPlatforms.map((pt) => {
+                      const info = PLATFORMS[pt];
+                      const isSelected = selectedPlatform === pt;
+                      return (
+                        <button
+                          key={pt}
+                          type="button"
+                          onClick={() => setSelectedPlatform(pt)}
+                          className={`flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-all hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                            isSelected
+                              ? `${cs.border} ${cs.bg} ring-2 ring-offset-1 ring-current`
+                              : "border-border hover:border-muted-foreground/40 hover:bg-muted/40"
+                          }`}
+                        >
+                          <span className="text-xl leading-none">{info.icon}</span>
+                          <span className="text-xs font-semibold leading-tight">{info.label}</span>
+                          <span className="text-[10px] text-muted-foreground leading-tight">{info.description}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+
+            <DialogFooter className="pt-2">
+              <Button variant="outline" onClick={onClose}>Cancel</Button>
+              <Button onClick={() => setStep(2)}>
+                Next — Configure {platformInfo?.label}
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+
+        {/* ── Step 2 (create) or flat form (edit) ────────────────────── */}
+        {(isEdit || step === 2) && (
+          <div className="space-y-4 py-2">
+            {/* Selected platform banner (create only) */}
+            {!isEdit && (
+              <div className={`flex items-center gap-3 rounded-lg border p-3 ${catStyle.border} ${catStyle.bg}`}>
+                <span className="text-2xl">{platformInfo?.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm">{platformInfo?.label}</p>
+                  <p className="text-xs text-muted-foreground truncate">{platformInfo?.description}</p>
+                </div>
+                <span className={`shrink-0 inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${catStyle.badge}`}>
+                  {platformInfo?.category}
+                </span>
+              </div>
+            )}
+
+            <Field label="Integration name *">
+              <Input
+                value={form.name}
+                onChange={(e) => set("name", e.target.value)}
+                placeholder={`${platformInfo?.label ?? "Integration"} — DC Network`}
+                className="text-sm"
+                autoFocus
+              />
             </Field>
+
+            <Field label="Base URL (optional)">
+              <Input
+                value={form.baseUrl}
+                onChange={(e) => set("baseUrl", e.target.value)}
+                placeholder="https://ipam.ndma.gov.gh/api/"
+                className="text-sm"
+              />
+            </Field>
+
             {isEdit && (
               <Field label="Status">
                 <select
@@ -688,68 +823,68 @@ function IntegrationDialog({ open, onClose, onSave, isPending, editData }: Integ
                   className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                   {(["active", "inactive", "error", "pending"] as const).map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                    <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
                   ))}
                 </select>
               </Field>
             )}
-          </div>
-          <Field label="API base URL">
-            <Input value={form.apiBaseUrl} onChange={(e) => set("apiBaseUrl", e.target.value)} placeholder="https://ipam.ndma.gov.gh/api/" className="text-sm" />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Support team">
-              <Input value={form.supportTeam} onChange={(e) => set("supportTeam", e.target.value)} placeholder="Network Ops" className="text-sm" />
-            </Field>
-            <Field label="Runbook URL">
-              <Input value={form.runbookUrl} onChange={(e) => set("runbookUrl", e.target.value)} placeholder="https://…" className="text-sm" />
-            </Field>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-2 rounded-md border p-2.5">
-              <Switch checked={form.hasApi} onCheckedChange={(v) => set("hasApi", v)} />
-              <span className="text-xs font-medium">Has API connector</span>
-            </div>
-            <div className="flex items-center gap-2 rounded-md border p-2.5">
-              <Switch checked={form.syncEnabled} onCheckedChange={(v) => set("syncEnabled", v)} />
-              <span className="text-xs font-medium">Auto-sync enabled</span>
-            </div>
-          </div>
-          {form.syncEnabled && (
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Sync direction">
-                <select
-                  value={form.syncDirection}
-                  onChange={(e) => set("syncDirection", e.target.value)}
-                  className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  {(["inbound", "outbound", "bidirectional"] as const).map((d) => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Frequency (minutes)">
-                <Input
-                  type="number"
-                  value={form.syncFrequencyMinutes}
-                  onChange={(e) => set("syncFrequencyMinutes", e.target.value)}
-                  placeholder="60"
-                  className="text-sm"
-                />
-              </Field>
-            </div>
-          )}
-          <Field label="Description">
-            <Textarea value={form.description} onChange={(e) => set("description", e.target.value)} rows={2} className="text-sm" />
-          </Field>
-        </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isPending}>Cancel</Button>
-          <Button onClick={handleSave} disabled={isPending || !form.name.trim()}>
-            {isPending ? "Saving…" : isEdit ? "Save changes" : "Add integration"}
-          </Button>
-        </DialogFooter>
+            <div className="flex items-center gap-3 rounded-md border p-3">
+              <Switch checked={form.syncEnabled} onCheckedChange={(v) => set("syncEnabled", v)} />
+              <div>
+                <span className="text-sm font-medium">Auto-sync enabled</span>
+                <p className="text-xs text-muted-foreground">Automatically pull records on a schedule</p>
+              </div>
+            </div>
+
+            {form.syncEnabled && (
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Sync direction">
+                  <select
+                    value={form.syncDirection}
+                    onChange={(e) => set("syncDirection", e.target.value)}
+                    className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="inbound">Inbound (pull from platform)</option>
+                    <option value="outbound">Outbound (push to platform)</option>
+                    <option value="bidirectional">Bidirectional</option>
+                  </select>
+                </Field>
+                <Field label="Sync frequency (minutes)">
+                  <Input
+                    type="number"
+                    value={form.syncFrequency}
+                    onChange={(e) => set("syncFrequency", e.target.value)}
+                    placeholder="60"
+                    className="text-sm"
+                  />
+                </Field>
+              </div>
+            )}
+
+            <Field label="Notes (optional)">
+              <Textarea
+                value={form.notes}
+                onChange={(e) => set("notes", e.target.value)}
+                rows={2}
+                placeholder="Support team, runbook link, any relevant context…"
+                className="text-sm"
+              />
+            </Field>
+
+            <DialogFooter>
+              {!isEdit && (
+                <Button variant="outline" onClick={() => setStep(1)} disabled={isPending}>
+                  Back
+                </Button>
+              )}
+              <Button variant="outline" onClick={onClose} disabled={isPending}>Cancel</Button>
+              <Button onClick={handleSave} disabled={isPending || !form.name.trim()}>
+                {isPending ? "Saving…" : isEdit ? "Save changes" : "Add integration"}
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -1477,75 +1612,131 @@ function PlatformAccountsPage() {
             </p>
 
             {integrationsLoading ? (
-              Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-md" />)
+              Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-md" />)
             ) : !integrations?.length ? (
               <div className="rounded-md border border-dashed p-12 text-center text-muted-foreground">
                 <Plug className="size-8 mx-auto mb-3 opacity-40" />
                 <p className="font-medium">No integrations configured</p>
                 <p className="text-sm mt-1">Platform integrations enable automatic account sync from external APIs.</p>
+                <Button size="sm" className="mt-4 gap-1.5" onClick={() => setShowCreateIntegration(true)}>
+                  <Plus className="size-3.5" />Add your first integration
+                </Button>
               </div>
             ) : (
-              integrations.map((integration) => (
-                <div key={integration.id} className="rounded-md border p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-medium text-sm">{integration.name}</p>
-                        <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${INTEGRATION_STATUS_COLORS[integration.status] ?? ""}`}>
-                          {integration.status}
-                        </span>
-                        {integration.syncEnabled && (
-                          <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
-                            <Activity className="size-3" />Sync on
-                          </span>
-                        )}
+              <div className="grid gap-3">
+                {integrations.map((integration) => {
+                  const ptKey = (integration.platform) as PlatformType;
+                  const platformInfo = PLATFORMS[ptKey] ?? PLATFORMS.other;
+                  const catStyle = CATEGORY_STYLES[platformInfo.category] ?? CATEGORY_STYLES.Other;
+                  const syncDir = (integration.syncDirection as string) ?? "";
+                  const syncFreq = (integration as unknown as Record<string, unknown>).syncFrequency as number | undefined
+                    ?? integration.syncFrequencyMinutes;
+                  const lastSyncAt = integration.lastSyncAt;
+                  const lastSyncError = (integration as unknown as Record<string, unknown>).lastSyncError as string | undefined;
+                  const notes = (integration as unknown as Record<string, unknown>).notes as string | undefined
+                    ?? (integration as unknown as Record<string, unknown>).description as string | undefined;
+                  const supportTeam = (integration as unknown as Record<string, unknown>).supportTeam as string | undefined;
+                  const runbookUrl = (integration as unknown as Record<string, unknown>).runbookUrl as string | undefined;
+
+                  return (
+                    <div key={integration.id} className={`rounded-lg border p-4 transition-shadow hover:shadow-sm ${integration.status === "error" ? "border-red-200 bg-red-50/40 dark:border-red-800 dark:bg-red-950/20" : ""}`}>
+                      <div className="flex items-start gap-4">
+                        {/* Platform icon */}
+                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-xl ${catStyle.border} ${catStyle.bg}`}>
+                          {platformInfo.icon}
+                        </div>
+
+                        {/* Main content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-semibold text-sm">{integration.name}</p>
+                            {/* Status badge */}
+                            <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${INTEGRATION_STATUS_COLORS[integration.status] ?? "bg-muted text-muted-foreground"}`}>
+                              {integration.status.charAt(0).toUpperCase() + integration.status.slice(1)}
+                            </span>
+                            {/* Sync badge */}
+                            {integration.syncEnabled ? (
+                              <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                                <Activity className="size-3" />Auto-sync
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
+                                Manual
+                              </span>
+                            )}
+                            {/* Category badge */}
+                            <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${catStyle.badge}`}>
+                              {platformInfo.category}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {platformInfo.label}
+                            {syncDir && <span className="ml-2">· {syncDir}</span>}
+                            {syncFreq && <span className="ml-2">· every {syncFreq}m</span>}
+                          </p>
+
+                          {supportTeam && (
+                            <p className="text-xs text-muted-foreground mt-0.5">Support: {supportTeam}</p>
+                          )}
+
+                          {notes && (
+                            <p className="text-xs text-muted-foreground mt-0.5 truncate">{notes}</p>
+                          )}
+
+                          {lastSyncAt && (
+                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                              <Clock className="size-3" />
+                              Last sync: {format(lastSyncAt instanceof Date ? lastSyncAt : new Date(lastSyncAt), "dd MMM yyyy, HH:mm")}
+                            </p>
+                          )}
+
+                          {lastSyncError && (
+                            <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                              <AlertCircle className="size-3 shrink-0" />
+                              {lastSyncError}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {runbookUrl && (
+                            <a
+                              href={runbookUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:underline px-1"
+                            >
+                              Runbook
+                            </a>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0"
+                            onClick={() => setEditIntegration(integration as unknown as Record<string, unknown>)}
+                            title="Edit integration"
+                          >
+                            <Pencil className="size-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs gap-1"
+                            onClick={() => triggerSyncMutation.mutate({ integrationId: integration.id })}
+                            disabled={triggerSyncMutation.isPending}
+                            title="Trigger sync now"
+                          >
+                            <RefreshCw className={`size-3 ${triggerSyncMutation.isPending ? "animate-spin" : ""}`} />
+                            Sync now
+                          </Button>
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {PLATFORM_LABELS[integration.platform as Platform] ?? integration.platform}
-                        {String(integration.syncDirection ?? "").length > 0 && <span className="ml-2">· {integration.syncDirection as string}</span>}
-                        {integration.syncFrequencyMinutes && <span className="ml-2">· every {integration.syncFrequencyMinutes}m</span>}
-                      </p>
-                      {integration.supportTeam && (
-                        <p className="text-xs text-muted-foreground mt-0.5">Support: {integration.supportTeam}</p>
-                      )}
-                      {integration.lastSyncAt && (
-                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                          <Clock className="size-3" />
-                          Last sync: {format(new Date(integration.lastSyncAt), "dd MMM yyyy, HH:mm")}
-                        </p>
-                      )}
-                      {integration.lastSyncError && (
-                        <p className="text-xs text-red-600 mt-1">{integration.lastSyncError}</p>
-                      )}
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {String(integration.runbookUrl ?? "").length > 0 && (
-                        <a href={integration.runbookUrl as string} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">Runbook</a>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 w-7 p-0"
-                        onClick={() => setEditIntegration(integration as unknown as Record<string, unknown>)}
-                        title="Edit integration"
-                      >
-                        <Pencil className="size-3" />
-                      </Button>
-                      {integration.syncEnabled && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs gap-1"
-                          onClick={() => triggerSyncMutation.mutate({ integrationId: integration.id })}
-                          disabled={triggerSyncMutation.isPending}
-                        >
-                          <RefreshCw className="size-3" />Sync now
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))
+                  );
+                })}
+              </div>
             )}
           </div>
         )}

@@ -12,6 +12,17 @@ export const Route = createFileRoute("/_authenticated/compliance/items")({
   component: ComplianceItemsPage,
 });
 
+function ComplianceStatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; cls: string }> = {
+    current: { label: "Current", cls: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
+    expiring_soon: { label: "Expiring Soon", cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" },
+    expired: { label: "Expired", cls: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 font-semibold" },
+    not_started: { label: "Not Started", cls: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300" },
+  };
+  const cfg = map[status] ?? { label: status, cls: "bg-muted text-muted-foreground" };
+  return <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cfg.cls}`}>{cfg.label}</span>;
+}
+
 function ComplianceItemsPage() {
   const { data, isLoading } = useQuery(
     orpc.compliance.getExpiringItems.queryOptions({ input: { withinDays: 90 } })
@@ -36,7 +47,7 @@ function ComplianceItemsPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight">Compliance Overview</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Items expiring or expired across training and PPE — action required.
+            Track policy acknowledgements and sign-offs across training and PPE compliance items.
           </p>
         </div>
 
@@ -80,17 +91,13 @@ function ComplianceItemsPage() {
                           <p className="text-sm font-medium">{record.staffProfile?.user?.name}</p>
                           <p className="text-xs text-muted-foreground mt-0.5">{record.trainingName}</p>
                         </div>
-                        <div className="text-right">
-                          <p
-                            className={`text-xs font-medium ${
-                              expired ? "text-red-600" : "text-amber-600"
-                            }`}
-                          >
-                            {expired ? "Expired" : "Expiring"}{" "}
+                        <div className="text-right flex flex-col items-end gap-1">
+                          <ComplianceStatusBadge status={expired ? "expired" : "expiring_soon"} />
+                          <p className="text-xs text-muted-foreground">
                             {record.expiryDate &&
                               format(parseISO(record.expiryDate), "dd MMM yyyy")}
+                            {record.provider ? ` · ${record.provider}` : ""}
                           </p>
-                          <p className="text-xs text-muted-foreground">{record.provider ?? ""}</p>
                         </div>
                       </div>
                     );
@@ -115,18 +122,12 @@ function ComplianceItemsPage() {
                           <p className="text-sm font-medium">{record.staffProfile?.user?.name}</p>
                           <p className="text-xs text-muted-foreground mt-0.5">{record.itemName}</p>
                         </div>
-                        <div className="text-right">
-                          <p
-                            className={`text-xs font-medium ${
-                              expired ? "text-red-600" : "text-amber-600"
-                            }`}
-                          >
-                            {expired ? "Expired" : "Expiring"}{" "}
+                        <div className="text-right flex flex-col items-end gap-1">
+                          <ComplianceStatusBadge status={expired ? "expired" : "expiring_soon"} />
+                          <p className="text-xs text-muted-foreground">
                             {record.expiryDate &&
                               format(parseISO(record.expiryDate), "dd MMM yyyy")}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Condition: {record.condition ?? "good"}
+                            {record.condition ? ` · ${record.condition}` : ""}
                           </p>
                         </div>
                       </div>

@@ -32,6 +32,23 @@ const STATUS_COLORS: Record<LeaveStatus, string> = {
   cancelled: "bg-muted text-muted-foreground",
 };
 
+const STATUS_LABELS: Record<LeaveStatus, string> = {
+  pending: "Pending",
+  approved: "Approved",
+  rejected: "Rejected",
+  cancelled: "Cancelled",
+};
+
+function LeaveStatusBadge({ status }: { status: string }) {
+  const cls = STATUS_COLORS[status as LeaveStatus] ?? "bg-muted text-muted-foreground";
+  const label = STATUS_LABELS[status as LeaveStatus] ?? status;
+  return (
+    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cls}`}>
+      {label}
+    </span>
+  );
+}
+
 function LeavePage() {
   const [activeTab, setActiveTab] = useState<"all" | "pending">("all");
   const [status, setStatus] = useState<LeaveStatus | "">("");
@@ -163,7 +180,10 @@ function LeavePage() {
               ) : !data?.length ? (
                 <TableRow>
                   <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
-                    No leave requests found.
+                    No leave requests found.{" "}
+                    <Link to="/leave/new" className="underline">
+                      Submit a request
+                    </Link>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -181,13 +201,7 @@ function LeavePage() {
                     </TableCell>
                     <TableCell>{req.totalDays}</TableCell>
                     <TableCell>
-                      <span
-                        className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
-                          STATUS_COLORS[req.status as LeaveStatus] ?? ""
-                        }`}
-                      >
-                        {req.status}
-                      </span>
+                      <LeaveStatusBadge status={req.status} />
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs max-w-xs truncate">
                       {req.reason ?? "—"}

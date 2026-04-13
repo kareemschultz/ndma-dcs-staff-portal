@@ -9,6 +9,21 @@ import { orpc } from "@/utils/orpc";
 
 import "../index.css";
 
+function RootErrorComponent({ error }: { error: Error }) {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
+      <h1 className="text-2xl font-semibold">Something went wrong</h1>
+      <p className="text-sm text-muted-foreground max-w-md">{error.message}</p>
+      <button
+        className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground"
+        onClick={() => window.location.reload()}
+      >
+        Reload
+      </button>
+    </div>
+  );
+}
+
 export interface RouterAppContext {
   orpc: typeof orpc;
   queryClient: QueryClient;
@@ -16,12 +31,13 @@ export interface RouterAppContext {
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
   component: RootComponent,
+  errorComponent: RootErrorComponent,
   head: () => ({
     meta: [
-      { title: "NDMA DCS Staff Portal" },
+      { title: "DCS Ops Center" },
       {
         name: "description",
-        content: "Data Centre Services Staff Portal — Staff, Operations & Compliance Management",
+        content: "NDMA Data Centre Services — Operations & Compliance Management",
       },
     ],
     links: [{ rel: "icon", href: "/favicon.ico" }],
