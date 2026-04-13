@@ -316,7 +316,7 @@ function PlannerPage() {
       <Header fixed>
         <div className="flex items-center gap-2">
           <CalendarClock className="size-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Rota Planner</span>
+          <span className="text-sm font-medium">Roster Planner</span>
         </div>
         <div className="ms-auto flex items-center gap-2">
           <ThemeSwitch />
@@ -331,7 +331,7 @@ function PlannerPage() {
 
       <Main>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight">Rota Planner</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Roster Planner</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Create draft schedules, assign on-call roles, and publish for the team.
           </p>

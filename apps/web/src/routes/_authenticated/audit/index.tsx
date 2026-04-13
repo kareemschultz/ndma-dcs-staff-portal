@@ -27,7 +27,7 @@ const MODULE_OPTIONS = [
   { value: "incidents", label: "Incidents" },
   { value: "staff", label: "Staff" },
   { value: "leave", label: "Leave" },
-  { value: "rota", label: "On-Call Rota" },
+  { value: "rota", label: "On-Call Roster" },
   { value: "procurement", label: "Procurement" },
   { value: "compliance", label: "Compliance" },
   { value: "access", label: "Access" },

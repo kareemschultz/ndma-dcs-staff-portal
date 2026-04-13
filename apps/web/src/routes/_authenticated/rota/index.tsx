@@ -43,7 +43,7 @@ function RotaPage() {
       <Header fixed>
         <div className="flex items-center gap-2">
           <CalendarClock className="size-4 text-muted-foreground" />
-          <span className="text-sm font-medium">On-Call Rota</span>
+          <span className="text-sm font-medium">On-Call Roster</span>
         </div>
         <div className="ms-auto flex items-center gap-2">
           <ThemeSwitch />
@@ -52,7 +52,7 @@ function RotaPage() {
 
       <Main>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight">On-Call Rota</h1>
+          <h1 className="text-2xl font-bold tracking-tight">On-Call Roster</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Current and upcoming on-call assignments.
           </p>

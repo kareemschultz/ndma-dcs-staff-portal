@@ -47,7 +47,7 @@ function HistoryPage() {
       <Header fixed>
         <div className="flex items-center gap-2">
           <History className="size-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Rota History</span>
+          <span className="text-sm font-medium">Roster History</span>
         </div>
         <div className="ms-auto flex items-center gap-2">
           <ThemeSwitch />
