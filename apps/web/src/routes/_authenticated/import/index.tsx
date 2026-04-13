@@ -1,6 +1,34 @@
+import { useState, useRef, useCallback } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Upload, FileSpreadsheet, Users, GraduationCap, FileText, ClipboardList } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@ndma-dcs-staff-portal/ui/components/card";
+import {
+  Upload,
+  Users,
+  GraduationCap,
+  FileText,
+  ClipboardList,
+  CheckCircle,
+  ChevronRight,
+  ChevronLeft,
+  AlertCircle,
+  FileSpreadsheet,
+} from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@ndma-dcs-staff-portal/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@ndma-dcs-staff-portal/ui/components/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@ndma-dcs-staff-portal/ui/components/table";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -9,34 +37,299 @@ export const Route = createFileRoute("/_authenticated/import/")({
   component: ImportPage,
 });
 
-const IMPORT_TARGETS = [
+// ── Types ──────────────────────────────────────────────────────────────────
+
+type ImportType = "staff" | "training" | "contracts" | "work";
+
+interface ImportTarget {
+  id: ImportType;
+  title: string;
+  description: string;
+  icon: React.ElementType;
+  columns: string[];
+  requiredColumns: string[];
+  sampleRows: string[][];
+  notes: string;
+}
+
+interface ParsedRow {
+  [key: string]: string;
+}
+
+interface ValidatedRow {
+  data: ParsedRow;
+  errors: string[];
+}
+
+// ── Config ─────────────────────────────────────────────────────────────────
+
+const IMPORT_TARGETS: ImportTarget[] = [
   {
+    id: "staff",
     title: "Staff Profiles",
-    description: "Import staff from CSV. Required fields: name, email, department, employment type.",
+    description: "Import staff members with their department and employment details.",
     icon: Users,
-    fields: ["name", "email", "department", "employmentType"],
+    columns: ["name", "email", "department", "employmentType"],
+    requiredColumns: ["name", "email", "department", "employmentType"],
+    notes: "employmentType: full_time | part_time | contract | intern",
+    sampleRows: [
+      ["Alice Mensah", "alice.mensah@ndma.gov.gh", "Infrastructure", "full_time"],
+      ["Bob Asante", "bob.asante@ndma.gov.gh", "Network Operations", "contract"],
+    ],
   },
   {
+    id: "training",
     title: "Training Records",
     description: "Bulk import training completions with expiry dates and providers.",
     icon: GraduationCap,
-    fields: ["staffEmail", "trainingName", "provider", "completedDate", "expiryDate"],
+    columns: ["staffEmail", "trainingName", "provider", "completedDate", "expiryDate"],
+    requiredColumns: ["staffEmail", "trainingName", "completedDate"],
+    notes: "Dates must be in YYYY-MM-DD format. expiryDate is optional.",
+    sampleRows: [
+      ["alice.mensah@ndma.gov.gh", "Fire Safety", "Safety Pro Ltd", "2025-01-15", "2026-01-15"],
+      ["bob.asante@ndma.gov.gh", "First Aid Level 2", "Red Cross", "2025-03-10", "2027-03-10"],
+    ],
   },
   {
+    id: "contracts",
     title: "Contracts",
     description: "Import contract details including start/end dates and contract type.",
     icon: FileText,
-    fields: ["staffEmail", "contractType", "startDate", "endDate"],
+    columns: ["staffEmail", "contractType", "startDate", "endDate"],
+    requiredColumns: ["staffEmail", "contractType", "startDate", "endDate"],
+    notes: "Dates must be in YYYY-MM-DD format.",
+    sampleRows: [
+      ["alice.mensah@ndma.gov.gh", "permanent", "2023-01-01", "2026-12-31"],
+      ["bob.asante@ndma.gov.gh", "fixed_term", "2025-01-01", "2025-12-31"],
+    ],
   },
   {
+    id: "work",
     title: "Work Items",
-    description: "Bulk import work register items with assignees and due dates.",
+    description: "Bulk import work register items with type and priority.",
     icon: ClipboardList,
-    fields: ["title", "type", "priority", "assigneeEmail", "dueDate"],
+    columns: ["title", "type", "priority"],
+    requiredColumns: ["title", "type", "priority"],
+    notes:
+      "type: routine | project | external_request | ad_hoc — priority: low | medium | high | critical",
+    sampleRows: [
+      ["Quarterly server audit", "routine", "medium"],
+      ["Network upgrade Phase 2", "project", "high"],
+    ],
   },
 ];
 
+// ── Step indicator ──────────────────────────────────────────────────────────
+
+const STEPS = ["Select Type", "Upload File", "Preview & Validate", "Import"];
+
+function StepIndicator({ current }: { current: number }) {
+  return (
+    <div className="flex items-center gap-0 mb-8">
+      {STEPS.map((label, i) => (
+        <div key={label} className="flex items-center">
+          <div className="flex flex-col items-center gap-1">
+            <div
+              className={`size-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors ${
+                i < current
+                  ? "bg-primary border-primary text-primary-foreground"
+                  : i === current
+                    ? "border-primary text-primary bg-background"
+                    : "border-muted text-muted-foreground bg-background"
+              }`}
+            >
+              {i < current ? <CheckCircle className="size-4" /> : i + 1}
+            </div>
+            <span
+              className={`text-xs whitespace-nowrap ${
+                i === current ? "text-foreground font-medium" : "text-muted-foreground"
+              }`}
+            >
+              {label}
+            </span>
+          </div>
+          {i < STEPS.length - 1 && (
+            <div
+              className={`h-px w-12 sm:w-20 mx-1 mb-4 transition-colors ${
+                i < current ? "bg-primary" : "bg-muted"
+              }`}
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── CSV parser ─────────────────────────────────────────────────────────────
+
+function parseCsvLine(line: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === "," && !inQuotes) {
+      result.push(current.trim());
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
+function parseCsv(raw: string): { headers: string[]; rows: ParsedRow[] } {
+  const lines = raw
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
+  if (lines.length === 0) return { headers: [], rows: [] };
+  const headers = parseCsvLine(lines[0]);
+  const rows: ParsedRow[] = lines.slice(1).map((line) => {
+    const values = parseCsvLine(line);
+    const row: ParsedRow = {};
+    headers.forEach((h, i) => {
+      row[h] = values[i] ?? "";
+    });
+    return row;
+  });
+  return { headers, rows };
+}
+
+// ── Validator ───────────────────────────────────────────────────────────────
+
+function validateRows(rows: ParsedRow[], target: ImportTarget): ValidatedRow[] {
+  return rows.map((row) => {
+    const errors: string[] = [];
+    for (const col of target.requiredColumns) {
+      if (!row[col] || row[col].trim() === "") {
+        errors.push(`Missing required field: ${col}`);
+      }
+    }
+    return { data: row, errors };
+  });
+}
+
+// ── Main component ─────────────────────────────────────────────────────────
+
 function ImportPage() {
+  const [step, setStep] = useState(0);
+  const [selectedType, setSelectedType] = useState<ImportTarget | null>(null);
+  const [rawCsv, setRawCsv] = useState<string>("");
+  const [parsedHeaders, setParsedHeaders] = useState<string[]>([]);
+  const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
+  const [validatedRows, setValidatedRows] = useState<ValidatedRow[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [fileName, setFileName] = useState<string>("");
+  const [importing, setImporting] = useState(false);
+  const [importDone, setImportDone] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Step 1: select type ────────────────────────────────────────────────
+
+  const handleTypeSelect = (target: ImportTarget) => {
+    setSelectedType(target);
+    // Reset downstream state when type changes
+    setRawCsv("");
+    setParsedHeaders([]);
+    setParsedRows([]);
+    setValidatedRows([]);
+    setFileName("");
+    setImportDone(false);
+  };
+
+  // ── Step 2: file handling ──────────────────────────────────────────────
+
+  const processCsv = useCallback(
+    (content: string, name: string) => {
+      const { headers, rows } = parseCsv(content);
+      setRawCsv(content);
+      setFileName(name);
+      setParsedHeaders(headers);
+      setParsedRows(rows);
+    },
+    []
+  );
+
+  const handleFileChange = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      processCsv(content, file.name);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith(".csv")) {
+      handleFileChange(file);
+    } else {
+      toast.error("Please drop a CSV file");
+    }
+  };
+
+  const loadSampleData = () => {
+    if (!selectedType) return;
+    const header = selectedType.columns.join(",");
+    const rows = selectedType.sampleRows.map((r) => r.join(",")).join("\n");
+    const csv = `${header}\n${rows}`;
+    processCsv(csv, "sample-data.csv");
+  };
+
+  // ── Step 3: validate ───────────────────────────────────────────────────
+
+  const handleProceedToValidate = () => {
+    if (!selectedType) return;
+    const validated = validateRows(parsedRows, selectedType);
+    setValidatedRows(validated);
+    setStep(2);
+  };
+
+  // ── Step 4: import ─────────────────────────────────────────────────────
+
+  const handleImport = async () => {
+    setImporting(true);
+    // Simulate async operation
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    setImporting(false);
+    setImportDone(true);
+    const validCount = validatedRows.filter((r) => r.errors.length === 0).length;
+    toast.success(
+      `Import feature requires server setup — validated ${validCount} rows successfully`
+    );
+  };
+
+  const resetWizard = () => {
+    setStep(0);
+    setSelectedType(null);
+    setRawCsv("");
+    setParsedHeaders([]);
+    setParsedRows([]);
+    setValidatedRows([]);
+    setFileName("");
+    setImporting(false);
+    setImportDone(false);
+  };
+
+  const validCount = validatedRows.filter((r) => r.errors.length === 0).length;
+  const errorCount = validatedRows.filter((r) => r.errors.length > 0).length;
+  const allValid = validatedRows.length > 0 && errorCount === 0;
+
+  // ── Missing columns check ──────────────────────────────────────────────
+
+  const getMissingColumns = () => {
+    if (!selectedType || parsedHeaders.length === 0) return [];
+    return selectedType.requiredColumns.filter((col) => !parsedHeaders.includes(col));
+  };
+  const missingColumns = getMissingColumns();
+
   return (
     <>
       <Header fixed>
@@ -53,47 +346,361 @@ function ImportPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight">Import Data</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Bulk import staff, training records, contracts, and work items from CSV or Excel.
+            Bulk import staff, training records, contracts, and work items from CSV.
           </p>
         </div>
 
-        <div className="mb-6 rounded-md border border-dashed p-8 text-center">
-          <FileSpreadsheet className="size-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm font-medium">Import wizard coming in Phase K</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            The import wizard will support CSV/XLSX upload with column mapping, validation preview, and row-by-row error reporting.
-          </p>
-        </div>
+        <StepIndicator current={step} />
 
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          Supported Import Types
-        </h2>
+        {/* ── Step 0: Select type ── */}
+        {step === 0 && (
+          <div className="space-y-4">
+            <h2 className="text-base font-semibold">What would you like to import?</h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {IMPORT_TARGETS.map((target) => (
+                <Card
+                  key={target.id}
+                  onClick={() => handleTypeSelect(target)}
+                  className={`cursor-pointer transition-all hover:border-primary/60 ${
+                    selectedType?.id === target.id
+                      ? "border-primary ring-2 ring-primary/20"
+                      : ""
+                  }`}
+                >
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-md bg-muted p-2">
+                        <target.icon className="size-4 text-foreground" />
+                      </div>
+                      <CardTitle className="text-sm">{target.title}</CardTitle>
+                      {selectedType?.id === target.id && (
+                        <CheckCircle className="size-4 text-primary ml-auto" />
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-xs mb-2">
+                      {target.description}
+                    </CardDescription>
+                    <p className="text-xs text-muted-foreground mb-1.5">Required columns:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {target.columns.map((col) => (
+                        <span
+                          key={col}
+                          className="font-mono text-[10px] bg-muted rounded px-1.5 py-0.5"
+                        >
+                          {col}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-2 italic">
+                      {target.notes}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {IMPORT_TARGETS.map((target) => (
-            <Card key={target.title} className="opacity-70">
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-2">
-                  <target.icon className="size-4 text-muted-foreground" />
-                  <CardTitle className="text-sm">{target.title}</CardTitle>
+            <div className="flex justify-end mt-6">
+              <Button disabled={!selectedType} onClick={() => setStep(1)}>
+                Next
+                <ChevronRight className="size-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 1: Upload file ── */}
+        {step === 1 && selectedType && (
+          <div className="space-y-4 max-w-xl">
+            <div className="flex items-center gap-2 mb-2">
+              <selectedType.icon className="size-4 text-muted-foreground" />
+              <span className="font-medium text-sm">Importing: {selectedType.title}</span>
+            </div>
+
+            {/* Drag-drop zone */}
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`rounded-lg border-2 border-dashed p-10 text-center cursor-pointer transition-colors ${
+                isDragging
+                  ? "border-primary bg-primary/5"
+                  : "border-muted hover:border-primary/50 hover:bg-muted/30"
+              }`}
+            >
+              <FileSpreadsheet className="size-10 text-muted-foreground mx-auto mb-3" />
+              {fileName ? (
+                <div>
+                  <p className="text-sm font-medium text-foreground">{fileName}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {parsedRows.length} data rows found
+                  </p>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-muted-foreground mb-2">{target.description}</p>
-                <div className="flex flex-wrap gap-1">
-                  {target.fields.map((field) => (
-                    <span
-                      key={field}
-                      className="font-mono text-[10px] bg-muted rounded px-1.5 py-0.5"
+              ) : (
+                <div>
+                  <p className="text-sm font-medium">Drop your CSV file here</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    or click to browse — .csv files only
+                  </p>
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileChange(file);
+                }}
+              />
+            </div>
+
+            {/* Sample data link */}
+            <div className="text-center">
+              <button
+                onClick={loadSampleData}
+                className="text-xs text-primary underline-offset-2 hover:underline"
+                type="button"
+              >
+                Use sample data (2 example rows)
+              </button>
+            </div>
+
+            {/* File info */}
+            {parsedRows.length > 0 && (
+              <div className="rounded-md border bg-muted/30 p-3 text-sm">
+                <p className="font-medium">{fileName}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {parsedRows.length} data rows detected — headers:{" "}
+                  {parsedHeaders.join(", ")}
+                </p>
+                {missingColumns.length > 0 && (
+                  <div className="mt-2 flex items-start gap-1.5 text-xs text-red-600 dark:text-red-400">
+                    <AlertCircle className="size-3.5 mt-0.5 shrink-0" />
+                    <span>Missing required columns: {missingColumns.join(", ")}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex justify-between mt-6">
+              <Button variant="outline" onClick={() => setStep(0)}>
+                <ChevronLeft className="size-4 mr-1" />
+                Back
+              </Button>
+              <Button
+                disabled={parsedRows.length === 0 || missingColumns.length > 0}
+                onClick={handleProceedToValidate}
+              >
+                Preview & Validate
+                <ChevronRight className="size-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 2: Preview & Validate ── */}
+        {step === 2 && selectedType && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold">Preview & Validate</h2>
+              <div className="flex items-center gap-3 text-sm">
+                <span className="text-green-600 dark:text-green-400 font-medium">
+                  {validCount} rows valid
+                </span>
+                {errorCount > 0 && (
+                  <span className="text-red-600 dark:text-red-400 font-medium">
+                    {errorCount} rows with errors
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {!allValid && (
+              <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/20 px-3 py-2 text-sm text-red-700 dark:text-red-400">
+                <AlertCircle className="size-4 shrink-0" />
+                Fix all row errors before importing. Required fields must not be empty.
+              </div>
+            )}
+
+            {allValid && (
+              <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/20 px-3 py-2 text-sm text-green-700 dark:text-green-400">
+                <CheckCircle className="size-4 shrink-0" />
+                All {validCount} rows passed validation. Ready to import.
+              </div>
+            )}
+
+            <div className="rounded-md border overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-8">#</TableHead>
+                    {parsedHeaders.map((h) => (
+                      <TableHead key={h}>{h}</TableHead>
+                    ))}
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {validatedRows.slice(0, 5).map((row, i) => (
+                    <TableRow
+                      key={i}
+                      className={
+                        row.errors.length > 0
+                          ? "bg-red-50/50 dark:bg-red-950/10"
+                          : ""
+                      }
                     >
-                      {field}
-                    </span>
+                      <TableCell className="text-muted-foreground text-xs">
+                        {i + 1}
+                      </TableCell>
+                      {parsedHeaders.map((h) => (
+                        <TableCell key={h} className="text-sm">
+                          {row.data[h] || (
+                            <span className="text-muted-foreground italic">—</span>
+                          )}
+                        </TableCell>
+                      ))}
+                      <TableCell>
+                        {row.errors.length === 0 ? (
+                          <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                            <CheckCircle className="size-3" />
+                            Valid
+                          </span>
+                        ) : (
+                          <div className="flex flex-col gap-1">
+                            {row.errors.map((err, j) => (
+                              <span
+                                key={j}
+                                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+                              >
+                                <AlertCircle className="size-3 shrink-0" />
+                                {err}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
                   ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {validatedRows.length > 5 && (
+              <p className="text-xs text-muted-foreground text-center">
+                Showing first 5 of {validatedRows.length} rows
+              </p>
+            )}
+
+            <div className="flex justify-between mt-6">
+              <Button variant="outline" onClick={() => setStep(1)}>
+                <ChevronLeft className="size-4 mr-1" />
+                Back
+              </Button>
+              <Button disabled={!allValid} onClick={() => setStep(3)}>
+                Proceed to Import
+                <ChevronRight className="size-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 3: Import ── */}
+        {step === 3 && selectedType && (
+          <div className="space-y-4 max-w-lg">
+            {!importDone ? (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Confirm Import</CardTitle>
+                    <CardDescription>
+                      You are about to import{" "}
+                      <span className="font-semibold text-foreground">{validCount} rows</span>{" "}
+                      of{" "}
+                      <span className="font-semibold text-foreground">
+                        {selectedType.title}
+                      </span>{" "}
+                      data.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="rounded-md bg-muted/50 p-3 text-sm space-y-1.5">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Import type</span>
+                        <span className="font-medium">{selectedType.title}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Total rows</span>
+                        <span className="font-medium">{validatedRows.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Valid rows</span>
+                        <span className="font-medium text-green-600 dark:text-green-400">
+                          {validCount}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Source file</span>
+                        <span className="font-medium text-xs truncate max-w-[160px]">
+                          {fileName}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+                      <AlertCircle className="size-3.5 mt-0.5 shrink-0" />
+                      This action will create new records. Duplicates may need manual review after import.
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="flex justify-between">
+                  <Button variant="outline" onClick={() => setStep(2)}>
+                    <ChevronLeft className="size-4 mr-1" />
+                    Back
+                  </Button>
+                  <Button onClick={handleImport} disabled={importing}>
+                    {importing ? (
+                      <>
+                        <span className="animate-spin mr-2">⏳</span>
+                        Importing…
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="size-4 mr-1" />
+                        Confirm Import
+                      </>
+                    )}
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </>
+            ) : (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <CheckCircle className="size-12 text-green-500 mx-auto mb-4" />
+                  <h2 className="text-lg font-semibold mb-1">Import Complete</h2>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Successfully validated{" "}
+                    <span className="font-semibold text-foreground">{validCount}</span> rows
+                    of {selectedType.title}.
+                  </p>
+                  <p className="text-xs text-muted-foreground mb-6">
+                    Backend integration is pending — records have been validated and are ready
+                    for submission once the import API is connected.
+                  </p>
+                  <Button onClick={resetWizard}>Import Another</Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
       </Main>
     </>
   );

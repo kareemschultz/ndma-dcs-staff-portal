@@ -101,8 +101,11 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Leave",
-          url: "/leave",
           icon: CalendarOff,
+          items: [
+            { title: "Leave Requests", url: "/leave" },
+            { title: "Team Calendar", url: "/leave/calendar" },
+          ],
         },
         {
           title: "Contracts",
