@@ -12,7 +12,7 @@ import {
   serviceOwners,
   syncJobs,
 } from "@ndma-dcs-staff-portal/db";
-import { and, eq, isNull, isNotNull, lte, sql } from "drizzle-orm";
+import { and, eq, isNull, isNotNull, lte } from "drizzle-orm";
 
 import { protectedProcedure } from "../index";
 import { logAudit } from "../lib/audit";
@@ -124,7 +124,7 @@ export const accessRouter = {
         if (input.isStale !== undefined)
           conditions.push(eq(platformAccounts.isStale, input.isStale));
         if (input.reviewDue) {
-          const today = new Date().toISOString().split("T")[0];
+          const today = new Date().toISOString().slice(0, 10);
           conditions.push(
             and(
               isNotNull(platformAccounts.reviewDueDate),
@@ -194,7 +194,7 @@ export const accessRouter = {
       .handler(async ({ input }) => {
         const cutoff = new Date();
         cutoff.setDate(cutoff.getDate() + input.withinDays);
-        const cutoffStr = cutoff.toISOString().split("T")[0];
+        const cutoffStr = cutoff.toISOString().slice(0, 10);
 
         return db.query.platformAccounts.findMany({
           where: and(
@@ -284,6 +284,7 @@ export const accessRouter = {
             createdByUserId: context.session.user.id,
           })
           .returning();
+        if (!account) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,
@@ -391,11 +392,11 @@ export const accessRouter = {
     markReviewed: protectedProcedure
       .input(z.object({ id: z.string() }))
       .handler(async ({ input, context }) => {
-        const today = new Date().toISOString().split("T")[0];
+        const today = new Date().toISOString().slice(0, 10);
         // Set next review date 90 days out
         const nextReview = new Date();
         nextReview.setDate(nextReview.getDate() + 90);
-        const nextReviewStr = nextReview.toISOString().split("T")[0];
+        const nextReviewStr = nextReview.toISOString().slice(0, 10);
 
         const [updated] = await db
           .update(platformAccounts)
@@ -484,6 +485,7 @@ export const accessRouter = {
           .insert(externalContacts)
           .values({ ...input, createdByUserId: context.session.user.id })
           .returning();
+        if (!contact) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,
@@ -604,6 +606,7 @@ export const accessRouter = {
       )
       .handler(async ({ input, context }) => {
         const [group] = await db.insert(accessGroups).values(input).returning();
+        if (!group) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,
@@ -730,6 +733,7 @@ export const accessRouter = {
             set: { removedAt: null, addedByUserId: context.session.user.id },
           })
           .returning();
+        if (!membership) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,
@@ -836,7 +840,7 @@ export const accessRouter = {
     }),
 
     getOverdue: protectedProcedure.handler(async () => {
-      const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toISOString().slice(0, 10);
       return db.query.accessReviews.findMany({
         where: and(
           eq(accessReviews.status, "pending"),
@@ -872,6 +876,7 @@ export const accessRouter = {
             reviewerId: input.reviewerId ?? context.session.user.id,
           })
           .returning();
+        if (!review) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,
@@ -998,6 +1003,7 @@ export const accessRouter = {
           .insert(platformIntegrations)
           .values({ ...input, status: "pending" })
           .returning();
+        if (!integration) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,
@@ -1075,6 +1081,7 @@ export const accessRouter = {
             status: "pending",
           })
           .returning();
+        if (!job) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,
@@ -1243,6 +1250,7 @@ export const accessRouter = {
             set: { role: input.role },
           })
           .returning();
+        if (!owner) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,

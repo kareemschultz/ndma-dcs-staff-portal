@@ -32,6 +32,7 @@ export const leaveRouter = {
       )
       .handler(async ({ input, context }) => {
         const [type] = await db.insert(leaveTypes).values(input).returning();
+        if (!type) throw new ORPCError("INTERNAL_SERVER_ERROR");
         await logAudit({
           actorId: context.session.user.id,
           actorName: context.session.user.name,
@@ -118,6 +119,7 @@ export const leaveRouter = {
             },
           })
           .returning();
+        if (!balance) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,
@@ -187,6 +189,7 @@ export const leaveRouter = {
           .insert(leaveRequests)
           .values({ ...input, reason: input.reason ?? null })
           .returning();
+        if (!request) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,

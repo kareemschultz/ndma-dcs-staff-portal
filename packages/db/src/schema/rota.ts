@@ -3,13 +3,13 @@ import {
   boolean,
   date,
   index,
-  integer,
   jsonb,
   pgEnum,
   pgTable,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+
 
 import { user } from "./auth";
 import { staffProfiles } from "./staff";

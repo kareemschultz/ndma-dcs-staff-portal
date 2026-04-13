@@ -14,7 +14,7 @@
  *   - Accounts returned but with isActive=false → ensure local status="disabled"
  */
 
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import {
   db,
   platformAccounts,
@@ -23,7 +23,6 @@ import {
   reconciliationIssues,
 } from "@ndma-dcs-staff-portal/db";
 
-import type { ExternalAccount } from "./types";
 import { ipamConnector } from "./connectors/ipam";
 import { ldapConnector } from "./connectors/ldap";
 

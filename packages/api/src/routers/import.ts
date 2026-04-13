@@ -1,3 +1,4 @@
+import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import {
   db,
@@ -73,6 +74,7 @@ async function findOrCreateDepartment(name: string): Promise<string> {
     .insert(departments)
     .values({ name, code })
     .returning();
+  if (!dept) throw new Error("Failed to create department");
   return dept.id;
 }
 
@@ -81,7 +83,7 @@ async function findOrCreateDepartment(name: string): Promise<string> {
 async function processStaffRow(
   rawRow: Record<string, string>,
   rowIdx: number,
-  createdByUserId: string,
+  _createdByUserId: string,
 ): Promise<{ success: boolean; error?: { row: number; field?: string; message: string } }> {
   const parse = staffRowSchema.safeParse({
     name: rawRow.name,
@@ -127,6 +129,7 @@ async function processStaffRow(
       updatedAt: new Date(),
     })
     .returning();
+  if (!newUser) throw new Error("Failed to create user");
 
   // Create staff profile
   await db.insert(staffProfiles).values({
@@ -268,12 +271,14 @@ export const importRouter = {
           createdByUserId: context.session.user.id,
         })
         .returning();
+      if (!job) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       const errors: { row: number; field?: string; message: string }[] = [];
       let successCount = 0;
 
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
+        if (!row) continue;
         let result: { success: boolean; error?: { row: number; field?: string; message: string } };
 
         try {

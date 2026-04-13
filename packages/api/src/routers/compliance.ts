@@ -58,6 +58,7 @@ export const complianceRouter = {
             provider: input.provider ?? null,
           })
           .returning();
+        if (!record) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,
@@ -169,6 +170,7 @@ export const complianceRouter = {
             size: input.size ?? null,
           })
           .returning();
+        if (!record) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,
@@ -269,6 +271,7 @@ export const complianceRouter = {
           .insert(policyAcknowledgements)
           .values(input)
           .returning();
+        if (!record) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,
@@ -292,8 +295,7 @@ export const complianceRouter = {
     .handler(async ({ input }) => {
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() + input.withinDays);
-      const cutoffStr = cutoff.toISOString().split("T")[0];
-      const today = new Date().toISOString().split("T")[0];
+      const cutoffStr = cutoff.toISOString().slice(0, 10);
 
       const [training, ppe] = await Promise.all([
         db.query.trainingRecords.findMany({

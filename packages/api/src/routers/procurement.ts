@@ -116,6 +116,7 @@ export const procurementRouter = {
           createdById: context.session.user.id,
         })
         .returning();
+      if (!pr) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       // Insert line items
       await db.insert(prLineItems).values(
@@ -350,7 +351,7 @@ export const procurementRouter = {
   markReceived: protectedProcedure
     .input(z.object({ id: z.string(), notes: z.string().optional() }))
     .handler(async ({ input, context }) => {
-      const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toISOString().slice(0, 10);
       const [updated] = await db
         .update(purchaseRequisitions)
         .set({

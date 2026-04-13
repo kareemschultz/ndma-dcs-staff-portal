@@ -11,7 +11,6 @@ import {
   purchaseRequisitions,
   auditLogs,
   onCallSchedules,
-  onCallAssignments,
 } from "@ndma-dcs-staff-portal/db";
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 
@@ -19,8 +18,7 @@ import { protectedProcedure } from "../index";
 
 export const dashboardRouter = {
   main: protectedProcedure.handler(async () => {
-    const today = new Date().toISOString().split("T")[0];
-    const now = new Date();
+    const today = new Date().toISOString().slice(0, 10);
 
     const [
       activeStaffCount,
@@ -109,7 +107,7 @@ export const dashboardRouter = {
       (() => {
         const cutoff = new Date();
         cutoff.setDate(cutoff.getDate() + 60);
-        const cutoffStr = cutoff.toISOString().split("T")[0];
+        const cutoffStr = cutoff.toISOString().slice(0, 10);
         return db
           .select({ count: sql<number>`count(*)` })
           .from(contracts)
@@ -165,7 +163,7 @@ export const dashboardRouter = {
   }),
 
   opsReadiness: protectedProcedure.handler(async () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().slice(0, 10);
 
     const [onCallCoverage, unresolvedIncidents, overdueWork, overdueChanges] =
       await Promise.all([
