@@ -37,44 +37,144 @@
 
 ## Screenshots
 
-> To view the live app, run `bun run dev` — the web app starts at **http://localhost:5173**.
-> Toggle between Light and Dark mode via the theme switcher in the user menu (top-right of the sidebar).
+> All screenshots captured at 1440×900 from a live dev session. Light mode (left) · Dark mode (right).
 
-| Page | Route | Description |
-|------|-------|-------------|
-| Dashboard | `/` | KPI cards, ops readiness indicator, workload imbalance widget, active cycles progress, recent activity feed |
-| Ops Readiness | `/ops-readiness` | Service health status grid, on-call coverage, recent incidents, staffing availability |
-| Work Register | `/work` | 5-view work item register: List · Kanban · Grid · Calendar · Analytics; per-engineer bar chart |
-| Work Workload | `/work/workload` | Per-engineer workload cards with load score, colour-coded overload/low-load grouping |
-| Cycles | `/cycles` | Sprint/cycle board; create cycles, link work items, track progress |
-| Incidents | `/incidents` | Active and historical incidents, severity badges, MTTR stats |
-| On-Call Roster | `/rota` | Weekly schedule grid; assign/swap/publish; escalation policy editor |
-| Rota Planner | `/rota/planner` | Drag-and-drop weekly planner for next cycle |
-| Temp Changes | `/changes` | Temporary technical changes with remove-by dates; overdue auto-flagging |
-| Procurement | `/procurement` | PR list with status pipeline badges; pending approvals queue for managers |
-| New PR | `/procurement/new` | Multi-step PR creation form with line items |
-| Staff Directory | `/staff` | Staff cards with status indicators; full profile modal |
-| Staff Profile | `/staff/:staffId` | Tabbed profile: Overview · Contracts · Training · PPE · On-Call · Leave |
-| Leave | `/leave` | Leave requests list; team calendar heatmap |
-| New Leave | `/leave/new` | Leave request form with balance display |
-| Contracts | `/contracts` | Contract register with expiry tracking |
-| Appraisals | `/appraisals` | Appraisal records with rating distribution |
-| Service Registry | `/services` | Platform services catalogue with runbook/docs links |
-| Platform Access | `/access` | Identity governance — Accounts · VPN · Groups · Contacts · Integrations · Reconciliation · Reviews tabs |
-| Compliance | `/compliance/training` | Training certification records with expiry alerts |
-| PPE | `/compliance/ppe` | PPE issuance records per staff member |
-| Policy Acks | `/compliance/items` | Policy acknowledgement tracking |
-| Reports | `/reports` | Cross-module reporting dashboard |
-| Audit Log | `/audit` | Searchable append-only audit trail with before/after diff |
-| Import Data | `/import` | CSV/XLSX staff data import with dry-run preview |
-| Notifications | `/notifications` | In-app notification centre; mark-read, dismiss |
-| Settings | `/settings/general` | System-wide configuration |
-| Departments | `/settings/departments` | Department management |
-| Leave Types | `/settings/leave-types` | Configurable leave type catalogue |
-| Escalation | `/settings/escalation` | Escalation policy and step editor |
-| Roles | `/settings/roles` | RBAC role viewer |
-| Automation | `/settings/automation` | Automation rules engine — create rules, view fire logs |
-| Documentation | `http://localhost:4000` | Fumadocs MDX wiki (separate Next.js app) |
+### Dashboard
+<table><tr>
+<td><img src="docs/screenshots/light/01-dashboard.png" alt="Dashboard – Light" /></td>
+<td><img src="docs/screenshots/dark/01-dashboard.png" alt="Dashboard – Dark" /></td>
+</tr></table>
+
+### Work Register
+<table><tr>
+<td><img src="docs/screenshots/light/03-work-list.png" alt="Work Register – Light" /></td>
+<td><img src="docs/screenshots/dark/03-work-list.png" alt="Work Register – Dark" /></td>
+</tr></table>
+
+### Workload View
+<table><tr>
+<td><img src="docs/screenshots/light/04-work-workload.png" alt="Workload – Light" /></td>
+<td><img src="docs/screenshots/dark/04-work-workload.png" alt="Workload – Dark" /></td>
+</tr></table>
+
+### On-Call Roster
+<table><tr>
+<td><img src="docs/screenshots/light/07-rota.png" alt="Roster – Light" /></td>
+<td><img src="docs/screenshots/dark/07-rota.png" alt="Roster – Dark" /></td>
+</tr></table>
+
+### Incidents
+<table><tr>
+<td><img src="docs/screenshots/light/06-incidents.png" alt="Incidents – Light" /></td>
+<td><img src="docs/screenshots/dark/06-incidents.png" alt="Incidents – Dark" /></td>
+</tr></table>
+
+### Platform Access & Identity Governance
+<table><tr>
+<td><img src="docs/screenshots/light/15-access.png" alt="Access – Light" /></td>
+<td><img src="docs/screenshots/dark/15-access.png" alt="Access – Dark" /></td>
+</tr></table>
+
+### Staff Directory
+<table><tr>
+<td><img src="docs/screenshots/light/10-staff.png" alt="Staff – Light" /></td>
+<td><img src="docs/screenshots/dark/10-staff.png" alt="Staff – Dark" /></td>
+</tr></table>
+
+### Procurement
+<table><tr>
+<td><img src="docs/screenshots/light/09-procurement.png" alt="Procurement – Light" /></td>
+<td><img src="docs/screenshots/dark/09-procurement.png" alt="Procurement – Dark" /></td>
+</tr></table>
+
+### Cycles / Sprint Board
+<table><tr>
+<td><img src="docs/screenshots/light/05-cycles.png" alt="Cycles – Light" /></td>
+<td><img src="docs/screenshots/dark/05-cycles.png" alt="Cycles – Dark" /></td>
+</tr></table>
+
+### Ops Readiness
+<table><tr>
+<td><img src="docs/screenshots/light/02-ops-readiness.png" alt="Ops Readiness – Light" /></td>
+<td><img src="docs/screenshots/dark/02-ops-readiness.png" alt="Ops Readiness – Dark" /></td>
+</tr></table>
+
+### Automation Rules Engine
+<table><tr>
+<td><img src="docs/screenshots/light/22-settings-automation.png" alt="Automation – Light" /></td>
+<td><img src="docs/screenshots/dark/22-settings-automation.png" alt="Automation – Dark" /></td>
+</tr></table>
+
+### Audit Log
+<table><tr>
+<td><img src="docs/screenshots/light/19-audit.png" alt="Audit – Light" /></td>
+<td><img src="docs/screenshots/dark/19-audit.png" alt="Audit – Dark" /></td>
+</tr></table>
+
+<details>
+<summary>More pages (Leave · Contracts · Appraisals · Services · Compliance · Reports · Settings)</summary>
+
+### Leave
+<table><tr>
+<td><img src="docs/screenshots/light/11-leave.png" alt="Leave – Light" /></td>
+<td><img src="docs/screenshots/dark/11-leave.png" alt="Leave – Dark" /></td>
+</tr></table>
+
+### Contracts
+<table><tr>
+<td><img src="docs/screenshots/light/12-contracts.png" alt="Contracts – Light" /></td>
+<td><img src="docs/screenshots/dark/12-contracts.png" alt="Contracts – Dark" /></td>
+</tr></table>
+
+### Appraisals
+<table><tr>
+<td><img src="docs/screenshots/light/13-appraisals.png" alt="Appraisals – Light" /></td>
+<td><img src="docs/screenshots/dark/13-appraisals.png" alt="Appraisals – Dark" /></td>
+</tr></table>
+
+### Service Registry
+<table><tr>
+<td><img src="docs/screenshots/light/14-services.png" alt="Services – Light" /></td>
+<td><img src="docs/screenshots/dark/14-services.png" alt="Services – Dark" /></td>
+</tr></table>
+
+### Compliance — Training
+<table><tr>
+<td><img src="docs/screenshots/light/16-compliance-training.png" alt="Compliance Training – Light" /></td>
+<td><img src="docs/screenshots/dark/16-compliance-training.png" alt="Compliance Training – Dark" /></td>
+</tr></table>
+
+### Compliance — PPE
+<table><tr>
+<td><img src="docs/screenshots/light/17-compliance-ppe.png" alt="Compliance PPE – Light" /></td>
+<td><img src="docs/screenshots/dark/17-compliance-ppe.png" alt="Compliance PPE – Dark" /></td>
+</tr></table>
+
+### Reports
+<table><tr>
+<td><img src="docs/screenshots/light/18-reports.png" alt="Reports – Light" /></td>
+<td><img src="docs/screenshots/dark/18-reports.png" alt="Reports – Dark" /></td>
+</tr></table>
+
+### Temp Changes
+<table><tr>
+<td><img src="docs/screenshots/light/08-temp-changes.png" alt="Temp Changes – Light" /></td>
+<td><img src="docs/screenshots/dark/08-temp-changes.png" alt="Temp Changes – Dark" /></td>
+</tr></table>
+
+### Notifications
+<table><tr>
+<td><img src="docs/screenshots/light/20-notifications.png" alt="Notifications – Light" /></td>
+<td><img src="docs/screenshots/dark/20-notifications.png" alt="Notifications – Dark" /></td>
+</tr></table>
+
+### Settings — General
+<table><tr>
+<td><img src="docs/screenshots/light/21-settings-general.png" alt="Settings – Light" /></td>
+<td><img src="docs/screenshots/dark/21-settings-general.png" alt="Settings – Dark" /></td>
+</tr></table>
+
+</details>
 
 ---
 
