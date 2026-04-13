@@ -1,0 +1,195 @@
+{
+  "timestamp": "2026-04-13T11:24:09.814Z",
+  "results": [
+    {
+      "slug": "dashboard",
+      "url": "http://localhost:3001/",
+      "status": "ok"
+    },
+    {
+      "slug": "ops-readiness",
+      "url": "http://localhost:3001/ops-readiness",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "work",
+      "url": "http://localhost:3001/work",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "cycles",
+      "url": "http://localhost:3001/cycles",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "incidents",
+      "url": "http://localhost:3001/incidents",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "rota",
+      "url": "http://localhost:3001/rota",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "changes",
+      "url": "http://localhost:3001/changes",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "procurement",
+      "url": "http://localhost:3001/procurement",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "services",
+      "url": "http://localhost:3001/services",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "access",
+      "url": "http://localhost:3001/access",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "staff",
+      "url": "http://localhost:3001/staff",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "leave",
+      "url": "http://localhost:3001/leave",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "contracts",
+      "url": "http://localhost:3001/contracts",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "appraisals",
+      "url": "http://localhost:3001/appraisals",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "compliance-training",
+      "url": "http://localhost:3001/compliance/training",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "compliance-ppe",
+      "url": "http://localhost:3001/compliance/ppe",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "compliance-items",
+      "url": "http://localhost:3001/compliance/items",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "analytics",
+      "url": "http://localhost:3001/analytics",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "reports",
+      "url": "http://localhost:3001/reports",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "audit",
+      "url": "http://localhost:3001/audit",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "import",
+      "url": "http://localhost:3001/import",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "notifications",
+      "url": "http://localhost:3001/notifications",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "settings-general",
+      "url": "http://localhost:3001/settings/general",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "settings-departments",
+      "url": "http://localhost:3001/settings/departments",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "settings-leave-types",
+      "url": "http://localhost:3001/settings/leave-types",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "settings-escalation",
+      "url": "http://localhost:3001/settings/escalation",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "settings-roles",
+      "url": "http://localhost:3001/settings/roles",
+      "status": "ok",
+      "httpStatus": 200
+    }
+  ],
+  "consoleErrors": {
+    "dashboard": [],
+    "ops-readiness": [],
+    "work": [],
+    "cycles": [],
+    "incidents": [],
+    "rota": [],
+    "changes": [],
+    "procurement": [],
+    "services": [],
+    "access": [],
+    "staff": [],
+    "leave": [],
+    "contracts": [],
+    "appraisals": [],
+    "compliance-training": [],
+    "compliance-ppe": [],
+    "compliance-items": [],
+    "analytics": [],
+    "reports": [],
+    "audit": [],
+    "import": [],
+    "notifications": [],
+    "settings-general": [],
+    "settings-departments": [],
+    "settings-leave-types": [],
+    "settings-escalation": [],
+    "settings-roles": []
+  }
+}

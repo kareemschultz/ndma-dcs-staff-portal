@@ -1,7 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { HeadContent, Outlet, createRootRouteWithContext } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { Toaster } from "@ndma-dcs-staff-portal/ui/components/sonner";
 
 import { ThemeProvider } from "@/components/theme-provider";
@@ -58,12 +56,6 @@ function RootComponent() {
         <Outlet />
         <Toaster richColors position="top-right" />
       </ThemeProvider>
-      {import.meta.env.MODE === "development" && (
-        <>
-          <TanStackRouterDevtools position="bottom-right" />
-          <ReactQueryDevtools buttonPosition="bottom-left" />
-        </>
-      )}
     </>
   );
 }
