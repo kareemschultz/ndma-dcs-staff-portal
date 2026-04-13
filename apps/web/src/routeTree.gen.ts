@@ -38,6 +38,7 @@ import { Route as AuthenticatedSettingsLeaveTypesRouteImport } from './routes/_a
 import { Route as AuthenticatedSettingsGeneralRouteImport } from './routes/_authenticated/settings/general'
 import { Route as AuthenticatedSettingsEscalationRouteImport } from './routes/_authenticated/settings/escalation'
 import { Route as AuthenticatedSettingsDepartmentsRouteImport } from './routes/_authenticated/settings/departments'
+import { Route as AuthenticatedSettingsAutomationRouteImport } from './routes/_authenticated/settings/automation'
 import { Route as AuthenticatedRotaSwapsRouteImport } from './routes/_authenticated/rota/swaps'
 import { Route as AuthenticatedRotaPlannerRouteImport } from './routes/_authenticated/rota/planner'
 import { Route as AuthenticatedRotaHistoryRouteImport } from './routes/_authenticated/rota/history'
@@ -217,6 +218,12 @@ const AuthenticatedSettingsDepartmentsRoute =
     path: '/settings/departments',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSettingsAutomationRoute =
+  AuthenticatedSettingsAutomationRouteImport.update({
+    id: '/settings/automation',
+    path: '/settings/automation',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedRotaSwapsRoute = AuthenticatedRotaSwapsRouteImport.update({
   id: '/rota/swaps',
   path: '/rota/swaps',
@@ -316,6 +323,7 @@ export interface FileRoutesByFullPath {
   '/rota/history': typeof AuthenticatedRotaHistoryRoute
   '/rota/planner': typeof AuthenticatedRotaPlannerRoute
   '/rota/swaps': typeof AuthenticatedRotaSwapsRoute
+  '/settings/automation': typeof AuthenticatedSettingsAutomationRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/escalation': typeof AuthenticatedSettingsEscalationRoute
   '/settings/general': typeof AuthenticatedSettingsGeneralRoute
@@ -360,6 +368,7 @@ export interface FileRoutesByTo {
   '/rota/history': typeof AuthenticatedRotaHistoryRoute
   '/rota/planner': typeof AuthenticatedRotaPlannerRoute
   '/rota/swaps': typeof AuthenticatedRotaSwapsRoute
+  '/settings/automation': typeof AuthenticatedSettingsAutomationRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/escalation': typeof AuthenticatedSettingsEscalationRoute
   '/settings/general': typeof AuthenticatedSettingsGeneralRoute
@@ -406,6 +415,7 @@ export interface FileRoutesById {
   '/_authenticated/rota/history': typeof AuthenticatedRotaHistoryRoute
   '/_authenticated/rota/planner': typeof AuthenticatedRotaPlannerRoute
   '/_authenticated/rota/swaps': typeof AuthenticatedRotaSwapsRoute
+  '/_authenticated/settings/automation': typeof AuthenticatedSettingsAutomationRoute
   '/_authenticated/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/_authenticated/settings/escalation': typeof AuthenticatedSettingsEscalationRoute
   '/_authenticated/settings/general': typeof AuthenticatedSettingsGeneralRoute
@@ -452,6 +462,7 @@ export interface FileRouteTypes {
     | '/rota/history'
     | '/rota/planner'
     | '/rota/swaps'
+    | '/settings/automation'
     | '/settings/departments'
     | '/settings/escalation'
     | '/settings/general'
@@ -496,6 +507,7 @@ export interface FileRouteTypes {
     | '/rota/history'
     | '/rota/planner'
     | '/rota/swaps'
+    | '/settings/automation'
     | '/settings/departments'
     | '/settings/escalation'
     | '/settings/general'
@@ -541,6 +553,7 @@ export interface FileRouteTypes {
     | '/_authenticated/rota/history'
     | '/_authenticated/rota/planner'
     | '/_authenticated/rota/swaps'
+    | '/_authenticated/settings/automation'
     | '/_authenticated/settings/departments'
     | '/_authenticated/settings/escalation'
     | '/_authenticated/settings/general'
@@ -779,6 +792,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsDepartmentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings/automation': {
+      id: '/_authenticated/settings/automation'
+      path: '/settings/automation'
+      fullPath: '/settings/automation'
+      preLoaderRoute: typeof AuthenticatedSettingsAutomationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/rota/swaps': {
       id: '/_authenticated/rota/swaps'
       path: '/rota/swaps'
@@ -896,6 +916,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRotaHistoryRoute: typeof AuthenticatedRotaHistoryRoute
   AuthenticatedRotaPlannerRoute: typeof AuthenticatedRotaPlannerRoute
   AuthenticatedRotaSwapsRoute: typeof AuthenticatedRotaSwapsRoute
+  AuthenticatedSettingsAutomationRoute: typeof AuthenticatedSettingsAutomationRoute
   AuthenticatedSettingsDepartmentsRoute: typeof AuthenticatedSettingsDepartmentsRoute
   AuthenticatedSettingsEscalationRoute: typeof AuthenticatedSettingsEscalationRoute
   AuthenticatedSettingsGeneralRoute: typeof AuthenticatedSettingsGeneralRoute
@@ -940,6 +961,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRotaHistoryRoute: AuthenticatedRotaHistoryRoute,
   AuthenticatedRotaPlannerRoute: AuthenticatedRotaPlannerRoute,
   AuthenticatedRotaSwapsRoute: AuthenticatedRotaSwapsRoute,
+  AuthenticatedSettingsAutomationRoute: AuthenticatedSettingsAutomationRoute,
   AuthenticatedSettingsDepartmentsRoute: AuthenticatedSettingsDepartmentsRoute,
   AuthenticatedSettingsEscalationRoute: AuthenticatedSettingsEscalationRoute,
   AuthenticatedSettingsGeneralRoute: AuthenticatedSettingsGeneralRoute,
