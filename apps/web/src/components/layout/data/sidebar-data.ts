@@ -7,6 +7,7 @@ import {
   Building2,
   CalendarClock,
   CalendarOff,
+  CalendarRange,
   ClipboardCheck,
   FileText,
   GraduationCap,
@@ -57,8 +58,16 @@ export const sidebarData: Omit<SidebarData, "user"> = {
       items: [
         {
           title: "Work Register",
-          url: "/work",
           icon: ListTodo,
+          items: [
+            { title: "All Items", url: "/work" },
+            { title: "Workload View", url: "/work/workload" },
+          ],
+        },
+        {
+          title: "Cycles",
+          url: "/cycles",
+          icon: CalendarRange,
         },
         {
           title: "Incidents",
