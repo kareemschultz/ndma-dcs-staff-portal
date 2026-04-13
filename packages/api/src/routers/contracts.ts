@@ -3,7 +3,7 @@ import { z } from "zod";
 import { db, contracts } from "@ndma-dcs-staff-portal/db";
 import { and, eq, lte, sql } from "drizzle-orm";
 
-import { protectedProcedure } from "../index";
+import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 export const contractsRouter = {
@@ -43,7 +43,7 @@ export const contractsRouter = {
       return contract;
     }),
 
-  create: protectedProcedure
+  create: requireRole("contract", "create")
     .input(
       z.object({
         staffProfileId: z.string(),
@@ -80,7 +80,7 @@ export const contractsRouter = {
       return contract;
     }),
 
-  update: protectedProcedure
+  update: requireRole("contract", "update")
     .input(
       z.object({
         id: z.string(),

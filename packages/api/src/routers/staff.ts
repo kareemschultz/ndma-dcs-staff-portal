@@ -3,7 +3,7 @@ import { z } from "zod";
 import { db, staffProfiles, departments } from "@ndma-dcs-staff-portal/db";
 import { and, desc, eq } from "drizzle-orm";
 
-import { protectedProcedure } from "../index";
+import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 export const staffRouter = {
@@ -44,7 +44,7 @@ export const staffRouter = {
       return profile;
     }),
 
-  create: protectedProcedure
+  create: requireRole("staff", "create")
     .input(
       z.object({
         userId: z.string(),
@@ -85,7 +85,7 @@ export const staffRouter = {
       return profile;
     }),
 
-  update: protectedProcedure
+  update: requireRole("staff", "update")
     .input(
       z.object({
         id: z.string(),
@@ -131,7 +131,7 @@ export const staffRouter = {
       return updated;
     }),
 
-  deactivate: protectedProcedure
+  deactivate: requireRole("staff", "delete")
     .input(z.object({ id: z.string() }))
     .handler(async ({ input, context }) => {
       const before = await db.query.staffProfiles.findFirst({

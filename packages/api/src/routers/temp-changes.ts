@@ -3,7 +3,7 @@ import { z } from "zod";
 import { db, temporaryChanges } from "@ndma-dcs-staff-portal/db";
 import { and, desc, eq, lt, sql } from "drizzle-orm";
 
-import { protectedProcedure } from "../index";
+import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 const StatusSchema = z.enum([
@@ -62,7 +62,7 @@ export const tempChangesRouter = {
       return change;
     }),
 
-  create: protectedProcedure
+  create: requireRole("work", "create")
     .input(
       z.object({
         title: z.string().min(1).max(200),
@@ -107,7 +107,7 @@ export const tempChangesRouter = {
       return change;
     }),
 
-  update: protectedProcedure
+  update: requireRole("work", "update")
     .input(
       z.object({
         id: z.string(),
@@ -153,7 +153,7 @@ export const tempChangesRouter = {
       return updated;
     }),
 
-  markRemoved: protectedProcedure
+  markRemoved: requireRole("work", "update")
     .input(z.object({ id: z.string(), followUpNotes: z.string().optional() }))
     .handler(async ({ input, context }) => {
       const today = new Date().toISOString().slice(0, 10);

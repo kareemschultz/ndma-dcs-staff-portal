@@ -11,7 +11,7 @@ import {
 } from "@ndma-dcs-staff-portal/db";
 import { eq, sql } from "drizzle-orm";
 
-import { protectedProcedure } from "../index";
+import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 // ── Row schemas ───────────────────────────────────────────────────────────
@@ -248,7 +248,7 @@ async function processWorkRow(
 export const importRouter = {
   /** Execute a validated import. Rows are processed one at a time; failures are
    * recorded in the job errors array without aborting the whole batch. */
-  execute: protectedProcedure
+  execute: requireRole("staff", "import")
     .input(
       z.object({
         importType: z.enum(["staff", "training", "contracts", "work"]),

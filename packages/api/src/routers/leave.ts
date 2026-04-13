@@ -8,7 +8,7 @@ import {
 } from "@ndma-dcs-staff-portal/db";
 import { and, eq, gte, lte, sql } from "drizzle-orm";
 
-import { protectedProcedure } from "../index";
+import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 import { createNotification } from "../lib/notify";
 
@@ -21,7 +21,7 @@ export const leaveRouter = {
       });
     }),
 
-    create: protectedProcedure
+    create: requireRole("leave", "create")
       .input(
         z.object({
           name: z.string().min(1),
@@ -47,7 +47,7 @@ export const leaveRouter = {
         return type;
       }),
 
-    update: protectedProcedure
+    update: requireRole("leave", "update")
       .input(
         z.object({
           id: z.string(),
@@ -90,7 +90,7 @@ export const leaveRouter = {
         });
       }),
 
-    adjust: protectedProcedure
+    adjust: requireRole("leave", "update")
       .input(
         z.object({
           staffProfileId: z.string(),
@@ -173,7 +173,7 @@ export const leaveRouter = {
         });
       }),
 
-    create: protectedProcedure
+    create: requireRole("leave", "create")
       .input(
         z.object({
           staffProfileId: z.string(),
@@ -206,7 +206,7 @@ export const leaveRouter = {
         return request;
       }),
 
-    approve: protectedProcedure
+    approve: requireRole("leave", "approve")
       .input(z.object({ id: z.string() }))
       .handler(async ({ input, context }) => {
         const before = await db.query.leaveRequests.findFirst({
@@ -264,7 +264,7 @@ export const leaveRouter = {
         return updated;
       }),
 
-    reject: protectedProcedure
+    reject: requireRole("leave", "reject")
       .input(z.object({ id: z.string(), rejectionReason: z.string().optional() }))
       .handler(async ({ input, context }) => {
         const before = await db.query.leaveRequests.findFirst({
@@ -311,7 +311,7 @@ export const leaveRouter = {
         return updated;
       }),
 
-    cancel: protectedProcedure
+    cancel: requireRole("leave", "cancel")
       .input(z.object({ id: z.string() }))
       .handler(async ({ input, context }) => {
         const before = await db.query.leaveRequests.findFirst({

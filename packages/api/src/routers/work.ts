@@ -9,7 +9,7 @@ import {
 } from "@ndma-dcs-staff-portal/db";
 import { and, desc, eq, lt, sql, isNotNull } from "drizzle-orm";
 
-import { protectedProcedure } from "../index";
+import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 import { createNotification } from "../lib/notify";
 
@@ -149,7 +149,7 @@ export const workRouter = {
       return item;
     }),
 
-  create: protectedProcedure
+  create: requireRole("work", "create")
     .input(CreateWorkItemInput)
     .handler(async ({ input, context }) => {
       const [item] = await db
@@ -196,7 +196,7 @@ export const workRouter = {
       return item;
     }),
 
-  update: protectedProcedure
+  update: requireRole("work", "update")
     .input(UpdateWorkItemInput)
     .handler(async ({ input, context }) => {
       const { id, ...updates } = input;
@@ -233,7 +233,7 @@ export const workRouter = {
       return updated;
     }),
 
-  assign: protectedProcedure
+  assign: requireRole("work", "assign")
     .input(z.object({ id: z.string(), staffProfileId: z.string() }))
     .handler(async ({ input, context }) => {
       const before = await db.query.workItems.findFirst({
@@ -281,7 +281,7 @@ export const workRouter = {
       return updated;
     }),
 
-  addComment: protectedProcedure
+  addComment: requireRole("work", "update")
     .input(AddCommentInput)
     .handler(async ({ input, context }) => {
       const exists = await db.query.workItems.findFirst({
@@ -301,7 +301,7 @@ export const workRouter = {
       return comment;
     }),
 
-  addWeeklyUpdate: protectedProcedure
+  addWeeklyUpdate: requireRole("work", "update")
     .input(AddWeeklyUpdateInput)
     .handler(async ({ input, context }) => {
       const exists = await db.query.workItems.findFirst({

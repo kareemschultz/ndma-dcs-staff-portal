@@ -7,7 +7,7 @@ import {
   onCallOverrides,
 } from "@ndma-dcs-staff-portal/db";
 import { eq, asc } from "drizzle-orm";
-import { protectedProcedure } from "../index";
+import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 // ── Input Schemas ─────────────────────────────────────────────────────────
@@ -102,7 +102,7 @@ export const escalationRouter = {
         return policy;
       }),
 
-    create: protectedProcedure
+    create: requireRole("rota", "create")
       .input(CreatePolicyInput)
       .handler(async ({ input, context }) => {
         const [policy] = await db
@@ -126,7 +126,7 @@ export const escalationRouter = {
         return policy;
       }),
 
-    update: protectedProcedure
+    update: requireRole("rota", "update")
       .input(UpdatePolicyInput)
       .handler(async ({ input, context }) => {
         const { id, ...values } = input;
@@ -158,7 +158,7 @@ export const escalationRouter = {
         return updated;
       }),
 
-    delete: protectedProcedure
+    delete: requireRole("rota", "delete")
       .input(z.object({ id: z.string() }))
       .handler(async ({ input, context }) => {
         const existing = await db.query.escalationPolicies.findFirst({
@@ -187,7 +187,7 @@ export const escalationRouter = {
   // ── Steps ─────────────────────────────────────────────────────────────
 
   steps: {
-    add: protectedProcedure
+    add: requireRole("rota", "update")
       .input(AddStepInput)
       .handler(async ({ input, context }) => {
         const policy = await db.query.escalationPolicies.findFirst({
@@ -213,7 +213,7 @@ export const escalationRouter = {
         return step;
       }),
 
-    update: protectedProcedure
+    update: requireRole("rota", "update")
       .input(UpdateStepInput)
       .handler(async ({ input, context }) => {
         const { stepId, ...values } = input;
@@ -245,7 +245,7 @@ export const escalationRouter = {
         return updated;
       }),
 
-    delete: protectedProcedure
+    delete: requireRole("rota", "update")
       .input(z.object({ stepId: z.string() }))
       .handler(async ({ input, context }) => {
         const existing = await db.query.escalationSteps.findFirst({
@@ -289,7 +289,7 @@ export const escalationRouter = {
         });
       }),
 
-    create: protectedProcedure
+    create: requireRole("rota", "update")
       .input(CreateOverrideInput)
       .handler(async ({ input, context }) => {
         const [override] = await db
@@ -313,7 +313,7 @@ export const escalationRouter = {
         return override;
       }),
 
-    update: protectedProcedure
+    update: requireRole("rota", "update")
       .input(UpdateOverrideInput)
       .handler(async ({ input, context }) => {
         const { id, ...values } = input;
@@ -345,7 +345,7 @@ export const escalationRouter = {
         return updated;
       }),
 
-    delete: protectedProcedure
+    delete: requireRole("rota", "update")
       .input(z.object({ id: z.string() }))
       .handler(async ({ input, context }) => {
         const existing = await db.query.onCallOverrides.findFirst({

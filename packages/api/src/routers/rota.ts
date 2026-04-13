@@ -11,7 +11,7 @@ import {
   departments,
 } from "@ndma-dcs-staff-portal/db";
 import { eq, desc, asc, and, gte, lte } from "drizzle-orm";
-import { protectedProcedure } from "../index";
+import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 // ── Input Schemas ──────────────────────────────────────────────────────────
@@ -151,7 +151,7 @@ export const rotaRouter = {
   }),
 
   // Create a new draft schedule for a given week
-  create: protectedProcedure
+  create: requireRole("rota", "create")
     .input(CreateScheduleInput)
     .handler(async ({ input, context }) => {
       const weekEnd = getWeekEnd(input.weekStart);
@@ -193,7 +193,7 @@ export const rotaRouter = {
     }),
 
   // Assign a staff member to a role in a draft schedule
-  assign: protectedProcedure
+  assign: requireRole("rota", "update")
     .input(AssignStaffInput)
     .handler(async ({ input, context }) => {
       const schedule = await db.query.onCallSchedules.findFirst({
@@ -249,7 +249,7 @@ export const rotaRouter = {
     }),
 
   // Remove an assignment from a draft schedule
-  removeAssignment: protectedProcedure
+  removeAssignment: requireRole("rota", "update")
     .input(RemoveAssignmentInput)
     .handler(async ({ input, context }) => {
       const existing = await db.query.onCallAssignments.findFirst({
@@ -291,7 +291,7 @@ export const rotaRouter = {
     }),
 
   // Publish a schedule — validates all 4 roles are filled first
-  publish: protectedProcedure
+  publish: requireRole("rota", "update")
     .input(PublishScheduleInput)
     .handler(async ({ input, context }) => {
       const schedule = await db.query.onCallSchedules.findFirst({
@@ -409,7 +409,7 @@ export const rotaRouter = {
 
   // ── Swap sub-router ────────────────────────────────────────────────────
   swap: {
-    request: protectedProcedure
+    request: requireRole("rota", "swap")
       .input(RequestSwapInput)
       .handler(async ({ input, context }) => {
         const assignment = await db.query.onCallAssignments.findFirst({
@@ -456,7 +456,7 @@ export const rotaRouter = {
         return swap;
       }),
 
-    review: protectedProcedure
+    review: requireRole("rota", "update")
       .input(ReviewSwapInput)
       .handler(async ({ input, context }) => {
         const swap = await db.query.onCallSwaps.findFirst({

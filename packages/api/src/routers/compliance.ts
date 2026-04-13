@@ -8,7 +8,7 @@ import {
 } from "@ndma-dcs-staff-portal/db";
 import { and, eq, lte, sql } from "drizzle-orm";
 
-import { protectedProcedure } from "../index";
+import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 export const complianceRouter = {
@@ -36,7 +36,7 @@ export const complianceRouter = {
         });
       }),
 
-    create: protectedProcedure
+    create: requireRole("compliance", "create")
       .input(
         z.object({
           staffProfileId: z.string(),
@@ -75,7 +75,7 @@ export const complianceRouter = {
         return record;
       }),
 
-    update: protectedProcedure
+    update: requireRole("compliance", "update")
       .input(
         z.object({
           id: z.string(),
@@ -118,7 +118,7 @@ export const complianceRouter = {
         return updated;
       }),
 
-    delete: protectedProcedure
+    delete: requireRole("compliance", "update")
       .input(z.object({ id: z.string() }))
       .handler(async ({ input, context }) => {
         await db.delete(trainingRecords).where(eq(trainingRecords.id, input.id));
@@ -149,7 +149,7 @@ export const complianceRouter = {
         });
       }),
 
-    create: protectedProcedure
+    create: requireRole("compliance", "create")
       .input(
         z.object({
           staffProfileId: z.string(),
@@ -187,7 +187,7 @@ export const complianceRouter = {
         return record;
       }),
 
-    update: protectedProcedure
+    update: requireRole("compliance", "update")
       .input(
         z.object({
           id: z.string(),
@@ -227,7 +227,7 @@ export const complianceRouter = {
         return updated;
       }),
 
-    delete: protectedProcedure
+    delete: requireRole("compliance", "update")
       .input(z.object({ id: z.string() }))
       .handler(async ({ input, context }) => {
         await db.delete(ppeRecords).where(eq(ppeRecords.id, input.id));
@@ -258,7 +258,7 @@ export const complianceRouter = {
         });
       }),
 
-    acknowledge: protectedProcedure
+    acknowledge: requireRole("compliance", "create")
       .input(
         z.object({
           staffProfileId: z.string(),

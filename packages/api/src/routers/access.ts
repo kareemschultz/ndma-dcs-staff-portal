@@ -14,7 +14,7 @@ import {
 } from "@ndma-dcs-staff-portal/db";
 import { and, eq, isNull, isNotNull, lte } from "drizzle-orm";
 
-import { protectedProcedure } from "../index";
+import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 import { runSyncJob } from "../lib/sync";
 
@@ -240,7 +240,7 @@ export const accessRouter = {
       });
     }),
 
-    create: protectedProcedure
+    create: requireRole("access", "create")
       .input(
         z.object({
           // One of these two should be provided
@@ -302,7 +302,7 @@ export const accessRouter = {
         return account;
       }),
 
-    update: protectedProcedure
+    update: requireRole("access", "update")
       .input(
         z.object({
           id: z.string(),
@@ -353,7 +353,7 @@ export const accessRouter = {
         return updated;
       }),
 
-    disable: protectedProcedure
+    disable: requireRole("access", "update")
       .input(z.object({ id: z.string(), reason: z.string().optional() }))
       .handler(async ({ input, context }) => {
         const before = await db.query.platformAccounts.findFirst({
@@ -390,7 +390,7 @@ export const accessRouter = {
         return updated;
       }),
 
-    markReviewed: protectedProcedure
+    markReviewed: requireRole("access", "update")
       .input(z.object({ id: z.string() }))
       .handler(async ({ input, context }) => {
         const today = new Date().toISOString().slice(0, 10);
@@ -469,7 +469,7 @@ export const accessRouter = {
         return contact;
       }),
 
-    create: protectedProcedure
+    create: requireRole("access", "create")
       .input(
         z.object({
           name: z.string().min(1),
@@ -504,7 +504,7 @@ export const accessRouter = {
         return contact;
       }),
 
-    update: protectedProcedure
+    update: requireRole("access", "update")
       .input(
         z.object({
           id: z.string(),
@@ -595,7 +595,7 @@ export const accessRouter = {
         return group;
       }),
 
-    create: protectedProcedure
+    create: requireRole("access", "create")
       .input(
         z.object({
           name: z.string().min(1),
@@ -626,7 +626,7 @@ export const accessRouter = {
         return group;
       }),
 
-    update: protectedProcedure
+    update: requireRole("access", "update")
       .input(
         z.object({
           id: z.string(),
@@ -666,7 +666,7 @@ export const accessRouter = {
         return updated;
       }),
 
-    delete: protectedProcedure
+    delete: requireRole("access", "delete")
       .input(z.object({ id: z.string() }))
       .handler(async ({ input, context }) => {
         const group = await db.query.accessGroups.findFirst({
@@ -712,7 +712,7 @@ export const accessRouter = {
         });
       }),
 
-    addMember: protectedProcedure
+    addMember: requireRole("access", "update")
       .input(
         z.object({
           groupId: z.string(),
@@ -754,7 +754,7 @@ export const accessRouter = {
         return membership;
       }),
 
-    removeMember: protectedProcedure
+    removeMember: requireRole("access", "update")
       .input(
         z.object({
           groupId: z.string(),
@@ -863,7 +863,7 @@ export const accessRouter = {
       });
     }),
 
-    create: protectedProcedure
+    create: requireRole("access", "create")
       .input(
         z.object({
           platformAccountId: z.string(),
@@ -898,7 +898,7 @@ export const accessRouter = {
         return review;
       }),
 
-    complete: protectedProcedure
+    complete: requireRole("access", "update")
       .input(
         z.object({
           id: z.string(),
@@ -984,7 +984,7 @@ export const accessRouter = {
         return integration;
       }),
 
-    create: protectedProcedure
+    create: requireRole("access", "create")
       .input(
         z.object({
           name: z.string().min(1),
@@ -1026,7 +1026,7 @@ export const accessRouter = {
         return integration;
       }),
 
-    update: protectedProcedure
+    update: requireRole("access", "update")
       .input(
         z.object({
           id: z.string(),
@@ -1066,7 +1066,7 @@ export const accessRouter = {
         return updated;
       }),
 
-    triggerSync: protectedProcedure
+    triggerSync: requireRole("access", "update")
       .input(z.object({ integrationId: z.string() }))
       .handler(async ({ input, context }) => {
         const integration = await db.query.platformIntegrations.findFirst({
@@ -1185,7 +1185,7 @@ export const accessRouter = {
         });
       }),
 
-    resolve: protectedProcedure
+    resolve: requireRole("access", "update")
       .input(
         z.object({
           id: z.string(),
@@ -1239,7 +1239,7 @@ export const accessRouter = {
         });
       }),
 
-    assign: protectedProcedure
+    assign: requireRole("access", "update")
       .input(
         z.object({
           serviceId: z.string(),
@@ -1273,7 +1273,7 @@ export const accessRouter = {
         return owner;
       }),
 
-    remove: protectedProcedure
+    remove: requireRole("access", "update")
       .input(z.object({ serviceId: z.string(), staffProfileId: z.string() }))
       .handler(async ({ input, context }) => {
         await db.delete(serviceOwners).where(

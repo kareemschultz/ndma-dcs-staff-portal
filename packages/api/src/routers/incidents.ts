@@ -10,7 +10,7 @@ import {
 } from "@ndma-dcs-staff-portal/db";
 import { and, desc, eq, sql } from "drizzle-orm";
 
-import { protectedProcedure } from "../index";
+import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 // ── Input Schemas ──────────────────────────────────────────────────────────
@@ -141,7 +141,7 @@ export const incidentsRouter = {
       return incident;
     }),
 
-  create: protectedProcedure
+  create: requireRole("work", "create")
     .input(CreateIncidentInput)
     .handler(async ({ input, context }) => {
       const [incident] = await db
@@ -181,7 +181,7 @@ export const incidentsRouter = {
       return incident;
     }),
 
-  update: protectedProcedure
+  update: requireRole("work", "update")
     .input(UpdateIncidentInput)
     .handler(async ({ input, context }) => {
       const { id, ...updates } = input;
@@ -231,7 +231,7 @@ export const incidentsRouter = {
       return updated;
     }),
 
-  addTimelineEntry: protectedProcedure
+  addTimelineEntry: requireRole("work", "update")
     .input(AddTimelineInput)
     .handler(async ({ input, context }) => {
       const exists = await db.query.incidents.findFirst({
@@ -253,7 +253,7 @@ export const incidentsRouter = {
       return entry;
     }),
 
-  addResponder: protectedProcedure
+  addResponder: requireRole("work", "update")
     .input(AddResponderInput)
     .handler(async ({ input }) => {
       const [responder] = await db
@@ -274,7 +274,7 @@ export const incidentsRouter = {
       return responder;
     }),
 
-  removeResponder: protectedProcedure
+  removeResponder: requireRole("work", "update")
     .input(z.object({ incidentId: z.string(), staffProfileId: z.string() }))
     .handler(async ({ input }) => {
       await db
@@ -289,7 +289,7 @@ export const incidentsRouter = {
       return { success: true };
     }),
 
-  linkService: protectedProcedure
+  linkService: requireRole("work", "update")
     .input(
       z.object({
         incidentId: z.string(),
@@ -310,7 +310,7 @@ export const incidentsRouter = {
       return link;
     }),
 
-  unlinkService: protectedProcedure
+  unlinkService: requireRole("work", "update")
     .input(z.object({ incidentId: z.string(), serviceId: z.string() }))
     .handler(async ({ input }) => {
       await db
@@ -324,7 +324,7 @@ export const incidentsRouter = {
       return { success: true };
     }),
 
-  createPIR: protectedProcedure
+  createPIR: requireRole("work", "create")
     .input(CreatePIRInput)
     .handler(async ({ input, context }) => {
       const [pir] = await db
