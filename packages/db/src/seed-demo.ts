@@ -20,7 +20,7 @@ import {
   incidentAffectedServices,
   incidentResponders,
 } from "./schema/incidents";
-import { workItems, workItemAssignees, workItemTeamAllocations } from "./schema/work";
+import { workItems, workItemAssignees, workItemTeamAllocations, workInitiatives } from "./schema/work";
 import { cycles, cycleWorkItems } from "./schema/cycles";
 import {
   leaveTypes,
@@ -32,6 +32,7 @@ import { temporaryChanges } from "./schema/temp-changes";
 import {
   platformAccounts,
   platformIntegrations,
+  accessReviews,
 } from "./schema/access";
 import {
   trainingRecords,
@@ -41,6 +42,10 @@ import {
 import { contracts } from "./schema/contracts";
 import { appraisals } from "./schema/appraisals";
 import { auditLogs } from "./schema/audit";
+import { automationRules } from "./schema/automation";
+import { escalationPolicies, escalationSteps } from "./schema/escalation";
+import { notifications } from "./schema/notifications";
+import { onCallSwaps } from "./schema/rota";
 
 // ── ID registries (for targeted clear) ─────────────────────────────────────
 
@@ -62,6 +67,13 @@ const DEMO_CONTRACT_IDS      = ["con-001","con-002","con-003","con-004","con-005
 const DEMO_APPRAISAL_IDS     = ["apr-001","apr-002","apr-003","apr-004"] as const;
 const DEMO_ASSIGNEE_IDS      = ["wia-001","wia-002","wia-003","wia-004","wia-005","wia-006","wia-007","wia-008","wia-009"] as const;
 const DEMO_TEAM_ALLOC_IDS    = ["wta-001","wta-002","wta-003","wta-004","wta-005","wta-006"] as const;
+const DEMO_INITIATIVE_IDS    = ["win-001","win-002","win-003"] as const;
+const DEMO_AUTOMATION_IDS    = ["auto-001","auto-002","auto-003","auto-004"] as const;
+const DEMO_ESC_POLICY_IDS    = ["ep-001","ep-002"] as const;
+const DEMO_ESC_STEP_IDS      = ["es-001","es-002","es-003","es-004","es-005"] as const;
+const DEMO_NOTIFICATION_IDS  = ["notif-001","notif-002","notif-003","notif-004","notif-005","notif-006"] as const;
+const DEMO_ACCESS_REVIEW_IDS = ["arev-001","arev-002","arev-003","arev-004"] as const;
+const DEMO_SWAP_IDS          = ["swap-001","swap-002"] as const;
 
 // ── Clear all demo data (reverse FK order) ──────────────────────────────────
 
@@ -81,6 +93,25 @@ async function clearDemo() {
   // Cycle links (before cycles and work items)
   await db.delete(cycleWorkItems).where(inArray(cycleWorkItems.cycleId, [...DEMO_CYCLE_IDS]));
   await db.delete(cycles).where(inArray(cycles.id, [...DEMO_CYCLE_IDS]));
+
+  // Notifications
+  await db.delete(notifications).where(inArray(notifications.id, [...DEMO_NOTIFICATION_IDS]));
+
+  // On-call swaps
+  await db.delete(onCallSwaps).where(inArray(onCallSwaps.id, [...DEMO_SWAP_IDS]));
+
+  // Escalation steps (before policies)
+  await db.delete(escalationSteps).where(inArray(escalationSteps.id, [...DEMO_ESC_STEP_IDS]));
+  await db.delete(escalationPolicies).where(inArray(escalationPolicies.id, [...DEMO_ESC_POLICY_IDS]));
+
+  // Automation rules
+  await db.delete(automationRules).where(inArray(automationRules.id, [...DEMO_AUTOMATION_IDS]));
+
+  // Access reviews
+  await db.delete(accessReviews).where(inArray(accessReviews.id, [...DEMO_ACCESS_REVIEW_IDS]));
+
+  // Work initiatives
+  await db.delete(workInitiatives).where(inArray(workInitiatives.id, [...DEMO_INITIATIVE_IDS]));
 
   // Appraisals
   await db.delete(appraisals).where(inArray(appraisals.id, [...DEMO_APPRAISAL_IDS]));
@@ -375,6 +406,297 @@ async function seedDemo() {
     { id: "apr-002", staffProfileId: "sp-shemar",   periodStart: "2026-01-01", periodEnd: "2026-06-30", status: "in_progress", reviewedById: "sp-sachin", goals: "ITIL certification and incident response improvement.",     achievements: "Completed ITIL 4 Foundation with distinction." },
     { id: "apr-003", staffProfileId: "sp-timothy",  periodStart: "2026-01-01", periodEnd: "2026-06-30", status: "scheduled",  scheduledDate: "2026-05-15", reviewedById: "sp-sachin", goals: "CompTIA Network+ renewal and BGP implementation experience." },
     { id: "apr-004", staffProfileId: "sp-bheesham", periodStart: "2025-01-01", periodEnd: "2025-12-31", status: "overdue",     reviewedById: "sp-sachin", goals: "CCNA renewal and patch management ownership.",              notes: "Review delayed — reschedule for April 2026." },
+  ]).onConflictDoNothing();
+
+  // ── Work Initiatives ──────────────────────────────────────────────────────
+  console.log("🎯 Seeding work initiatives...");
+  await db.insert(workInitiatives).values([
+    {
+      id: "win-001",
+      title: "Infrastructure Modernisation 2026",
+      description: "Upgrade core network infrastructure including switches, routers, and cabling across all data centre rooms. Align with NDMA 5-year digital roadmap.",
+      status: "active",
+      departmentId: "dept-core",
+      targetDate: "2026-09-30",
+      createdById: "user-sachin",
+    },
+    {
+      id: "win-002",
+      title: "Security Hardening & Compliance",
+      description: "Comprehensive audit and hardening of all firewall rules, VPN policies, AD group memberships, and access controls. Includes remediation of all critical and high findings.",
+      status: "active",
+      departmentId: "dept-asn",
+      targetDate: "2026-06-30",
+      createdById: "user-sachin",
+    },
+    {
+      id: "win-003",
+      title: "Monitoring & Observability Uplift",
+      description: "Expand Zabbix coverage to 100% of managed assets, integrate LTE monitoring into Grafana, and establish automated alerting runbooks.",
+      status: "active",
+      departmentId: "dept-asn",
+      targetDate: "2026-07-31",
+      createdById: "user-sachin",
+    },
+  ]).onConflictDoNothing();
+
+  // ── Automation Rules ───────────────────────────────────────────────────────
+  console.log("⚙️  Seeding automation rules...");
+  await db.insert(automationRules).values([
+    {
+      id: "auto-001",
+      name: "Notify manager on new leave request",
+      description: "Sends an in-app notification to the admin role whenever a staff member submits a leave request.",
+      enabled: true,
+      triggerModule: "leave",
+      triggerEvent: "requested",
+      conditions: [],
+      actions: [
+        {
+          type: "notify_role",
+          role: "manager",
+          title: "New Leave Request",
+          body: "A staff member has submitted a leave request requiring your approval.",
+          linkUrl: "/leave",
+        },
+      ],
+      createdById: "user-sachin",
+    },
+    {
+      id: "auto-002",
+      name: "Alert on Sev1 incident creation",
+      description: "Notifies all admins and managers immediately when a Sev1 incident is created.",
+      enabled: true,
+      triggerModule: "incident",
+      triggerEvent: "created",
+      conditions: [
+        { field: "severity", operator: "eq", value: "sev1" },
+      ],
+      actions: [
+        {
+          type: "notify_role",
+          role: "admin",
+          title: "🚨 Sev1 Incident Raised",
+          body: "A critical Sev1 incident has been created. Immediate response required.",
+          linkUrl: "/incidents",
+        },
+      ],
+      createdById: "user-sachin",
+    },
+    {
+      id: "auto-003",
+      name: "Flag overdue temporary changes",
+      description: "Sends a notification to admins when a temporary change passes its remove-by date.",
+      enabled: true,
+      triggerModule: "temp_changes",
+      triggerEvent: "overdue",
+      conditions: [],
+      actions: [
+        {
+          type: "notify_role",
+          role: "admin",
+          title: "Temporary Change Overdue",
+          body: "A temporary change has passed its scheduled removal date and needs attention.",
+          linkUrl: "/changes",
+        },
+      ],
+      createdById: "user-sachin",
+    },
+    {
+      id: "auto-004",
+      name: "Notify requester on procurement approval",
+      description: "Notifies the PR requester in-app when their purchase requisition is approved or rejected.",
+      enabled: true,
+      triggerModule: "procurement",
+      triggerEvent: "approved",
+      conditions: [],
+      actions: [
+        {
+          type: "notify_in_app",
+          title: "PR Approved",
+          body: "Your purchase requisition has been approved.",
+          recipientField: "requestedById",
+          linkUrl: "/procurement",
+        },
+      ],
+      createdById: "user-sachin",
+    },
+  ]).onConflictDoNothing();
+
+  // ── Escalation Policies ────────────────────────────────────────────────────
+  console.log("📡 Seeding escalation policies...");
+  await db.insert(escalationPolicies).values([
+    {
+      id: "ep-001",
+      name: "Network Outage Escalation",
+      description: "Standard escalation chain for network-affecting incidents. Starts with ASN on-call, escalates to Lead Engineer after 15 min, then Ops Manager after 30 min.",
+      serviceId: "svc-inet",
+      isActive: true,
+    },
+    {
+      id: "ep-002",
+      name: "Active Directory / Auth Escalation",
+      description: "Escalation for authentication and identity incidents. Lead Engineer is paged immediately; ASN on-call supports.",
+      serviceId: "svc-ad",
+      isActive: true,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(escalationSteps).values([
+    { id: "es-001", policyId: "ep-001", stepOrder: 1, delayMinutes: 0,  notifyOnCallRole: "asn_support" },
+    { id: "es-002", policyId: "ep-001", stepOrder: 2, delayMinutes: 15, notifyOnCallRole: "lead_engineer" },
+    { id: "es-003", policyId: "ep-001", stepOrder: 3, delayMinutes: 30, notifyStaffId: "sp-sachin" },
+    { id: "es-004", policyId: "ep-002", stepOrder: 1, delayMinutes: 0,  notifyOnCallRole: "lead_engineer" },
+    { id: "es-005", policyId: "ep-002", stepOrder: 2, delayMinutes: 10, notifyOnCallRole: "asn_support" },
+  ]).onConflictDoNothing();
+
+  // ── Notifications ──────────────────────────────────────────────────────────
+  console.log("🔔 Seeding notifications...");
+  await db.insert(notifications).values([
+    {
+      id: "notif-001",
+      recipientId: "user-sachin",
+      channel: "in_app",
+      title: "New Leave Request",
+      body: "Shemar Henry has submitted an annual leave request (21–23 Apr 2026) requiring approval.",
+      module: "leave",
+      resourceType: "leave_request",
+      resourceId: "lr-002",
+      linkUrl: "/leave",
+      status: "sent",
+      createdAt: new Date("2026-04-10T09:15:00Z"),
+    },
+    {
+      id: "notif-002",
+      recipientId: "user-sachin",
+      channel: "in_app",
+      title: "New Leave Request",
+      body: "Nicolai Mahangi has submitted an emergency leave request (28–29 Apr 2026) requiring approval.",
+      module: "leave",
+      resourceType: "leave_request",
+      resourceId: "lr-007",
+      linkUrl: "/leave",
+      status: "sent",
+      createdAt: new Date("2026-04-12T14:00:00Z"),
+    },
+    {
+      id: "notif-003",
+      recipientId: "user-sachin",
+      channel: "in_app",
+      title: "🚨 Sev2 Incident Raised",
+      body: "Incident: Fortigate HA failover triggered unexpectedly — requires commander assignment.",
+      module: "incident",
+      resourceType: "incident",
+      resourceId: "inc-004",
+      linkUrl: "/incidents",
+      status: "read",
+      readAt: new Date("2026-04-12T22:30:00Z"),
+      createdAt: new Date("2026-04-12T22:06:00Z"),
+    },
+    {
+      id: "notif-004",
+      recipientId: "user-kareem",
+      channel: "in_app",
+      title: "Temporary Change Overdue",
+      body: "Bypass firewall rule for treasury data transfer passed its removal date (5 Apr 2026). Please confirm removal.",
+      module: "changes",
+      resourceType: "temporary_change",
+      resourceId: "tc-003",
+      linkUrl: "/changes",
+      status: "sent",
+      createdAt: new Date("2026-04-06T08:00:00Z"),
+    },
+    {
+      id: "notif-005",
+      recipientId: "user-sachin",
+      channel: "in_app",
+      title: "PR Approved",
+      body: "Purchase Requisition: UPS replacement batteries – Room A has been approved.",
+      module: "procurement",
+      resourceType: "purchase_requisition",
+      resourceId: "pr-003",
+      linkUrl: "/procurement",
+      status: "dismissed",
+      createdAt: new Date("2026-04-10T09:46:00Z"),
+    },
+    {
+      id: "notif-006",
+      recipientId: "user-kareem",
+      channel: "in_app",
+      title: "Roster Swap Request",
+      body: "Devon Abrams has requested a shift swap for the Core Support role (Week 1 2026). Please review.",
+      module: "rota",
+      resourceType: "on_call_swap",
+      resourceId: "swap-001",
+      linkUrl: "/roster",
+      status: "sent",
+      createdAt: new Date("2026-04-11T10:30:00Z"),
+    },
+  ]).onConflictDoNothing();
+
+  // ── Access Reviews ─────────────────────────────────────────────────────────
+  console.log("🔐 Seeding access reviews...");
+  await db.insert(accessReviews).values([
+    {
+      id: "arev-001",
+      platformAccountId: "pa-001",
+      reviewerId: "user-sachin",
+      status: "approved",
+      reviewedAt: new Date("2026-03-01T10:00:00Z"),
+      nextReviewDate: "2026-09-01",
+      notes: "VPN access confirmed appropriate. User active, role matches.",
+    },
+    {
+      id: "arev-002",
+      platformAccountId: "pa-003",
+      reviewerId: "user-sachin",
+      status: "approved",
+      reviewedAt: new Date("2026-03-01T10:30:00Z"),
+      nextReviewDate: "2026-09-01",
+      notes: "VPN access confirmed. Core team engineer — access level appropriate.",
+    },
+    {
+      id: "arev-003",
+      platformAccountId: "pa-008",
+      reviewerId: "user-sachin",
+      status: "pending",
+      nextReviewDate: "2026-04-30",
+      notes: "Vendor VPN account. Awaiting confirmation from Cisco TAC that the engagement is still active.",
+    },
+    {
+      id: "arev-004",
+      platformAccountId: "pa-006",
+      reviewerId: "user-sachin",
+      status: "pending",
+      nextReviewDate: "2026-04-15",
+      notes: "phpIPAM admin account — check if rg_admin still requires admin-level access or can be downgraded.",
+    },
+  ]).onConflictDoNothing();
+
+  // ── On-Call Swap Requests ──────────────────────────────────────────────────
+  console.log("🔄 Seeding on-call swap requests...");
+  await db.insert(onCallSwaps).values([
+    {
+      id: "swap-001",
+      // Devon (core_support, w01) wants to swap with Gerard
+      assignmentId: "c360c1cb-69c9-4eb8-972e-d6d6dd0ba833",
+      requesterId: "sp-devon",
+      targetId: "sp-gerard",
+      reason: "Attending a family event on Saturday. Gerard has agreed to cover.",
+      status: "pending",
+    },
+    {
+      id: "swap-002",
+      // Richie (enterprise_support, w01) swapped with Timothy — already approved
+      assignmentId: "10ff9a6d-4119-4224-ae4f-635b2e78b733",
+      requesterId: "sp-richie",
+      targetId: "sp-timothy",
+      reason: "Medical appointment mid-week. Timothy confirmed availability.",
+      status: "approved",
+      reviewedById: "user-sachin",
+      reviewedAt: new Date("2026-04-05T11:00:00Z"),
+      reviewNotes: "Approved. Both engineers confirmed. Rota updated.",
+    },
   ]).onConflictDoNothing();
 
   // ── Audit Log ──────────────────────────────────────────────────────────────

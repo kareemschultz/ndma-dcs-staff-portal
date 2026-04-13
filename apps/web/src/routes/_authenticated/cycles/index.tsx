@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   CalendarRange,
   CheckCircle2,
@@ -19,6 +22,23 @@ import {
 } from "@ndma-dcs-staff-portal/ui/components/card";
 import { Badge } from "@ndma-dcs-staff-portal/ui/components/badge";
 import { Skeleton } from "@ndma-dcs-staff-portal/ui/components/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@ndma-dcs-staff-portal/ui/components/dialog";
+import { Input } from "@ndma-dcs-staff-portal/ui/components/input";
+import { Label } from "@ndma-dcs-staff-portal/ui/components/label";
+import { Textarea } from "@ndma-dcs-staff-portal/ui/components/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@ndma-dcs-staff-portal/ui/components/select";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -226,10 +246,147 @@ function CycleSkeleton() {
   );
 }
 
+// ── New Cycle Dialog ────────────────────────────────────────────────────────
+
+const newCycleSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
+  period: z.enum(["weekly", "fortnightly", "monthly", "quarterly", "custom"]),
+  departmentId: z.string().optional(),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
+});
+
+type NewCycleFormValues = z.infer<typeof newCycleSchema>;
+
+function NewCycleDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
+  const queryClient = useQueryClient();
+
+  const { data: departments } = useQuery(orpc.staff.getDepartments.queryOptions());
+
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } =
+    useForm<NewCycleFormValues>({
+      resolver: zodResolver(newCycleSchema),
+      defaultValues: { period: "monthly" },
+    });
+
+  const mutation = useMutation(
+    orpc.cycles.create.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: orpc.cycles.list.key() });
+        reset();
+        onOpenChange(false);
+      },
+    }),
+  );
+
+  const onSubmit = (values: NewCycleFormValues) => {
+    mutation.mutate({
+      name: values.name,
+      description: values.description || undefined,
+      period: values.period,
+      departmentId: values.departmentId || undefined,
+      startDate: values.startDate,
+      endDate: values.endDate,
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>New Cycle</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="cycle-name">Name</Label>
+            <Input id="cycle-name" placeholder="Q2 2026 Infrastructure Sprint" {...register("name")} />
+            {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="cycle-desc">Description</Label>
+            <Textarea id="cycle-desc" placeholder="Goals for this cycle…" rows={2} {...register("description")} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Period</Label>
+              <Select
+                defaultValue="monthly"
+                onValueChange={(v) => setValue("period", v as NewCycleFormValues["period"])}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(["weekly", "fortnightly", "monthly", "quarterly", "custom"] as const).map((p) => (
+                    <SelectItem key={p} value={p}>{PERIOD_LABELS[p]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Department</Label>
+              <Select onValueChange={(v: string | null) => setValue("departmentId", v === "_none" || !v ? undefined : v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All departments" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">All departments</SelectItem>
+                  {departments?.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="cycle-start">Start Date</Label>
+              <Input id="cycle-start" type="date" {...register("startDate")} />
+              {errors.startDate && <p className="text-xs text-destructive">{errors.startDate.message}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="cycle-end">End Date</Label>
+              <Input id="cycle-end" type="date" {...register("endDate")} />
+              {errors.endDate && <p className="text-xs text-destructive">{errors.endDate.message}</p>}
+            </div>
+          </div>
+
+          {mutation.error && (
+            <p className="text-xs text-destructive">
+              {(mutation.error as Error).message || "Failed to create cycle"}
+            </p>
+          )}
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? "Creating…" : "Create Cycle"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ── Page ────────────────────────────────────────────────────────────────────
 
 function CyclesPage() {
   const [statusFilter, setStatusFilter] = useState<CycleStatus | "">("");
+  const [newCycleOpen, setNewCycleOpen] = useState(false);
 
   const { data: cycles, isLoading, refetch, isFetching } = useQuery(
     orpc.cycles.list.queryOptions({
@@ -256,6 +413,7 @@ function CyclesPage() {
 
   return (
     <>
+      <NewCycleDialog open={newCycleOpen} onOpenChange={setNewCycleOpen} />
       <Header>
         <div className="flex items-center gap-2">
           <CalendarRange className="h-5 w-5 text-primary" />
@@ -272,7 +430,7 @@ function CyclesPage() {
             <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
           </Button>
           <ThemeSwitch />
-          <Button size="sm" disabled title="Coming soon">
+          <Button size="sm" onClick={() => setNewCycleOpen(true)}>
             <Plus className="mr-1 h-4 w-4" />
             New Cycle
           </Button>
