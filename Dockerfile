@@ -128,7 +128,7 @@ COPY --from=docs-builder /app/apps/docs/.next/static ./.next/static
 EXPOSE 4000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-  CMD curl -sf http://localhost:4000 > /dev/null || exit 1
+  CMD node -e "require('http').get('http://localhost:4000',r=>process.exit(r.statusCode<400?0:1)).on('error',()=>process.exit(1))"
 
 # In a Bun monorepo, Next.js standalone mirrors the workspace path:
 # .next/standalone/apps/docs/server.js (not /server.js at root)
