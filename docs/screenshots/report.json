@@ -1,195 +1,388 @@
 {
-  "timestamp": "2026-04-13T11:24:09.814Z",
+  "timestamp": "2026-04-13T11:33:24.759Z",
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "totalPages": 28,
+  "totalScreenshots": 54,
   "results": [
     {
       "slug": "dashboard",
+      "theme": "light",
       "url": "http://localhost:3001/",
       "status": "ok"
     },
     {
       "slug": "ops-readiness",
+      "theme": "light",
       "url": "http://localhost:3001/ops-readiness",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "work",
+      "theme": "light",
       "url": "http://localhost:3001/work",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "cycles",
+      "theme": "light",
       "url": "http://localhost:3001/cycles",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "incidents",
+      "theme": "light",
       "url": "http://localhost:3001/incidents",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "rota",
+      "theme": "light",
       "url": "http://localhost:3001/rota",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "changes",
+      "theme": "light",
       "url": "http://localhost:3001/changes",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "procurement",
+      "theme": "light",
       "url": "http://localhost:3001/procurement",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "services",
+      "theme": "light",
       "url": "http://localhost:3001/services",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "access",
+      "theme": "light",
       "url": "http://localhost:3001/access",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "staff",
+      "theme": "light",
       "url": "http://localhost:3001/staff",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "leave",
+      "theme": "light",
       "url": "http://localhost:3001/leave",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "contracts",
+      "theme": "light",
       "url": "http://localhost:3001/contracts",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "appraisals",
+      "theme": "light",
       "url": "http://localhost:3001/appraisals",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "compliance-training",
+      "theme": "light",
       "url": "http://localhost:3001/compliance/training",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "compliance-ppe",
+      "theme": "light",
       "url": "http://localhost:3001/compliance/ppe",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "compliance-items",
+      "theme": "light",
       "url": "http://localhost:3001/compliance/items",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "analytics",
+      "theme": "light",
       "url": "http://localhost:3001/analytics",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "reports",
+      "theme": "light",
       "url": "http://localhost:3001/reports",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "audit",
+      "theme": "light",
       "url": "http://localhost:3001/audit",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "import",
+      "theme": "light",
       "url": "http://localhost:3001/import",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "notifications",
+      "theme": "light",
       "url": "http://localhost:3001/notifications",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "settings-general",
+      "theme": "light",
       "url": "http://localhost:3001/settings/general",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "settings-departments",
+      "theme": "light",
       "url": "http://localhost:3001/settings/departments",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "settings-leave-types",
+      "theme": "light",
       "url": "http://localhost:3001/settings/leave-types",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "settings-escalation",
+      "theme": "light",
       "url": "http://localhost:3001/settings/escalation",
       "status": "ok",
       "httpStatus": 200
     },
     {
       "slug": "settings-roles",
+      "theme": "light",
+      "url": "http://localhost:3001/settings/roles",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "dashboard",
+      "theme": "dark",
+      "url": "http://localhost:3001/",
+      "status": "ok"
+    },
+    {
+      "slug": "ops-readiness",
+      "theme": "dark",
+      "url": "http://localhost:3001/ops-readiness",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "work",
+      "theme": "dark",
+      "url": "http://localhost:3001/work",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "cycles",
+      "theme": "dark",
+      "url": "http://localhost:3001/cycles",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "incidents",
+      "theme": "dark",
+      "url": "http://localhost:3001/incidents",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "rota",
+      "theme": "dark",
+      "url": "http://localhost:3001/rota",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "changes",
+      "theme": "dark",
+      "url": "http://localhost:3001/changes",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "procurement",
+      "theme": "dark",
+      "url": "http://localhost:3001/procurement",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "services",
+      "theme": "dark",
+      "url": "http://localhost:3001/services",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "access",
+      "theme": "dark",
+      "url": "http://localhost:3001/access",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "staff",
+      "theme": "dark",
+      "url": "http://localhost:3001/staff",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "leave",
+      "theme": "dark",
+      "url": "http://localhost:3001/leave",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "contracts",
+      "theme": "dark",
+      "url": "http://localhost:3001/contracts",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "appraisals",
+      "theme": "dark",
+      "url": "http://localhost:3001/appraisals",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "compliance-training",
+      "theme": "dark",
+      "url": "http://localhost:3001/compliance/training",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "compliance-ppe",
+      "theme": "dark",
+      "url": "http://localhost:3001/compliance/ppe",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "compliance-items",
+      "theme": "dark",
+      "url": "http://localhost:3001/compliance/items",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "analytics",
+      "theme": "dark",
+      "url": "http://localhost:3001/analytics",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "reports",
+      "theme": "dark",
+      "url": "http://localhost:3001/reports",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "audit",
+      "theme": "dark",
+      "url": "http://localhost:3001/audit",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "import",
+      "theme": "dark",
+      "url": "http://localhost:3001/import",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "notifications",
+      "theme": "dark",
+      "url": "http://localhost:3001/notifications",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "settings-general",
+      "theme": "dark",
+      "url": "http://localhost:3001/settings/general",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "settings-departments",
+      "theme": "dark",
+      "url": "http://localhost:3001/settings/departments",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "settings-leave-types",
+      "theme": "dark",
+      "url": "http://localhost:3001/settings/leave-types",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "settings-escalation",
+      "theme": "dark",
+      "url": "http://localhost:3001/settings/escalation",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "slug": "settings-roles",
+      "theme": "dark",
       "url": "http://localhost:3001/settings/roles",
       "status": "ok",
       "httpStatus": 200
     }
   ],
-  "consoleErrors": {
-    "dashboard": [],
-    "ops-readiness": [],
-    "work": [],
-    "cycles": [],
-    "incidents": [],
-    "rota": [],
-    "changes": [],
-    "procurement": [],
-    "services": [],
-    "access": [],
-    "staff": [],
-    "leave": [],
-    "contracts": [],
-    "appraisals": [],
-    "compliance-training": [],
-    "compliance-ppe": [],
-    "compliance-items": [],
-    "analytics": [],
-    "reports": [],
-    "audit": [],
-    "import": [],
-    "notifications": [],
-    "settings-general": [],
-    "settings-departments": [],
-    "settings-leave-types": [],
-    "settings-escalation": [],
-    "settings-roles": []
-  }
+  "consoleErrors": {}
 }

@@ -37,59 +37,65 @@
 
 ## Screenshots
 
-> 28 pages · 1920×1080 · zero console errors · no dev artifacts
+> 28 pages · 56 screenshots · 1920×1080 · light & dark themes · zero console errors
 
 ### Login
-![Login](docs/screenshots/login-light.png)
+<img src="docs/screenshots/login-light.png" width="49%" alt="Login — Light" /> <img src="docs/screenshots/login-dark.png" width="49%" alt="Login — Dark" />
 
 ### Dashboard
-![Dashboard](docs/screenshots/dashboard-light.png)
+<img src="docs/screenshots/dashboard-light.png" width="49%" alt="Dashboard — Light" /> <img src="docs/screenshots/dashboard-dark.png" width="49%" alt="Dashboard — Dark" />
 
-### Analytics
-![Analytics](docs/screenshots/analytics-light.png)
+### Ops Readiness
+<img src="docs/screenshots/ops-readiness-light.png" width="49%" alt="Ops Readiness — Light" /> <img src="docs/screenshots/ops-readiness-dark.png" width="49%" alt="Ops Readiness — Dark" />
 
 ### Work Register
-![Work Register](docs/screenshots/work-light.png)
+<img src="docs/screenshots/work-light.png" width="49%" alt="Work — Light" /> <img src="docs/screenshots/work-dark.png" width="49%" alt="Work — Dark" />
 
-### On-Call Roster
-![Roster](docs/screenshots/rota-light.png)
+### Cycles & Sprint Board
+<img src="docs/screenshots/cycles-light.png" width="49%" alt="Cycles — Light" /> <img src="docs/screenshots/cycles-dark.png" width="49%" alt="Cycles — Dark" />
 
 ### Incidents
-![Incidents](docs/screenshots/incidents-light.png)
+<img src="docs/screenshots/incidents-light.png" width="49%" alt="Incidents — Light" /> <img src="docs/screenshots/incidents-dark.png" width="49%" alt="Incidents — Dark" />
 
-### Temp Changes
-![Temp Changes](docs/screenshots/changes-light.png)
+### On-Call Roster
+<img src="docs/screenshots/rota-light.png" width="49%" alt="Roster — Light" /> <img src="docs/screenshots/rota-dark.png" width="49%" alt="Roster — Dark" />
+
+### Temporary Changes
+<img src="docs/screenshots/changes-light.png" width="49%" alt="Temp Changes — Light" /> <img src="docs/screenshots/changes-dark.png" width="49%" alt="Temp Changes — Dark" />
+
+### Procurement
+<img src="docs/screenshots/procurement-light.png" width="49%" alt="Procurement — Light" /> <img src="docs/screenshots/procurement-dark.png" width="49%" alt="Procurement — Dark" />
 
 ### Platform Access & Identity Governance
-![Access](docs/screenshots/access-light.png)
+<img src="docs/screenshots/access-light.png" width="49%" alt="Access — Light" /> <img src="docs/screenshots/access-dark.png" width="49%" alt="Access — Dark" />
 
 ### Staff Directory
-![Staff](docs/screenshots/staff-light.png)
+<img src="docs/screenshots/staff-light.png" width="49%" alt="Staff — Light" /> <img src="docs/screenshots/staff-dark.png" width="49%" alt="Staff — Dark" />
+
+### Analytics
+<img src="docs/screenshots/analytics-light.png" width="49%" alt="Analytics — Light" /> <img src="docs/screenshots/analytics-dark.png" width="49%" alt="Analytics — Dark" />
 
 <details>
-<summary>More pages (Procurement · Cycles · Ops Readiness · Leave · Contracts · Appraisals · Services · Compliance · Reports · Audit · Import · Notifications · Settings)</summary>
+<summary><strong>All remaining pages — light &amp; dark</strong> (Leave · Contracts · Appraisals · Services · Compliance · Reports · Audit · Import · Notifications · Settings)</summary>
 
-| Page | Screenshot |
-|------|-----------|
-| Ops Readiness | ![](docs/screenshots/ops-readiness-light.png) |
-| Cycles | ![](docs/screenshots/cycles-light.png) |
-| Procurement | ![](docs/screenshots/procurement-light.png) |
-| Leave | ![](docs/screenshots/leave-light.png) |
-| Contracts | ![](docs/screenshots/contracts-light.png) |
-| Appraisals | ![](docs/screenshots/appraisals-light.png) |
-| Service Registry | ![](docs/screenshots/services-light.png) |
-| Training | ![](docs/screenshots/compliance-training-light.png) |
-| PPE | ![](docs/screenshots/compliance-ppe-light.png) |
-| Policy Items | ![](docs/screenshots/compliance-items-light.png) |
-| Reports | ![](docs/screenshots/reports-light.png) |
-| Audit Log | ![](docs/screenshots/audit-light.png) |
-| Import Data | ![](docs/screenshots/import-light.png) |
-| Notifications | ![](docs/screenshots/notifications-light.png) |
-| Settings General | ![](docs/screenshots/settings-general-light.png) |
-| Settings Departments | ![](docs/screenshots/settings-departments-light.png) |
-| Settings Leave Types | ![](docs/screenshots/settings-leave-types-light.png) |
-| Settings Escalation | ![](docs/screenshots/settings-escalation-light.png) |
-| Settings Roles | ![](docs/screenshots/settings-roles-light.png) |
+| Page | Light | Dark |
+|------|-------|------|
+| Leave | ![](docs/screenshots/leave-light.png) | ![](docs/screenshots/leave-dark.png) |
+| Contracts | ![](docs/screenshots/contracts-light.png) | ![](docs/screenshots/contracts-dark.png) |
+| Appraisals | ![](docs/screenshots/appraisals-light.png) | ![](docs/screenshots/appraisals-dark.png) |
+| Service Registry | ![](docs/screenshots/services-light.png) | ![](docs/screenshots/services-dark.png) |
+| Training | ![](docs/screenshots/compliance-training-light.png) | ![](docs/screenshots/compliance-training-dark.png) |
+| PPE | ![](docs/screenshots/compliance-ppe-light.png) | ![](docs/screenshots/compliance-ppe-dark.png) |
+| Policy Items | ![](docs/screenshots/compliance-items-light.png) | ![](docs/screenshots/compliance-items-dark.png) |
+| Reports | ![](docs/screenshots/reports-light.png) | ![](docs/screenshots/reports-dark.png) |
+| Audit Log | ![](docs/screenshots/audit-light.png) | ![](docs/screenshots/audit-dark.png) |
+| Import Data | ![](docs/screenshots/import-light.png) | ![](docs/screenshots/import-dark.png) |
+| Notifications | ![](docs/screenshots/notifications-light.png) | ![](docs/screenshots/notifications-dark.png) |
+| Settings — General | ![](docs/screenshots/settings-general-light.png) | ![](docs/screenshots/settings-general-dark.png) |
+| Settings — Departments | ![](docs/screenshots/settings-departments-light.png) | ![](docs/screenshots/settings-departments-dark.png) |
+| Settings — Leave Types | ![](docs/screenshots/settings-leave-types-light.png) | ![](docs/screenshots/settings-leave-types-dark.png) |
+| Settings — Escalation | ![](docs/screenshots/settings-escalation-light.png) | ![](docs/screenshots/settings-escalation-dark.png) |
+| Settings — Roles | ![](docs/screenshots/settings-roles-light.png) | ![](docs/screenshots/settings-roles-dark.png) |
 
 </details>
 

@@ -35,163 +35,170 @@ const routes = [
   { slug: 'settings-roles',       path: '/settings/roles' },
 ];
 
-// ── Hide all TanStack devtools overlays ─────────────────────────────────────
-// Uses both CSS class targeting AND text-content scanning so it works regardless
-// of how the devtools packages render their DOM.
-async function hideDevtools(page) {
-  await page.evaluate(() => {
-    // 1. CSS-class based hiding
-    const style = document.getElementById('__hide-devtools__') ?? document.createElement('style');
-    style.id = '__hide-devtools__';
-    style.textContent = `
-      [class^="tsqd-"], [class*=" tsqd-"],
-      [class^="tsrd-"], [class*=" tsrd-"],
-      #TanStackRouterDevtools,
-      [id^="TanStackRouter"],
-      [data-testid*="devtools"]
-      { display: none !important; }
-    `;
-    if (!style.parentNode) document.head.appendChild(style);
+const THEMES = ['light', 'dark'];
 
-    // 2. Text-content scan — catches elements where class names aren't predictable
-    const walk = (el) => {
-      if (!el || el === document.body) return;
-      const text = el.textContent?.trim() ?? '';
-      const isDevtools =
-        text === 'TanStack Router' ||
-        text === 'React Query' ||
-        el.getAttribute('aria-label')?.toLowerCase().includes('tanstack') ||
-        el.getAttribute('title')?.toLowerCase().includes('tanstack');
-      if (isDevtools) {
-        // Walk up to the top-level body child (the devtools root)
-        let root = el;
-        while (root.parentElement && root.parentElement !== document.body) {
-          root = root.parentElement;
-        }
-        root.style.setProperty('display', 'none', 'important');
-        return;
-      }
-      for (const child of el.children) walk(child);
-    };
-    // Only scan direct body children (devtools portals render there)
-    for (const child of document.body.children) {
-      if (child.id !== 'root' && child.id !== 'app') walk(child);
+// ── Clean up stale screenshots ────────────────────────────────────────────────
+function cleanStale() {
+  const stale = ['sign-in-light.png', 'sign-in-dark.png'];
+  for (const f of stale) {
+    const p = path.join(SCREENSHOT_DIR, f);
+    if (fs.existsSync(p)) {
+      fs.unlinkSync(p);
+      console.log(`Removed stale: ${f}`);
     }
-  });
+  }
 }
 
-const results = [];
-const consoleErrors = {};
+// ── Apply theme via localStorage BEFORE page load ────────────────────────────
+async function setTheme(context, theme) {
+  await context.addInitScript((t) => {
+    localStorage.setItem('ndma-dcs-theme', t);
+  }, theme);
+}
+
+// ── Force theme class on <html> after navigation (belt + suspenders) ─────────
+async function applyThemeClass(page, theme) {
+  await page.evaluate((t) => {
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(t);
+    localStorage.setItem('ndma-dcs-theme', t);
+  }, theme);
+  // Give next-themes a tick to reconcile
+  await page.waitForTimeout(300);
+}
+
+const allResults = {};
+const allErrors = {};
 
 (async () => {
+  cleanStale();
+
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({
-    viewport: { width: 1920, height: 1080 },
-  });
-  const page = await context.newPage();
 
-  let currentSlug = 'login';
-  page.on('console', msg => {
-    if (msg.type() === 'error') {
-      if (!consoleErrors[currentSlug]) consoleErrors[currentSlug] = [];
-      consoleErrors[currentSlug].push(msg.text());
+  for (const theme of THEMES) {
+    console.log(`\n${'='.repeat(60)}`);
+    console.log(`  THEME: ${theme.toUpperCase()}`);
+    console.log('='.repeat(60));
+
+    const context = await browser.newContext({
+      viewport: { width: 1920, height: 1080 },
+    });
+
+    // Pre-set theme in every new page's localStorage
+    await setTheme(context, theme);
+
+    const page = await context.newPage();
+    let currentSlug = 'login';
+    page.on('console', msg => {
+      if (msg.type() === 'error') {
+        const key = `${currentSlug}-${theme}`;
+        if (!allErrors[key]) allErrors[key] = [];
+        allErrors[key].push(msg.text());
+      }
+    });
+
+    // ── Login page ────────────────────────────────────────────────────────
+    console.log(`\nNavigating to /login ...`);
+    await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.waitForTimeout(1000);
+    await applyThemeClass(page, theme);
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, `login-${theme}.png`) });
+    console.log(`  ✓ login-${theme}.png`);
+
+    // ── Authenticate ──────────────────────────────────────────────────────
+    await page.waitForSelector('input[name="email"]', { timeout: 10000 });
+    await page.fill('input[name="email"]', 'admin@ndma.gov.gh');
+    await page.fill('input[name="password"]', 'password123');
+    await page.click('button[type="submit"]');
+
+    await page.waitForTimeout(3500);
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.waitForTimeout(2000);
+    await applyThemeClass(page, theme);
+
+    const afterLoginUrl = page.url();
+    if (afterLoginUrl.includes('/login')) {
+      console.error('ERROR: Still on login page — auth failed. Aborting theme:', theme);
+      await context.close();
+      continue;
     }
-  });
 
-  // ── Login page ────────────────────────────────────────────────────────────
-  console.log('Navigating to /login ...');
-  await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle', timeout: 30000 });
-  await page.waitForTimeout(1500);
-  await hideDevtools(page);
-  await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'login-light.png') });
-  console.log('✓ login-light.png');
+    // ── Dashboard ─────────────────────────────────────────────────────────
+    currentSlug = 'dashboard';
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, `dashboard-${theme}.png`) });
+    allResults[`dashboard-${theme}`] = { slug: 'dashboard', theme, url: afterLoginUrl, status: 'ok' };
+    console.log(`  ✓ dashboard-${theme}.png`);
 
-  // ── Authenticate ──────────────────────────────────────────────────────────
-  await page.waitForSelector('input[name="email"]', { timeout: 10000 });
-  await page.fill('input[name="email"]', 'admin@ndma.gov.gh');
-  await page.fill('input[name="password"]', 'password123');
-  await page.click('button[type="submit"]');
+    // ── All remaining pages ───────────────────────────────────────────────
+    for (const route of routes.slice(1)) {
+      currentSlug = route.slug;
+      const fullUrl = `${BASE_URL}${route.path}`;
+      console.log(`  Navigating to ${fullUrl} ...`);
 
-  // TanStack Router does a client-side redirect — wait for the cookie to be set
-  // then navigate explicitly to / (more reliable than waitForURL with CSR)
-  await page.waitForTimeout(3500);
-  await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle', timeout: 30000 });
-  await page.waitForTimeout(2500);
+      let status = 'ok';
+      let httpStatus = 0;
 
-  const afterLoginUrl = page.url();
-  console.log('After login, current URL:', afterLoginUrl);
-
-  if (afterLoginUrl.includes('/login')) {
-    console.error('ERROR: Still on login page — auth may have failed. Aborting.');
-    await browser.close();
-    process.exit(1);
-  }
-
-  // ── Dashboard ─────────────────────────────────────────────────────────────
-  currentSlug = 'dashboard';
-  if (!consoleErrors[currentSlug]) consoleErrors[currentSlug] = [];
-  await hideDevtools(page);
-  await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'dashboard-light.png') });
-  results.push({ slug: 'dashboard', url: afterLoginUrl, status: 'ok' });
-  console.log('✓ dashboard-light.png');
-
-  // ── All remaining pages ───────────────────────────────────────────────────
-  for (const route of routes.slice(1)) {
-    currentSlug = route.slug;
-    if (!consoleErrors[currentSlug]) consoleErrors[currentSlug] = [];
-
-    const fullUrl = `${BASE_URL}${route.path}`;
-    console.log(`Navigating to ${fullUrl} ...`);
-
-    let status = 'ok';
-    let httpStatus = 0;
-
-    try {
-      const response = await page.goto(fullUrl, { waitUntil: 'networkidle', timeout: 30000 });
-      await page.waitForTimeout(2000);
-      await hideDevtools(page);
-
-      httpStatus = response ? response.status() : 0;
-      if (httpStatus >= 400) status = `http-${httpStatus}`;
-
-      await page.screenshot({ path: path.join(SCREENSHOT_DIR, `${route.slug}-light.png`) });
-      console.log(`  ✓ ${route.slug}-light.png (HTTP ${httpStatus})`);
-      results.push({ slug: route.slug, url: page.url(), status, httpStatus });
-    } catch (err) {
-      status = `error: ${err.message.substring(0, 100)}`;
-      console.error(`  ✗ ${route.slug}: ${err.message.substring(0, 100)}`);
       try {
-        await hideDevtools(page);
-        await page.screenshot({ path: path.join(SCREENSHOT_DIR, `${route.slug}-light.png`) });
-      } catch (_) {}
-      results.push({ slug: route.slug, url: page.url(), status, httpStatus });
+        const response = await page.goto(fullUrl, { waitUntil: 'networkidle', timeout: 30000 });
+        await page.waitForTimeout(1500);
+        await applyThemeClass(page, theme);
+
+        httpStatus = response ? response.status() : 0;
+        if (httpStatus >= 400) status = `http-${httpStatus}`;
+
+        await page.screenshot({ path: path.join(SCREENSHOT_DIR, `${route.slug}-${theme}.png`) });
+        console.log(`    ✓ ${route.slug}-${theme}.png (HTTP ${httpStatus})`);
+        allResults[`${route.slug}-${theme}`] = { slug: route.slug, theme, url: page.url(), status, httpStatus };
+      } catch (err) {
+        status = `error: ${err.message.substring(0, 100)}`;
+        console.error(`    ✗ ${route.slug}: ${err.message.substring(0, 100)}`);
+        try {
+          await applyThemeClass(page, theme);
+          await page.screenshot({ path: path.join(SCREENSHOT_DIR, `${route.slug}-${theme}.png`) });
+        } catch (_) {}
+        allResults[`${route.slug}-${theme}`] = { slug: route.slug, theme, url: page.url(), status, httpStatus };
+      }
     }
+
+    await context.close();
   }
 
   await browser.close();
 
   // ── Report ────────────────────────────────────────────────────────────────
-  const report = { timestamp: new Date().toISOString(), results, consoleErrors };
+  const results = Object.values(allResults);
+  const report = {
+    timestamp: new Date().toISOString(),
+    themes: THEMES,
+    totalPages: routes.length + 1, // +1 for login
+    totalScreenshots: results.length,
+    results,
+    consoleErrors: allErrors,
+  };
   fs.writeFileSync(path.join(SCREENSHOT_DIR, 'report.json'), JSON.stringify(report, null, 2));
 
   console.log('\n=== SUMMARY ===');
-  for (const r of results) {
-    const errors = (consoleErrors[r.slug] || []).filter(e => !e.includes('favicon')).length;
-    const errTag = errors ? ` [${errors} JS errors]` : '';
-    console.log(`  ${r.status === 'ok' ? '✓' : '✗'} ${r.slug}${errTag}`);
+  for (const theme of THEMES) {
+    const themeResults = results.filter(r => r.theme === theme);
+    const ok = themeResults.filter(r => r.status === 'ok').length;
+    console.log(`  [${theme}] ${ok}/${themeResults.length} ok`);
   }
 
-  const pagesWithErrors = Object.entries(consoleErrors)
-    .map(([slug, errs]) => [slug, errs.filter(e => !e.includes('favicon'))])
+  const pagesWithErrors = Object.entries(allErrors)
+    .map(([key, errs]) => [key, errs.filter(e => !e.includes('favicon'))])
     .filter(([, errs]) => errs.length > 0);
 
   if (pagesWithErrors.length === 0) {
-    console.log('\nZero console errors across all pages.');
+    console.log('\nZero console errors across all pages and themes.');
   } else {
     console.log('\n=== CONSOLE ERRORS ===');
-    for (const [slug, errors] of pagesWithErrors) {
-      console.log(`\n  [${slug}]`);
+    for (const [key, errors] of pagesWithErrors) {
+      console.log(`\n  [${key}]`);
       errors.forEach(e => console.log(`    - ${e}`));
     }
   }
+
+  // Final count
+  const total = fs.readdirSync(SCREENSHOT_DIR).filter(f => f.endsWith('.png')).length;
+  console.log(`\nTotal screenshots in directory: ${total} (${routes.length + 1} pages × 2 themes = ${(routes.length + 1) * 2} expected)`);
 })();
