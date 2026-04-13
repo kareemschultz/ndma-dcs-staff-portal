@@ -11,6 +11,8 @@
   },
   "scripts": {
     "db:seed": "bun --env-file=../../apps/server/.env src/seed.ts",
+    "db:seed:demo": "bun --env-file=../../apps/server/.env src/seed-demo.ts",
+    "db:seed:clear": "bun --env-file=../../apps/server/.env src/seed-demo.ts --clear",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
