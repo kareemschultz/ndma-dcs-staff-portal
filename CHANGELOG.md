@@ -8,6 +8,18 @@ All notable changes to DCS Ops Center are documented here.
 
 ### Added
 
+#### Phase D — On-Call Expansion + Phase J — Dashboard (2026-04-12)
+- **Escalation router** (`packages/api/src/routers/escalation.ts`) — full CRUD for escalation policies, timed steps, and on-call overrides; all mutations audit-logged
+- **`rota.getEffectiveOnCall`** — resolves active overrides on top of base schedule assignments for a given date
+- **Rota planner page** (`/rota/planner`) — create draft schedules, assign staff per role via eligible-staff dropdowns, publish when complete
+- **Rota swaps page** (`/rota/swaps`) — pending and all swaps list with Approve/Reject buttons
+- **Rota history page** (`/rota/history`) — full assignment history log with action badges
+- **Sidebar updated** — On-Call Rota expanded to collapsible with 4 sub-links (Current, Planner, Swap Requests, History)
+- **Escalation settings page** (`/settings/escalation`) — live CRUD replacing the placeholder; create policies, add/delete steps inline, delete policies
+- **Dashboard wired** (`/`) — 8 KPI cards now pull live data from `orpc.dashboard.main`; ops readiness traffic-light indicator; recent activity audit feed (last 10 entries)
+- **AGENTS.md** — AI agent context file for OpenAI Codex, GitHub Copilot Workspace, and other non-Claude agents
+- **GEMINI.md** — Gemini CLI equivalent of AGENTS.md
+
 #### Phase H — Access & Accounts v2 (2026-04-12)
 - **Multi-source authentication tracking** — accounts now carry an `authSource` field distinguishing Local, AD/LDAP, RADIUS, SAML, OAuth/OIDC, Service Account, and API-only origins
 - **Sync mode support** — accounts are classified as `manual`, `synced`, or `hybrid` so synced records can receive local annotations without being overwritten on the next sync

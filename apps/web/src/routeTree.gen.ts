@@ -36,6 +36,9 @@ import { Route as AuthenticatedSettingsLeaveTypesRouteImport } from './routes/_a
 import { Route as AuthenticatedSettingsGeneralRouteImport } from './routes/_authenticated/settings/general'
 import { Route as AuthenticatedSettingsEscalationRouteImport } from './routes/_authenticated/settings/escalation'
 import { Route as AuthenticatedSettingsDepartmentsRouteImport } from './routes/_authenticated/settings/departments'
+import { Route as AuthenticatedRotaSwapsRouteImport } from './routes/_authenticated/rota/swaps'
+import { Route as AuthenticatedRotaPlannerRouteImport } from './routes/_authenticated/rota/planner'
+import { Route as AuthenticatedRotaHistoryRouteImport } from './routes/_authenticated/rota/history'
 import { Route as AuthenticatedProcurementNewRouteImport } from './routes/_authenticated/procurement/new'
 import { Route as AuthenticatedLeaveNewRouteImport } from './routes/_authenticated/leave/new'
 import { Route as AuthenticatedIncidentsNewRouteImport } from './routes/_authenticated/incidents/new'
@@ -198,6 +201,23 @@ const AuthenticatedSettingsDepartmentsRoute =
     path: '/settings/departments',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedRotaSwapsRoute = AuthenticatedRotaSwapsRouteImport.update({
+  id: '/rota/swaps',
+  path: '/rota/swaps',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRotaPlannerRoute =
+  AuthenticatedRotaPlannerRouteImport.update({
+    id: '/rota/planner',
+    path: '/rota/planner',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRotaHistoryRoute =
+  AuthenticatedRotaHistoryRouteImport.update({
+    id: '/rota/history',
+    path: '/rota/history',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProcurementNewRoute =
   AuthenticatedProcurementNewRouteImport.update({
     id: '/procurement/new',
@@ -263,6 +283,9 @@ export interface FileRoutesByFullPath {
   '/incidents/new': typeof AuthenticatedIncidentsNewRoute
   '/leave/new': typeof AuthenticatedLeaveNewRoute
   '/procurement/new': typeof AuthenticatedProcurementNewRoute
+  '/rota/history': typeof AuthenticatedRotaHistoryRoute
+  '/rota/planner': typeof AuthenticatedRotaPlannerRoute
+  '/rota/swaps': typeof AuthenticatedRotaSwapsRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/escalation': typeof AuthenticatedSettingsEscalationRoute
   '/settings/general': typeof AuthenticatedSettingsGeneralRoute
@@ -300,6 +323,9 @@ export interface FileRoutesByTo {
   '/incidents/new': typeof AuthenticatedIncidentsNewRoute
   '/leave/new': typeof AuthenticatedLeaveNewRoute
   '/procurement/new': typeof AuthenticatedProcurementNewRoute
+  '/rota/history': typeof AuthenticatedRotaHistoryRoute
+  '/rota/planner': typeof AuthenticatedRotaPlannerRoute
+  '/rota/swaps': typeof AuthenticatedRotaSwapsRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/escalation': typeof AuthenticatedSettingsEscalationRoute
   '/settings/general': typeof AuthenticatedSettingsGeneralRoute
@@ -339,6 +365,9 @@ export interface FileRoutesById {
   '/_authenticated/incidents/new': typeof AuthenticatedIncidentsNewRoute
   '/_authenticated/leave/new': typeof AuthenticatedLeaveNewRoute
   '/_authenticated/procurement/new': typeof AuthenticatedProcurementNewRoute
+  '/_authenticated/rota/history': typeof AuthenticatedRotaHistoryRoute
+  '/_authenticated/rota/planner': typeof AuthenticatedRotaPlannerRoute
+  '/_authenticated/rota/swaps': typeof AuthenticatedRotaSwapsRoute
   '/_authenticated/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/_authenticated/settings/escalation': typeof AuthenticatedSettingsEscalationRoute
   '/_authenticated/settings/general': typeof AuthenticatedSettingsGeneralRoute
@@ -378,6 +407,9 @@ export interface FileRouteTypes {
     | '/incidents/new'
     | '/leave/new'
     | '/procurement/new'
+    | '/rota/history'
+    | '/rota/planner'
+    | '/rota/swaps'
     | '/settings/departments'
     | '/settings/escalation'
     | '/settings/general'
@@ -415,6 +447,9 @@ export interface FileRouteTypes {
     | '/incidents/new'
     | '/leave/new'
     | '/procurement/new'
+    | '/rota/history'
+    | '/rota/planner'
+    | '/rota/swaps'
     | '/settings/departments'
     | '/settings/escalation'
     | '/settings/general'
@@ -453,6 +488,9 @@ export interface FileRouteTypes {
     | '/_authenticated/incidents/new'
     | '/_authenticated/leave/new'
     | '/_authenticated/procurement/new'
+    | '/_authenticated/rota/history'
+    | '/_authenticated/rota/planner'
+    | '/_authenticated/rota/swaps'
     | '/_authenticated/settings/departments'
     | '/_authenticated/settings/escalation'
     | '/_authenticated/settings/general'
@@ -675,6 +713,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsDepartmentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/rota/swaps': {
+      id: '/_authenticated/rota/swaps'
+      path: '/rota/swaps'
+      fullPath: '/rota/swaps'
+      preLoaderRoute: typeof AuthenticatedRotaSwapsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rota/planner': {
+      id: '/_authenticated/rota/planner'
+      path: '/rota/planner'
+      fullPath: '/rota/planner'
+      preLoaderRoute: typeof AuthenticatedRotaPlannerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rota/history': {
+      id: '/_authenticated/rota/history'
+      path: '/rota/history'
+      fullPath: '/rota/history'
+      preLoaderRoute: typeof AuthenticatedRotaHistoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/procurement/new': {
       id: '/_authenticated/procurement/new'
       path: '/procurement/new'
@@ -752,6 +811,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIncidentsNewRoute: typeof AuthenticatedIncidentsNewRoute
   AuthenticatedLeaveNewRoute: typeof AuthenticatedLeaveNewRoute
   AuthenticatedProcurementNewRoute: typeof AuthenticatedProcurementNewRoute
+  AuthenticatedRotaHistoryRoute: typeof AuthenticatedRotaHistoryRoute
+  AuthenticatedRotaPlannerRoute: typeof AuthenticatedRotaPlannerRoute
+  AuthenticatedRotaSwapsRoute: typeof AuthenticatedRotaSwapsRoute
   AuthenticatedSettingsDepartmentsRoute: typeof AuthenticatedSettingsDepartmentsRoute
   AuthenticatedSettingsEscalationRoute: typeof AuthenticatedSettingsEscalationRoute
   AuthenticatedSettingsGeneralRoute: typeof AuthenticatedSettingsGeneralRoute
@@ -789,6 +851,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIncidentsNewRoute: AuthenticatedIncidentsNewRoute,
   AuthenticatedLeaveNewRoute: AuthenticatedLeaveNewRoute,
   AuthenticatedProcurementNewRoute: AuthenticatedProcurementNewRoute,
+  AuthenticatedRotaHistoryRoute: AuthenticatedRotaHistoryRoute,
+  AuthenticatedRotaPlannerRoute: AuthenticatedRotaPlannerRoute,
+  AuthenticatedRotaSwapsRoute: AuthenticatedRotaSwapsRoute,
   AuthenticatedSettingsDepartmentsRoute: AuthenticatedSettingsDepartmentsRoute,
   AuthenticatedSettingsEscalationRoute: AuthenticatedSettingsEscalationRoute,
   AuthenticatedSettingsGeneralRoute: AuthenticatedSettingsGeneralRoute,

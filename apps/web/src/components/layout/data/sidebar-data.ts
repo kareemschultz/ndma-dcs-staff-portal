@@ -71,8 +71,13 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "On-Call Rota",
-          url: "/rota",
           icon: CalendarClock,
+          items: [
+            { title: "Current Rota", url: "/rota" },
+            { title: "Planner", url: "/rota/planner" },
+            { title: "Swap Requests", url: "/rota/swaps" },
+            { title: "History", url: "/rota/history" },
+          ],
         },
         {
           title: "Temp Changes",

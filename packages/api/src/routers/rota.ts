@@ -5,6 +5,7 @@ import {
   onCallSchedules,
   onCallAssignments,
   onCallSwaps,
+  onCallOverrides,
   assignmentHistory,
   staffProfiles,
   departments,
@@ -533,6 +534,51 @@ export const rotaRouter = {
         });
       }),
   },
+
+  // Resolve effective on-call for a given date, applying any active overrides
+  getEffectiveOnCall: protectedProcedure
+    .input(z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }))
+    .handler(async ({ input }) => {
+      const schedule = await db.query.onCallSchedules.findFirst({
+        where: and(
+          eq(onCallSchedules.status, "published"),
+          lte(onCallSchedules.weekStart, input.date),
+          gte(onCallSchedules.weekEnd, input.date),
+        ),
+        with: {
+          assignments: {
+            with: { staffProfile: { with: { user: true, department: true } } },
+          },
+        },
+      });
+
+      if (!schedule) return null;
+
+      // Fetch all overrides active on this date for this schedule
+      const overrides = await db.query.onCallOverrides.findMany({
+        where: and(
+          eq(onCallOverrides.scheduleId, schedule.id),
+          lte(onCallOverrides.startDate, input.date),
+          gte(onCallOverrides.endDate, input.date),
+        ),
+        with: {
+          overrideStaff: { with: { user: true, department: true } },
+        },
+      });
+
+      // Apply overrides: replace originalStaffId with overrideStaff for the role
+      const effectiveAssignments = schedule.assignments.map((a) => {
+        const override = overrides.find(
+          (o) => o.originalStaffId === a.staffProfileId && o.role === a.role,
+        );
+        if (override) {
+          return { ...a, staffProfile: override.overrideStaff, overridden: true, overrideReason: override.reason };
+        }
+        return { ...a, overridden: false };
+      });
+
+      return { ...schedule, assignments: effectiveAssignments };
+    }),
 
   // Assignment history with optional filters
   history: protectedProcedure
