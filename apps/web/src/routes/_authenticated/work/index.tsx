@@ -3,12 +3,31 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertCircle,
+  CheckCircle2,
   ClipboardCheck,
+  Loader2,
   Plus,
   RefreshCw,
+  Timer,
 } from "lucide-react";
 import { format, isPast, parseISO } from "date-fns";
+import {
+  BarChart,
+  Bar,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { Button } from "@ndma-dcs-staff-portal/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@ndma-dcs-staff-portal/ui/components/card";
 import {
   Table,
   TableBody,
@@ -28,6 +47,8 @@ import type { WorkStatus, WorkType, WorkPriority } from "@/features/work/compone
 export const Route = createFileRoute("/_authenticated/work/")({
   component: WorkPage,
 });
+
+// ── Constants ──────────────────────────────────────────────────────────────
 
 const STATUS_OPTIONS: { value: WorkStatus | ""; label: string }[] = [
   { value: "", label: "All Statuses" },
@@ -56,10 +77,24 @@ const PRIORITY_OPTIONS: { value: WorkPriority | ""; label: string }[] = [
   { value: "critical", label: "Critical" },
 ];
 
+// Status bar colors
+const STATUS_COLORS: Record<string, string> = {
+  backlog: "#94a3b8",
+  todo: "#64748b",
+  in_progress: "#3b82f6",
+  blocked: "#ef4444",
+  review: "#f59e0b",
+  done: "#22c55e",
+  cancelled: "#d1d5db",
+};
+
+// ── Component ──────────────────────────────────────────────────────────────
+
 function WorkPage() {
   const [status, setStatus] = useState<WorkStatus | "">("");
   const [type, setType] = useState<WorkType | "">("");
   const [priority, setPriority] = useState<WorkPriority | "">("");
+  const [departmentId, setDepartmentId] = useState("");
   const [overdueOnly, setOverdueOnly] = useState(false);
 
   const { data, isLoading, error, refetch } = useQuery(
@@ -68,14 +103,26 @@ function WorkPage() {
         status: status || undefined,
         type: type || undefined,
         priority: priority || undefined,
+        departmentId: departmentId || undefined,
         overdueOnly: overdueOnly || undefined,
-        limit: 100,
+        limit: 200,
         offset: 0,
       },
-    })
+    }),
   );
 
   const { data: stats } = useQuery(orpc.work.stats.queryOptions());
+  const { data: departments } = useQuery(orpc.staff.getDepartments.queryOptions());
+
+  // Build chart data from stats
+  const chartData = stats
+    ? Object.entries(stats.byStatus)
+        .filter(([, count]) => count > 0)
+        .map(([s, count]) => ({ status: s.replace("_", " "), count, fill: STATUS_COLORS[s] ?? "#94a3b8" }))
+        .sort((a, b) => b.count - a.count)
+    : [];
+
+  const doneThisMonth = stats?.byStatus["done"] ?? 0;
 
   return (
     <>
@@ -106,28 +153,95 @@ function WorkPage() {
           </p>
         </div>
 
-        {/* Stats bar */}
-        {stats && (
-          <div className="mb-4 flex flex-wrap gap-4 text-sm">
-            <span className="text-muted-foreground">
-              <strong className="text-foreground">{stats.total}</strong> total
-            </span>
-            <span className="text-muted-foreground">
-              <strong className="text-indigo-600">{stats.byStatus["in_progress"] ?? 0}</strong> in progress
-            </span>
-            <span className="text-muted-foreground">
-              <strong className="text-amber-600">{stats.byStatus["review"] ?? 0}</strong> in review
-            </span>
-            {stats.overdue > 0 && (
-              <span className="flex items-center gap-1 text-red-600">
-                <AlertCircle className="size-3.5" />
-                <strong>{stats.overdue}</strong> overdue
-              </span>
-            )}
-          </div>
+        {/* ── Stat cards ── */}
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <Card>
+            <CardHeader className="pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Total
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pb-3 px-4">
+              <p className="text-2xl font-bold">{stats?.total ?? "—"}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                <Loader2 className="size-3 text-blue-500" />
+                In Progress
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pb-3 px-4">
+              <p className="text-2xl font-bold text-blue-600">
+                {stats?.byStatus["in_progress"] ?? "—"}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                <AlertCircle className="size-3 text-red-500" />
+                Overdue
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pb-3 px-4">
+              <p className={`text-2xl font-bold ${(stats?.overdue ?? 0) > 0 ? "text-red-600" : ""}`}>
+                {stats?.overdue ?? "—"}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                <CheckCircle2 className="size-3 text-green-500" />
+                Done
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pb-3 px-4">
+              <p className="text-2xl font-bold text-green-600">{doneThisMonth}</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* ── Status distribution chart ── */}
+        {chartData.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Work Items by Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={chartData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis
+                    dataKey="status"
+                    tick={{ fontSize: 11 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={{ fontSize: 11 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{ fontSize: 12 }}
+                    cursor={{ fill: "hsl(var(--muted))" }}
+                  />
+                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                    {chartData.map((entry, i) => (
+                      <Cell key={i} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
         )}
 
-        {/* Filters */}
+        {/* ── Filters ── */}
         <div className="mb-4 flex flex-wrap gap-3">
           <select
             value={status}
@@ -159,6 +273,19 @@ function WorkPage() {
             ))}
           </select>
 
+          {departments && departments.length > 0 && (
+            <select
+              value={departmentId}
+              onChange={(e) => setDepartmentId(e.target.value)}
+              className="rounded-md border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">All Departments</option>
+              {departments.map((d) => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
+            </select>
+          )}
+
           <label className="flex items-center gap-2 text-sm cursor-pointer">
             <input
               type="checkbox"
@@ -166,16 +293,32 @@ function WorkPage() {
               onChange={(e) => setOverdueOnly(e.target.checked)}
               className="rounded border"
             />
+            <Timer className="size-3.5 text-red-500" />
             Overdue only
           </label>
+
+          {(status || type || priority || departmentId || overdueOnly) && (
+            <button
+              onClick={() => {
+                setStatus("");
+                setType("");
+                setPriority("");
+                setDepartmentId("");
+                setOverdueOnly(false);
+              }}
+              className="text-xs text-muted-foreground underline"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
 
-        {/* Table */}
+        {/* ── Table ── */}
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[40%]">Title</TableHead>
+                <TableHead className="w-[38%]">Title</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Priority</TableHead>
@@ -236,6 +379,12 @@ function WorkPage() {
                             {item.description}
                           </p>
                         )}
+                        {item.sourceSystem && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {item.sourceSystem}
+                            {item.sourceReference ? ` · #${item.sourceReference}` : ""}
+                          </p>
+                        )}
                       </TableCell>
                       <TableCell>
                         <TypeBadge type={item.type as WorkType} />
@@ -260,7 +409,9 @@ function WorkPage() {
                         {item.dueDate ? (
                           <span className={isOverdue ? "text-red-600 font-medium" : ""}>
                             {format(parseISO(item.dueDate), "dd MMM yyyy")}
-                            {isOverdue && " ⚠️"}
+                            {isOverdue && (
+                              <AlertCircle className="inline ml-1 size-3.5 text-red-500" />
+                            )}
                           </span>
                         ) : (
                           <span className="text-muted-foreground">—</span>
@@ -273,6 +424,12 @@ function WorkPage() {
             </TableBody>
           </Table>
         </div>
+
+        {data && data.length > 0 && (
+          <p className="mt-2 text-xs text-muted-foreground text-right">
+            Showing {data.length} item{data.length !== 1 ? "s" : ""}
+          </p>
+        )}
       </Main>
     </>
   );
