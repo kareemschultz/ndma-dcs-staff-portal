@@ -123,10 +123,13 @@ ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0 \
     NEXT_TELEMETRY_DISABLED=1
 
-# Standalone output includes a minimal node_modules and server.js
+# Standalone output includes a minimal node_modules and server.js.
+# In a Bun monorepo the standalone bundle mirrors workspace paths:
+# standalone/apps/docs/server.js — so server.js is NOT at root.
 COPY --from=docs-builder /app/apps/docs/.next/standalone ./
-# Static assets (chunks, images, etc.) must be copied separately
-COPY --from=docs-builder /app/apps/docs/.next/static ./.next/static
+# Static assets must land at apps/docs/.next/static (mirrors the workspace path
+# the standalone server.js expects — NOT at the root /.next/static).
+COPY --from=docs-builder /app/apps/docs/.next/static ./apps/docs/.next/static
 
 EXPOSE 4000
 
