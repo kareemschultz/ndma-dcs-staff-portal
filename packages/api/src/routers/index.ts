@@ -21,6 +21,8 @@ import { workRouter } from "./work";
 import { cyclesRouter } from "./cycles";
 import { workloadRouter } from "./workload";
 import { automationRouter } from "./automation";
+import { overlaysRouter } from "./overlays";
+import { analyticsRouter } from "./analytics";
 
 export const appRouter = {
   healthCheck: publicProcedure.handler(() => "OK"),
@@ -48,6 +50,8 @@ export const appRouter = {
   cycles: cyclesRouter,
   workload: workloadRouter,
   automation: automationRouter,
+  overlays: overlaysRouter,
+  analytics: analyticsRouter,
 };
 
 export type AppRouter = typeof appRouter;

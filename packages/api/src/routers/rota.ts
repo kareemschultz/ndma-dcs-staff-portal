@@ -11,6 +11,7 @@ import {
   departments,
   leaveRequests,
   contracts,
+  rotaImportWarnings,
 } from "@ndma-dcs-staff-portal/db";
 import { eq, desc, asc, and, gte, lte, or, isNull } from "drizzle-orm";
 import { protectedProcedure, requireRole } from "../index";
@@ -719,5 +720,108 @@ export const rotaRouter = {
           schedule: true,
         },
       });
+    }),
+
+  // Acknowledge an on-call assignment — staff confirms they received it
+  acknowledge: protectedProcedure
+    .input(z.object({ assignmentId: z.string() }))
+    .handler(async ({ input, context }) => {
+      const assignment = await db.query.onCallAssignments.findFirst({
+        where: eq(onCallAssignments.id, input.assignmentId),
+      });
+      if (!assignment) throw new ORPCError("NOT_FOUND");
+
+      // Find staff profile for the current user
+      const staffProfile = await db.query.staffProfiles.findFirst({
+        where: eq(staffProfiles.userId, context.session.user.id),
+      });
+      if (!staffProfile) throw new ORPCError("NOT_FOUND", { message: "Staff profile not found" });
+
+      const [updated] = await db
+        .update(onCallAssignments)
+        .set({
+          acknowledgedAt: new Date(),
+          acknowledgedById: staffProfile.id,
+          isConfirmed: true,
+        })
+        .where(eq(onCallAssignments.id, input.assignmentId))
+        .returning();
+      if (!updated) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
+      await logHistory({
+        scheduleId: assignment.scheduleId,
+        assignmentId: assignment.id,
+        staffProfileId: assignment.staffProfileId,
+        role: assignment.role,
+        action: "acknowledged",
+        performedById: context.session.user.id,
+      });
+
+      await logAudit({
+        actorId: context.session.user.id,
+        actorName: context.session.user.name,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
+        action: "rota.assignment.acknowledge",
+        module: "rota",
+        resourceType: "on_call_assignment",
+        resourceId: input.assignmentId,
+        afterValue: { acknowledgedAt: updated.acknowledgedAt },
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+      });
+
+      return updated;
+    }),
+
+  // Import warnings — ambiguous spreadsheet entries flagged for admin review
+  listImportWarnings: protectedProcedure
+    .input(z.object({ status: z.enum(["pending", "resolved", "dismissed"]).optional() }))
+    .handler(async ({ input }) => {
+      return db.query.rotaImportWarnings.findMany({
+        where: input.status
+          ? eq(rotaImportWarnings.status, input.status)
+          : undefined,
+        orderBy: asc(rotaImportWarnings.weekStart),
+        with: { schedule: true },
+      });
+    }),
+
+  resolveImportWarning: requireRole("rota", "update")
+    .input(
+      z.object({
+        warningId: z.string(),
+        action: z.enum(["resolved", "dismissed"]),
+        notes: z.string().optional(),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      const [updated] = await db
+        .update(rotaImportWarnings)
+        .set({
+          status: input.action,
+          resolvedById: context.session.user.id,
+          resolvedAt: new Date(),
+          resolutionNotes: input.notes,
+        })
+        .where(eq(rotaImportWarnings.id, input.warningId))
+        .returning();
+      if (!updated) throw new ORPCError("NOT_FOUND");
+
+      await logAudit({
+        actorId: context.session.user.id,
+        actorName: context.session.user.name,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
+        action: `rota.import_warning.${input.action}`,
+        module: "rota",
+        resourceType: "rota_import_warning",
+        resourceId: input.warningId,
+        afterValue: { status: input.action, notes: input.notes },
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+      });
+
+      return updated;
     }),
 };

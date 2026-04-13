@@ -4,12 +4,14 @@ import {
   contracts,
   departments,
   importJobs,
+  leaveRequests,
+  leaveTypes,
   staffProfiles,
   trainingRecords,
   user,
   workItems,
 } from "@ndma-dcs-staff-portal/db";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
@@ -46,6 +48,16 @@ const workRowSchema = z.object({
   priority: z.enum(["low", "medium", "high", "critical"]),
   description: z.string().optional(),
   assignedToEmail: z.string().email().optional(),
+});
+
+// Leave import: 2026 dates only, existing staff only (never creates new staff)
+const leaveRowSchema = z.object({
+  staffEmail: z.string().email(),
+  leaveTypeCode: z.string().min(1), // e.g. AL, SL, ML
+  startDate: z.string().regex(/^2026-\d{2}-\d{2}$/, "startDate must be a 2026 date (YYYY-MM-DD)"),
+  endDate: z.string().regex(/^2026-\d{2}-\d{2}$/, "endDate must be a 2026 date (YYYY-MM-DD)"),
+  totalDays: z.string().regex(/^\d+$/, "totalDays must be a number"),
+  reason: z.string().optional(),
 });
 
 // ── Shared helpers ────────────────────────────────────────────────────────
@@ -243,6 +255,67 @@ async function processWorkRow(
   return { success: true };
 }
 
+async function processLeaveRow(
+  rawRow: Record<string, string>,
+  rowIdx: number,
+): Promise<{ success: boolean; error?: { row: number; field?: string; message: string } }> {
+  const parse = leaveRowSchema.safeParse({
+    staffEmail: rawRow.staffEmail,
+    leaveTypeCode: rawRow.leaveTypeCode,
+    startDate: rawRow.startDate,
+    endDate: rawRow.endDate,
+    totalDays: rawRow.totalDays,
+    reason: rawRow.reason || undefined,
+  });
+  if (!parse.success) {
+    return {
+      success: false,
+      error: { row: rowIdx, message: parse.error.issues[0]?.message ?? "Validation failed" },
+    };
+  }
+  const data = parse.data;
+
+  // Must match an existing staff member — never create new staff
+  const staffProfileId = await findStaffByEmail(data.staffEmail);
+  if (!staffProfileId) {
+    return {
+      success: false,
+      error: {
+        row: rowIdx,
+        field: "staffEmail",
+        message: `No existing staff found with email ${data.staffEmail} — new staff cannot be created via leave import`,
+      },
+    };
+  }
+
+  // Must match an existing leave type by code
+  const leaveType = await db.query.leaveTypes.findFirst({
+    where: and(eq(leaveTypes.code, data.leaveTypeCode), eq(leaveTypes.isActive, true)),
+  });
+  if (!leaveType) {
+    return {
+      success: false,
+      error: {
+        row: rowIdx,
+        field: "leaveTypeCode",
+        message: `No active leave type found with code "${data.leaveTypeCode}"`,
+      },
+    };
+  }
+
+  await db.insert(leaveRequests).values({
+    staffProfileId,
+    leaveTypeId: leaveType.id,
+    startDate: data.startDate,
+    endDate: data.endDate,
+    totalDays: parseInt(data.totalDays, 10),
+    reason: data.reason ?? null,
+    status: "approved", // Historical imports are auto-approved
+  });
+
+  return { success: true };
+}
+
 // ── Router ────────────────────────────────────────────────────────────────
 
 export const importRouter = {
@@ -251,7 +324,7 @@ export const importRouter = {
   execute: requireRole("staff", "import")
     .input(
       z.object({
-        importType: z.enum(["staff", "training", "contracts", "work"]),
+        importType: z.enum(["staff", "training", "contracts", "work", "leave"]),
         fileName: z.string().optional(),
         rows: z.array(z.record(z.string(), z.string())).max(500),
       }),
@@ -263,7 +336,7 @@ export const importRouter = {
       const [job] = await db
         .insert(importJobs)
         .values({
-          importType: importType as "staff" | "training" | "contracts" | "work",
+          importType: importType as "staff" | "training" | "contracts" | "work" | "leave",
           fileName: fileName ?? null,
           status: "running",
           totalRows: rows.length,
@@ -292,6 +365,9 @@ export const importRouter = {
               break;
             case "work":
               result = await processWorkRow(row, i + 1, context.session.user.id);
+              break;
+            case "leave":
+              result = await processLeaveRow(row, i + 1);
               break;
             default:
               result = { success: false, error: { row: i + 1, message: "Unknown import type" } };
@@ -349,7 +425,7 @@ export const importRouter = {
       z.object({
         limit: z.number().default(20),
         offset: z.number().default(0),
-        importType: z.enum(["staff", "training", "contracts", "work", "platform_accounts"]).optional(),
+        importType: z.enum(["staff", "training", "contracts", "work", "platform_accounts", "leave"]).optional(),
       }),
     )
     .handler(async ({ input }) => {

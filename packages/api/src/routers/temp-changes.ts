@@ -1,7 +1,7 @@
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
-import { db, temporaryChanges } from "@ndma-dcs-staff-portal/db";
-import { and, desc, eq, lt, sql } from "drizzle-orm";
+import { db, temporaryChanges, tempChangeHistory, tempChangeLinks } from "@ndma-dcs-staff-portal/db";
+import { and, count, desc, eq, gt, gte, isNotNull, lt, lte, sql } from "drizzle-orm";
 
 import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
@@ -14,6 +14,27 @@ const StatusSchema = z.enum([
   "removed",
   "cancelled",
 ]);
+
+// ── Risk derivation helper ─────────────────────────────────────────────────────
+
+function deriveRiskLevel(data: {
+  externalExposure?: boolean;
+  publicIp?: string | null;
+  environment?: string | null;
+  ownerType?: string | null;
+}): "low" | "medium" | "high" | "critical" {
+  const hasPublicIp = !!(data.publicIp?.trim());
+  const isExternal = !!data.externalExposure;
+  const isProd = !data.environment || data.environment === "production";
+  const hasOwner = data.ownerType !== "system";
+
+  if (isExternal && hasPublicIp && isProd) return "critical";
+  if (isExternal || hasPublicIp || (isProd && !hasOwner)) return "high";
+  if (isProd) return "medium";
+  return "low";
+}
+
+// ── Router ─────────────────────────────────────────────────────────────────────
 
 export const tempChangesRouter = {
   list: protectedProcedure
@@ -75,14 +96,40 @@ export const tempChangesRouter = {
         followUpDate: z.string().optional(),
         linkedWorkItemId: z.string().optional(),
         rollbackPlan: z.string().optional(),
+        // Extended categorization
+        category: z.enum(["public_ip_exposure", "temporary_service", "temporary_access", "temporary_change", "other"]).optional(),
+        environment: z.string().optional(),
+        systemName: z.string().optional(),
+        // Network/IP exposure details
+        publicIp: z.string().optional(),
+        internalIp: z.string().optional(),
+        port: z.string().optional(),
+        protocol: z.enum(["tcp", "udp", "both"]).optional(),
+        externalExposure: z.boolean().optional(),
+        // Owner model
+        ownerType: z.enum(["internal_staff", "external_contact", "department", "system"]).optional(),
+        externalAgencyName: z.string().optional(),
+        externalAgencyType: z.string().optional(),
+        // Requester info
+        requestedByType: z.string().optional(),
+        requestedByExternal: z.string().optional(),
+        requestedById: z.string().optional(),
+        // Department linkage
+        departmentId: z.string().optional(),
       }),
     )
     .handler(async ({ input, context }) => {
+      const riskLevel = deriveRiskLevel({
+        externalExposure: input.externalExposure,
+        publicIp: input.publicIp,
+        environment: input.environment,
+        ownerType: input.ownerType,
+      });
+
       const [change] = await db
         .insert(temporaryChanges)
         .values({
-          ...input,
-          createdById: context.session.user.id,
+          title: input.title,
           description: input.description ?? null,
           justification: input.justification ?? null,
           ownerId: input.ownerId ?? null,
@@ -92,6 +139,24 @@ export const tempChangesRouter = {
           followUpDate: input.followUpDate ?? null,
           linkedWorkItemId: input.linkedWorkItemId ?? null,
           rollbackPlan: input.rollbackPlan ?? null,
+          createdById: context.session.user.id,
+          // Extended fields
+          category: input.category ?? "temporary_change",
+          environment: input.environment ?? "production",
+          systemName: input.systemName ?? null,
+          publicIp: input.publicIp ?? null,
+          internalIp: input.internalIp ?? null,
+          port: input.port ?? null,
+          protocol: input.protocol ?? null,
+          externalExposure: input.externalExposure ?? false,
+          ownerType: input.ownerType ?? "internal_staff",
+          externalAgencyName: input.externalAgencyName ?? null,
+          externalAgencyType: input.externalAgencyType ?? null,
+          requestedByType: input.requestedByType ?? null,
+          requestedByExternal: input.requestedByExternal ?? null,
+          requestedById: input.requestedById ?? null,
+          departmentId: input.departmentId ?? null,
+          riskLevel,
         })
         .returning();
       if (!change) throw new ORPCError("INTERNAL_SERVER_ERROR");
@@ -243,4 +308,149 @@ export const tempChangesRouter = {
 
     return { total: all.length, byStatus, overdue };
   }),
+
+  statsExtended: protectedProcedure.handler(async () => {
+    const all = await db.query.temporaryChanges.findMany({
+      columns: {
+        id: true,
+        status: true,
+        removeByDate: true,
+        publicIp: true,
+        externalExposure: true,
+        category: true,
+        riskLevel: true,
+      },
+    });
+    const today = new Date().toISOString().slice(0, 10);
+    const sevenDaysOut = new Date(Date.now() + 7 * 86400000)
+      .toISOString()
+      .slice(0, 10);
+    const byStatus: Record<string, number> = {};
+    const byCategory: Record<string, number> = {};
+    const byRisk: Record<string, number> = {};
+    let overdue = 0;
+    let expiringSoon = 0;
+    let publicIpCount = 0;
+    let active = 0;
+
+    for (const c of all) {
+      byStatus[c.status] = (byStatus[c.status] ?? 0) + 1;
+      if (c.category) byCategory[c.category] = (byCategory[c.category] ?? 0) + 1;
+      if (c.riskLevel) byRisk[c.riskLevel] = (byRisk[c.riskLevel] ?? 0) + 1;
+
+      const isActive = !["removed", "cancelled"].includes(c.status);
+      if (isActive && c.status === "active") active++;
+      if (
+        isActive &&
+        c.removeByDate &&
+        c.removeByDate < today
+      ) {
+        overdue++;
+      }
+      if (
+        isActive &&
+        c.removeByDate &&
+        c.removeByDate >= today &&
+        c.removeByDate <= sevenDaysOut
+      ) {
+        expiringSoon++;
+      }
+      if (isActive && c.publicIp) publicIpCount++;
+    }
+
+    return {
+      total: all.length,
+      active,
+      overdue,
+      expiringSoon,
+      publicIpCount,
+      byStatus,
+      byCategory,
+      byRisk,
+    };
+  }),
+
+  getPublicIPs: protectedProcedure
+    .input(z.object({}).optional())
+    .handler(async () => {
+      return db.query.temporaryChanges.findMany({
+        where: and(
+          isNotNull(temporaryChanges.publicIp),
+          sql`${temporaryChanges.status} NOT IN ('removed', 'cancelled')`,
+        ),
+        orderBy: desc(temporaryChanges.createdAt),
+        with: {
+          owner: { with: { user: true } },
+          service: true,
+        },
+      });
+    }),
+
+  getExpiringSoon: protectedProcedure
+    .input(z.object({ days: z.number().min(1).max(90).default(7) }))
+    .handler(async ({ input }) => {
+      const today = new Date().toISOString().slice(0, 10);
+      const cutoff = new Date(Date.now() + input.days * 86400000)
+        .toISOString()
+        .slice(0, 10);
+
+      return db.query.temporaryChanges.findMany({
+        where: and(
+          isNotNull(temporaryChanges.removeByDate),
+          gt(temporaryChanges.removeByDate, today),
+          lt(temporaryChanges.removeByDate, cutoff),
+          sql`${temporaryChanges.status} NOT IN ('removed', 'cancelled')`,
+        ),
+        orderBy: temporaryChanges.removeByDate,
+        with: {
+          owner: { with: { user: true } },
+          service: true,
+        },
+      });
+    }),
+
+  /** Get history for a specific temp change record */
+  getHistory: protectedProcedure
+    .input(z.object({ tempChangeId: z.string() }))
+    .handler(async ({ input }) => {
+      return db.query.tempChangeHistory.findMany({
+        where: eq(tempChangeHistory.tempChangeId, input.tempChangeId),
+        orderBy: (t, { desc }) => [desc(t.createdAt)],
+      });
+    }),
+
+  /** Add a link between a temp change and another entity (work item, incident, or service) */
+  addLink: requireRole("work", "create")
+    .input(z.object({
+      tempChangeId: z.string(),
+      workItemId: z.string().optional(),
+      incidentId: z.string().optional(),
+      serviceId: z.string().optional(),
+      linkType: z.enum(["related", "caused_by", "resolves"]).default("related"),
+    }))
+    .handler(async ({ input, context }) => {
+      const [link] = await db.insert(tempChangeLinks).values({
+        tempChangeId: input.tempChangeId,
+        workItemId: input.workItemId ?? null,
+        incidentId: input.incidentId ?? null,
+        serviceId: input.serviceId ?? null,
+        linkType: input.linkType,
+      }).returning();
+
+      await logAudit({
+        actorId: context.session.user.id,
+        actorName: context.session.user.name,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
+        action: "temp_change.link.add",
+        module: "changes",
+        resourceType: "temp_change_link",
+        resourceId: input.tempChangeId,
+        afterValue: input as Record<string, unknown>,
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+      });
+
+      return link;
+    }),
 };
