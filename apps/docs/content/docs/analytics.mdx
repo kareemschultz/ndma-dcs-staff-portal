@@ -1,0 +1,64 @@
+---
+title: Analytics & Reports
+description: Cross-module analytics, KPIs, and operational reporting
+---
+
+# Analytics & Reports
+
+The Analytics module aggregates data across all operational modules into a single dashboard. It answers "how is DCS performing?" across work, incidents, leave, roster coverage, procurement, and compliance.
+
+## Accessing analytics
+
+Navigate to **Analytics** in the System section of the sidebar. A **year selector** at the top filters all charts to the selected calendar year.
+
+## What's measured
+
+### Work metrics
+- Open work items by status
+- Items completed per month
+- Overdue rate (items past deadline ÷ total open)
+- Work type distribution (task / bug / project / maintenance)
+
+### Incident metrics
+- Total incidents by severity
+- Mean time to resolve (MTTR) in hours
+- Open vs. resolved vs. post-mortem pending
+
+### Leave metrics
+- Leave taken by staff member
+- Leave type breakdown (annual / sick / maternity / study)
+- Peak leave periods (months with highest concurrent leave)
+
+### Roster / On-Call metrics
+- On-call shifts per engineer (fairness distribution)
+- Swap request frequency
+
+### Procurement metrics
+- Total PRs raised by status (draft / submitted / approved / rejected)
+- Average approval time
+- Top procurement categories
+
+### Compliance metrics
+- Training completion rate
+- Overdue certifications
+- PPE record gaps
+
+## Ops Readiness
+
+The **Ops Readiness** page (linked from the Dashboard) gives a single-score health indicator across:
+- Incident response coverage
+- On-call roster filled
+- Overdue work items
+- Overdue temporary changes
+- Leave coverage gaps
+
+This is the page to check before a public holiday or major event.
+
+## Reports page
+
+The **Reports** page provides exportable summaries:
+- Weekly work report (all items with updates from the past week)
+- Monthly incident summary
+- Quarterly compliance status
+
+Reports are generated on-demand. Access requires the `report` RBAC resource (`manager`, `hrAdminOps`, `admin`, `readOnly` roles).

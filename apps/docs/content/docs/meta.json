@@ -3,11 +3,20 @@
   "pages": [
     "index",
     "work",
+    "cycles",
     "incidents",
     "roster",
     "leave",
+    "temp-changes",
     "access",
     "procurement",
-    "compliance"
+    "compliance",
+    "appraisals",
+    "contracts",
+    "staff",
+    "analytics",
+    "audit",
+    "import",
+    "automation"
   ]
 }

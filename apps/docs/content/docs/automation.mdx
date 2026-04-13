@@ -1,0 +1,78 @@
+---
+title: Automation Rules
+description: Event-driven automation to reduce manual follow-up
+---
+
+# Automation Rules
+
+Automation rules trigger actions automatically when something happens in the system. They replace the manual pings and reminders that currently happen via WhatsApp or email.
+
+## How rules work
+
+Each rule has:
+- A **trigger** — a module + event combination (e.g., `work` + `overdue`)
+- **Conditions** — optional filters (e.g., only fire if `priority = critical`)
+- **Actions** — what to do when the rule fires (currently: create a notification)
+
+When a mutation happens in a supported module, the system evaluates all enabled rules for that module/event. Rules whose conditions match the payload execute their actions immediately.
+
+## Supported triggers
+
+| Module | Events |
+|--------|--------|
+| `work` | `created`, `status_changed`, `assigned`, `overdue` |
+| `incident` | `created`, `status_changed`, `resolved` |
+| `leave` | `requested`, `approved`, `rejected` |
+| `temp_changes` | `created`, `overdue`, `removed` |
+| `procurement` | `submitted`, `approved`, `rejected` |
+| `rota` | `published`, `swap_approved` |
+
+## Conditions
+
+Conditions evaluate against the flat fields of the event payload. Use the DB column names as field names:
+
+```
+priority = critical
+status = in_progress
+leaveTypeId = lt-sick
+```
+
+Conditions support `=`, `!=`, `contains`. Multiple conditions are AND-ed together.
+
+## Actions
+
+Currently the only action type is **Create Notification**, which sends an in-app notification to a specified recipient (or the resource owner).
+
+Action templates support `{{fieldName}}` placeholders:
+```
+Title: Work item overdue: {{title}}
+Body: {{title}} ({{priority}}) was due on {{dueDate}} and is now overdue. Assigned to {{assignedToId}}.
+```
+
+Placeholders are replaced with values from the event payload at fire-time.
+
+## Managing rules
+
+Navigate to **Settings → Automation** to:
+- View all rules and their enabled/disabled state
+- Create a new rule
+- Edit conditions or actions
+- View the rule execution log (recent firings, payload, result)
+
+Managing automation rules requires the `settings` RBAC resource (`admin`, `hrAdminOps` roles).
+
+## Example rules
+
+**Notify manager when a critical work item goes overdue:**
+- Trigger: `work` / `overdue`
+- Condition: `priority = critical`
+- Action: Notify → "Critical item overdue: {{title}}"
+
+**Notify team when a leave request is approved:**
+- Trigger: `leave` / `approved`
+- Action: Notify → "Leave approved for {{staffProfileId}} from {{startDate}} to {{endDate}}"
+
+**Alert on new high-risk temp change:**
+- Trigger: `temp_changes` / `created`
+- Condition: `riskLevel = high`
+- Action: Notify → "High-risk change created: {{title}} — remove by {{removeByDate}}"

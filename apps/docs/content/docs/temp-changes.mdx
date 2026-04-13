@@ -1,0 +1,84 @@
+---
+title: Temporary Changes
+description: Tracking and managing network and infrastructure changes with defined removal dates
+---
+
+# Temporary Changes
+
+The Temporary Changes module replaces the manual spreadsheet tracker. Every change that is not permanent — open firewall rules, loaned equipment, temporary VPN accounts, bridged links — gets a record here with a hard removal date and an owner.
+
+## Why it exists
+
+Temporary changes are a major source of security drift. A firewall rule opened for a vendor visit in 2023 is still open in 2026 because no one remembered to close it. This module makes every change visible, owned, and time-bounded.
+
+## Creating a change
+
+1. Go to **Temp Changes → New Change**
+2. Fill in the title and category
+3. Set a `Remove By` date — this is mandatory
+4. Assign an owner (internal staff or external agency)
+5. For network exposure items, fill in the IP/port fields
+
+## Categories
+
+| Category | When to use |
+|----------|-------------|
+| **Firewall Rule** | Temporary allow rules on FortiGate, UTM, or ACLs |
+| **Network Config** | VLAN changes, link shutdowns, routing adjustments |
+| **Public IP Exposure** | Any internal host with a temporary public IP |
+| **Account / Access** | Temporary user accounts, VPN credentials |
+| **Equipment Loan** | Hardware lent to another agency |
+| **Configuration Change** | Device config that will be reverted |
+| **Other** | Anything that doesn't fit above |
+
+## Risk levels
+
+- **Low** — minimal blast radius (e.g., read-only access, internal network only)
+- **Medium** — moderate exposure (e.g., inter-department traffic)
+- **High** — internet-facing or privileged access (e.g., VPN with admin rights, public IP)
+- **Critical** — immediate escalation risk
+
+## Statuses
+
+| Status | Meaning |
+|--------|---------|
+| `planned` | Approved but not yet implemented |
+| `active` | Change is live |
+| `implemented` | Implemented and pending verification before removal |
+| `overdue` | Past the `Remove By` date — auto-flagged by the system |
+| `removed` | Safely reverted/removed |
+| `cancelled` | Was never implemented |
+
+The system automatically transitions `active` and `implemented` items to `overdue` when their `Remove By` date passes. The **Overdue** view shows everything that needs immediate action.
+
+## Owner types
+
+- **Internal staff** — a named DCS engineer owns the change and is responsible for removing it
+- **External agency** — a vendor or external partner owns the change; DCS tracks it on their behalf
+
+## Public IP exposure tracking
+
+For changes in the `public_ip_exposure` category, you can record:
+- Public IP and internal IP/port
+- Protocol (TCP/UDP/ICMP)
+- Whether it's internet-facing (`External Exposure`)
+- System name and environment (production/staging/lab)
+
+This gives DCS a real-time view of what's exposed on the internet at any moment.
+
+## Linked changes
+
+Changes can be linked to each other (e.g., a firewall rule that exists because of an equipment loan). Use **Add Link** to create these relationships.
+
+## Real examples currently tracked
+
+- Temporary VPN accounts `testvpn1`/`testvpn2` on UTM — pending removal
+- `chensuixin.huawei` VPN account for Huawei vendor — overdue
+- Temporary public IP for Owen ESD Identity server (`168.232.144.82 → 10.9.0.211`)
+- Parika/Skeldon/Cane Grove microwave `vlanif shutdown` — active
+- SSH allow rule for Cash Grant server (GCTO access) — high risk
+- 3 routers loaned to GPL for Solarfarm project
+
+## Expiring soon
+
+The **Expiring Soon** view shows changes due to expire within the next 7 days. Review this weekly so nothing slips into `overdue`.

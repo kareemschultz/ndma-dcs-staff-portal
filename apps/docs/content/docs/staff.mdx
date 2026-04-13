@@ -1,0 +1,67 @@
+---
+title: Staff Directory
+description: Managing DCS staff profiles, departments, and HR records
+---
+
+# Staff Directory
+
+The Staff Directory is the central record of everyone on the DCS team. Every other module (leave, work items, roster, compliance) references a staff profile.
+
+## Staff profiles
+
+Each profile contains:
+- **Name, email, job title, phone**
+- **Department** — assigned DCS sub-unit (Network Services, Core Infrastructure, etc.)
+- **Employment type** — `permanent`, `contract`, or `consultant`
+- **Status** — `active`, `on_leave`, `inactive`
+- A link to their Better Auth user account (for login)
+
+## Creating staff
+
+Staff accounts are created by admins/HR Ops via:
+1. **Manual creation** — Staff Directory → New Staff
+2. **Bulk import** — Import Data → staff CSV upload
+
+Self-signup is disabled. Staff cannot create their own accounts.
+
+## Departments
+
+Departments group staff for reporting and filtering. Current DCS departments:
+- Network Services (ASN)
+- Core Infrastructure
+- Security
+- Support
+
+Departments are managed under **Settings → Departments**.
+
+## Status transitions
+
+| Status | Meaning |
+|--------|---------|
+| `active` | Currently working |
+| `on_leave` | On approved leave (auto-updated when leave is approved) |
+| `inactive` | Departed, contract ended, or suspended |
+
+## Deactivating staff
+
+Use **Deactivate** (not delete) when a staff member leaves. This preserves all their historical records (work items, leave history, audit trail) while preventing login. Deactivated accounts are excluded from roster eligibility and leave balance calculations.
+
+## Workload view
+
+The **Workload View** shows every active staff member's current load:
+- Open work items (count)
+- Overdue work items
+- Current on-call role (if any)
+- Whether they're on leave today
+- An overall **load score** and **load level** (low / medium / high / critical)
+
+Use this when assigning new work to find the least-loaded engineer.
+
+## HR records linked to staff
+
+Each staff profile is the anchor for:
+- Leave balances and requests
+- Contract records
+- Appraisals
+- Training and PPE compliance records
+- Platform accounts (VPN, Zabbix, etc.)

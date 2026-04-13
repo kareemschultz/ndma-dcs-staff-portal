@@ -76,3 +76,53 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD bun -e "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 CMD ["bun", "run", "--cwd", "apps/server", "src/index.ts"]
+
+# ── Stage 5: Build docs (Fumadocs / Next.js) ─────────────────────────────────
+# Next.js standalone output lets us run the docs without shipping all of
+# node_modules — only the files the server actually imports are included.
+FROM oven/bun:1.3-slim AS docs-builder
+
+WORKDIR /app
+
+# Copy ALL workspace manifests so bun can resolve the full workspace graph
+COPY package.json bun.lock turbo.json ./
+COPY apps/docs/package.json apps/docs/
+COPY apps/web/package.json apps/web/
+COPY apps/server/package.json apps/server/
+COPY packages/api/package.json packages/api/
+COPY packages/auth/package.json packages/auth/
+COPY packages/db/package.json packages/db/
+COPY packages/env/package.json packages/env/
+COPY packages/ui/package.json packages/ui/
+COPY packages/config/package.json packages/config/
+
+RUN bun install --frozen-lockfile
+
+# Copy only the docs source — nothing else is needed for the build
+COPY apps/docs ./apps/docs
+
+# next build — bun invokes the local next binary via Node
+RUN bun run --cwd apps/docs build
+
+# ── Stage 6: Docs production runtime ─────────────────────────────────────────
+FROM node:20-alpine AS docs-runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production \
+    PORT=4000 \
+    HOSTNAME=0.0.0.0 \
+    NEXT_TELEMETRY_DISABLED=1
+
+# Next.js standalone output: root server.js + node_modules included by Next
+# Static assets and public dir must be copied alongside it
+COPY --from=docs-builder /app/apps/docs/.next/standalone ./
+COPY --from=docs-builder /app/apps/docs/.next/static ./apps/docs/.next/static
+COPY --from=docs-builder /app/apps/docs/public ./apps/docs/public
+
+EXPOSE 4000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+  CMD wget -qO- http://localhost:4000 > /dev/null 2>&1 || exit 1
+
+CMD ["node", "apps/docs/server.js"]

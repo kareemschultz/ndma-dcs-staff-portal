@@ -1,0 +1,48 @@
+---
+title: Audit Log
+description: Immutable audit trail for all system changes
+---
+
+# Audit Log
+
+Every create, update, delete, and approval action in DCS Ops Center is recorded in the audit log. Records are append-only — they cannot be edited or deleted.
+
+## What's logged
+
+Every mutation in the system records:
+
+| Field | Description |
+|-------|-------------|
+| `actorName` | Full name of the user who made the change |
+| `actorRole` | Their RBAC role at the time (admin, manager, staff, etc.) |
+| `action` | Dot-notation action (e.g., `work_item.create`, `leave.request.approve`) |
+| `module` | The module where the change happened |
+| `resourceType` | What kind of record was changed |
+| `resourceId` | The ID of the specific record |
+| `beforeValue` | Snapshot of the record before the change (updates only) |
+| `afterValue` | Snapshot of the record after the change |
+| `ipAddress` | Client IP address |
+| `correlationId` | UUID linking all log entries from a single HTTP request |
+| `timestamp` | When the change happened (UTC) |
+
+## Viewing the audit log
+
+Navigate to **Audit Log** in the System section. You can:
+- Filter by module, actor, resource type, or date range
+- Search by resource ID to see the full history of a specific record
+- Drill into a record to compare `beforeValue` and `afterValue`
+
+## Why it matters
+
+- **Accountability** — every change is attributed to a named person
+- **Debugging** — when something breaks, the audit log shows exactly what changed and when
+- **Compliance** — regulatory and security requirements for change tracking
+- **Recovery** — `beforeValue` snapshots let you reconstruct what a record looked like before a bad change
+
+## Access
+
+Viewing the audit log requires the `audit` RBAC resource. This is available to `admin`, `hrAdminOps`, `manager`, and `readOnly` roles. Staff members cannot view audit logs by default.
+
+## Retention
+
+Audit log records are never deleted by the application. Database-level retention policies are managed by the DBA separately.

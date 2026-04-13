@@ -50,24 +50,46 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Extract image metadata (tags, labels)
-      - name: Docker metadata
-        id: meta
+      # ── Main app image ────────────────────────────────────────────────────
+      - name: Docker metadata (app)
+        id: meta-app
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/${{ github.repository }}/app
           tags: |
             type=ref,event=branch
             type=sha,prefix=,format=short
             type=raw,value=latest,enable={{is_default_branch}}
 
-      # Build and push — use GHCR cache so only changed layers rebuild
-      - name: Build and push Docker image
+      - name: Build and push app image
         uses: docker/build-push-action@v6
         with:
           context: .
+          target: runner
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:cache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}:cache,mode=max
+          tags: ${{ steps.meta-app.outputs.tags }}
+          labels: ${{ steps.meta-app.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/app:cache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/app:cache,mode=max
+
+      # ── Docs image ────────────────────────────────────────────────────────
+      - name: Docker metadata (docs)
+        id: meta-docs
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/docs
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push docs image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: docs-runner
+          push: true
+          tags: ${{ steps.meta-docs.outputs.tags }}
+          labels: ${{ steps.meta-docs.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/docs:cache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/docs:cache,mode=max

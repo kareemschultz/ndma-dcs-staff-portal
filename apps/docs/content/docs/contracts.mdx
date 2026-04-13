@@ -1,0 +1,40 @@
+---
+title: Contracts
+description: Tracking staff and vendor contract records and renewal dates
+---
+
+# Contracts
+
+The Contracts module stores employment and vendor contract records. It is primarily used to track expiry dates and ensure renewals don't fall through the gaps.
+
+## Contract records
+
+Each contract contains:
+- **Staff member** — linked to a staff profile
+- **Contract type** — employment, vendor, SLA, maintenance, or other
+- **Start and end date**
+- **Status** — `active`, `expired`, `terminated`, or `pending`
+- **Notes** — any relevant terms or conditions
+
+## Expiring soon
+
+The **Expiring Soon** view shows contracts whose end date falls within the next 60 days. Review this regularly — contract lapses can cause access issues and legal exposure.
+
+When a contract expires, the associated staff profile should be transitioned to `inactive` (for employment contracts) or the vendor access should be reviewed in Platform Accounts.
+
+## Statuses
+
+| Status | Meaning |
+|--------|---------|
+| `active` | Contract is current |
+| `expired` | Past end date, not renewed |
+| `terminated` | Ended early |
+| `pending` | Awaiting signature or start date |
+
+## Integration with staff deactivation
+
+When deactivating a staff member, check their contract record first. If the contract is still `active`, mark it as `terminated` to reflect the actual end of employment.
+
+## Access
+
+Contract records are accessible to `staff`, `manager`, `hrAdminOps`, and `admin` roles (they can view). Only `hrAdminOps` and `admin` can create or update contracts.

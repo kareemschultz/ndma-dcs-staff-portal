@@ -1,0 +1,53 @@
+---
+title: Cycles
+description: Sprint-style work cycles for planning and tracking engineering output
+---
+
+# Cycles
+
+Cycles are time-boxed periods (like sprints) that group work items together for planning and reporting. They give the team a shared cadence without enforcing a rigid Scrum process.
+
+## What a cycle is
+
+A cycle has:
+- A **name** (e.g., "Q2 2026 — Network Upgrades")
+- A **period** type: weekly, bi-weekly, monthly, or quarterly
+- A **start and end date**
+- A **status**: planning → active → completed → archived
+- A set of **work items** pulled in from the Work Register
+
+## Creating a cycle
+
+1. Navigate to **Cycles** in the sidebar
+2. Click **New Cycle**
+3. Give it a descriptive name and set the date range
+4. Optionally add work items immediately, or add them later
+
+## Adding work items to a cycle
+
+From the cycle detail page, click **Add Work Item** to search and attach existing items from the Work Register. Work items can belong to multiple cycles (e.g., a long-running project spans several cycles).
+
+## Tracking progress
+
+The cycle detail page shows:
+- **Total items** added to the cycle
+- **Done items** (status = `done`)
+- **Progress bar** — done ÷ total
+- A list of all items with their current status, priority, and assignee
+
+Progress is calculated client-side from the live work item statuses, so it always reflects the current state.
+
+## Cycle statuses
+
+| Status | Meaning |
+|--------|---------|
+| `planning` | Cycle is being scoped — not yet started |
+| `active` | Current cycle in progress |
+| `completed` | End date passed, all items reviewed |
+| `archived` | Closed and removed from main view |
+
+Only one cycle should be `active` at a time per team, though the system doesn't enforce this.
+
+## Reporting
+
+Use cycles alongside the **Weekly Report** in Work Management to communicate progress to management. The cycle gives the full picture; the weekly report narrows it to individual item updates.

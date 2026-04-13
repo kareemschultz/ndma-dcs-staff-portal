@@ -1,0 +1,44 @@
+---
+title: Appraisals
+description: Staff performance appraisal tracking and records
+---
+
+# Appraisals
+
+The Appraisals module tracks performance review cycles for all DCS staff. It replaces the shared spreadsheet with a structured, auditable record of each appraisal.
+
+## Appraisal record
+
+Each appraisal contains:
+- **Staff member** — who is being appraised
+- **Appraiser** — the reviewing manager or HR rep
+- **Period** — the review period (start and end date)
+- **Type** — probation, annual, mid-year, or end-of-contract
+- **Score** — numeric performance score (if applicable)
+- **Notes** — free-text assessment
+- **Status** — scheduled → in_progress → completed → cancelled
+
+## Creating an appraisal
+
+1. Navigate to **Appraisals**
+2. Click **New Appraisal**
+3. Select the staff member and appraiser
+4. Set the review period and type
+5. Save as `scheduled` — fill in the score and notes when the review is complete
+
+## Statuses
+
+| Status | Meaning |
+|--------|---------|
+| `scheduled` | Upcoming review, not yet started |
+| `in_progress` | Review is being conducted |
+| `completed` | Review finished and recorded |
+| `cancelled` | Review was cancelled (e.g., staff left before review) |
+
+## Overdue appraisals
+
+An appraisal is considered overdue if its review period end date has passed and its status is still `scheduled` or `in_progress`. The **Overdue** view (via the appraisals list filter) highlights these.
+
+## Access
+
+Viewing and managing appraisals requires the `appraisal` RBAC resource. This is restricted to `manager`, `hrAdminOps`, and `admin` roles. Staff members do not have direct access to the appraisals module — appraisal results are communicated through the normal HR process.

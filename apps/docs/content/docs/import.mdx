@@ -1,0 +1,62 @@
+---
+title: Import Pipeline
+description: Bulk-importing staff, leave, and platform accounts from spreadsheets
+---
+
+# Import Pipeline
+
+The Import module lets admins and HR Ops bulk-load data from CSV or Excel-formatted files. It replaces manual data entry when onboarding new staff or migrating from spreadsheets.
+
+## Supported import types
+
+| Type | What it creates | Who can run it |
+|------|-----------------|----------------|
+| `staff` | Staff profiles + user accounts | `admin`, `hrAdminOps` |
+| `leave` | Leave requests for existing staff | `admin`, `hrAdminOps` |
+
+## Running an import
+
+1. Go to **Import Data** in the System section
+2. Select the import type
+3. Upload a CSV file (see column formats below)
+4. Review the validation preview — errors are shown row by row
+5. Confirm to execute
+
+The import runs as an async job. The **Import History** table shows status (`pending`, `processing`, `completed`, `failed`) and a result summary (rows imported, rows skipped, error details).
+
+## Staff CSV format
+
+```
+email,name,department,employmentType,phone,jobTitle
+kareem.schultz@ndma.gov.gh,Kareem Schultz,Network Services,permanent,+592-xxx-xxxx,Senior Network Engineer
+```
+
+Required: `email`, `name`
+Optional: `department`, `employmentType` (permanent/contract/consultant), `phone`, `jobTitle`
+
+- If the email already exists, the row is skipped (`onConflictDoNothing`)
+- New accounts are created with a temporary password; users must reset on first login
+- Self-signup is disabled — this is the only way to create new accounts
+
+## Leave CSV format
+
+```
+email,startDate,endDate,leaveType,notes
+kareem.schultz@ndma.gov.gh,2026-04-07,2026-04-12,annual,Pre-approved conference
+```
+
+- `startDate` / `endDate` must be in `YYYY-MM-DD` format, **2026 dates only**
+- `leaveType` must match an existing leave type slug (e.g., `annual`, `sick`, `maternity`)
+- Staff must already exist — the import never creates new user accounts
+- Leave type `leave` was added in the April 2026 schema update
+
+## Import history
+
+Each import job records:
+- When it ran and who triggered it
+- Total rows, imported count, skipped count
+- Per-row errors (e.g., "email not found", "invalid date format")
+
+## Error handling
+
+If any row fails validation, the entire import is **not** rolled back — rows that pass are imported and rows that fail are reported. This makes it easy to fix partial failures without re-uploading the entire file.

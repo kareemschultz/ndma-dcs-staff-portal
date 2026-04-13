@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   BarChart3,
   Bell,
+  BookOpen,
   Bot,
   Building2,
   CalendarClock,
@@ -192,6 +193,13 @@ export const sidebarData: Omit<SidebarData, "user"> = {
           title: "Notifications",
           url: "/notifications",
           icon: Bell,
+        },
+        {
+          title: "Documentation",
+          // Falls back to port 4000 if VITE_DOCS_URL is not set at build time.
+          // External links (starting with http) open in a new tab automatically.
+          url: (import.meta.env.VITE_DOCS_URL as string | undefined) ?? "http://localhost:4000",
+          icon: BookOpen,
         },
         {
           title: "Settings",
