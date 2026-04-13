@@ -28,6 +28,15 @@ export const platformTypeEnum = pgEnum("platform_type", [
   "phpipam",
   "radius",
   "zabbix",
+  // From account management spreadsheet (real platforms in use):
+  "esight",
+  "ivs_neteco",
+  "nce_fan_atp",
+  "neteco",
+  "lte_grafana",
+  "gen_grafana",
+  "plum",
+  "kibana",
   "other",
 ]);
 

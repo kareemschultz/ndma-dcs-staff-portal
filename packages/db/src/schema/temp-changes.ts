@@ -42,6 +42,8 @@ export const temporaryChanges = pgTable(
     status: tempChangeStatusEnum("status").notNull().default("planned"),
     rollbackPlan: text("rollback_plan"),
     followUpNotes: text("follow_up_notes"),
+    // Scheduled date for a follow-up check (distinct from removal date)
+    followUpDate: date("follow_up_date"),
     approvedById: text("approved_by_id").references(() => user.id, {
       onDelete: "set null",
     }),

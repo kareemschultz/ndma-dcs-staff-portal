@@ -64,6 +64,8 @@ export const workItems = pgTable(
     // Scheduling
     dueDate: date("due_date"),
     completedAt: timestamp("completed_at"),
+    // Time tracking (sourced from work tracker spreadsheet "Estimated Time (Hour)")
+    estimatedHours: text("estimated_hours"),
     // Audit
     createdById: text("created_by_id").references(() => user.id, {
       onDelete: "set null",

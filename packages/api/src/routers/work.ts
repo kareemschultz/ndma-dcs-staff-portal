@@ -46,6 +46,7 @@ const CreateWorkItemInput = z.object({
   sourceSystem: z.string().optional(),
   sourceReference: z.string().optional(),
   dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  estimatedHours: z.string().optional(),
 });
 
 const UpdateWorkItemInput = z.object({
@@ -61,6 +62,7 @@ const UpdateWorkItemInput = z.object({
   sourceSystem: z.string().optional(),
   sourceReference: z.string().optional(),
   dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  estimatedHours: z.string().optional(),
 });
 
 const ListWorkItemsInput = z.object({

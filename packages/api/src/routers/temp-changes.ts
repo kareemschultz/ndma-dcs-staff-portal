@@ -72,6 +72,7 @@ export const tempChangesRouter = {
         serviceId: z.string().optional(),
         implementationDate: z.string().optional(),
         removeByDate: z.string().optional(),
+        followUpDate: z.string().optional(),
         rollbackPlan: z.string().optional(),
       }),
     )
@@ -87,6 +88,7 @@ export const tempChangesRouter = {
           serviceId: input.serviceId ?? null,
           implementationDate: input.implementationDate ?? null,
           removeByDate: input.removeByDate ?? null,
+          followUpDate: input.followUpDate ?? null,
           rollbackPlan: input.rollbackPlan ?? null,
         })
         .returning();
@@ -123,6 +125,7 @@ export const tempChangesRouter = {
         status: StatusSchema.optional(),
         rollbackPlan: z.string().optional(),
         followUpNotes: z.string().optional(),
+        followUpDate: z.string().optional(),
         approvedById: z.string().optional(),
       }),
     )
