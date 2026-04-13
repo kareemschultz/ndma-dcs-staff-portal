@@ -14,7 +14,12 @@ import {
   TableHeader,
   TableRow,
 } from "@ndma-dcs-staff-portal/ui/components/table";
-import { Tabs } from "@ndma-dcs-staff-portal/ui/components/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@ndma-dcs-staff-portal/ui/components/dialog";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -104,17 +109,175 @@ const STATUS_OPTIONS = [
   { value: "cancelled", label: "Cancelled" },
 ];
 
+// ── PR Details Dialog ──────────────────────────────────────────────────────
+
+function PRDetailsDialog({
+  prId,
+  open,
+  onOpenChange,
+}: {
+  prId: string | null;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
+  const { data: pr, isLoading } = useQuery({
+    ...orpc.procurement.get.queryOptions({ input: { id: prId ?? "" } }),
+    enabled: !!prId && open,
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{pr?.title ?? "Purchase Requisition"}</DialogTitle>
+        </DialogHeader>
+        {isLoading ? (
+          <div className="space-y-2 py-4">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        ) : pr ? (
+          <div className="space-y-5 py-2">
+            {/* Meta */}
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+              <div>
+                <p className="text-xs text-muted-foreground">Status</p>
+                <PRStatusBadge status={pr.status} />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Priority</p>
+                <PriorityBadge priority={pr.priority} />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Department</p>
+                <p className="font-medium">{(pr as any).department?.name ?? "—"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Requested By</p>
+                <p className="font-medium">
+                  {(pr as any).requestedBy?.user?.name ?? "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Submitted</p>
+                <p className="font-medium">
+                  {pr.createdAt ? format(new Date(pr.createdAt), "dd MMM yyyy") : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Total Value</p>
+                <p className="font-medium font-mono">
+                  {pr.totalEstimatedCost
+                    ? `GHS ${Number(pr.totalEstimatedCost).toLocaleString("en-GH", { minimumFractionDigits: 2 })}`
+                    : "—"}
+                </p>
+              </div>
+            </div>
+
+            {pr.description && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Description</p>
+                <p className="text-sm">{pr.description}</p>
+              </div>
+            )}
+
+            {(pr as any).justification && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Justification</p>
+                <p className="text-sm">{(pr as any).justification}</p>
+              </div>
+            )}
+
+            {/* Line Items */}
+            {(pr as any).lineItems?.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                  Line Items
+                </p>
+                <div className="rounded-lg border overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="text-left px-3 py-2 text-xs font-medium text-muted-foreground">Description</th>
+                        <th className="text-right px-3 py-2 text-xs font-medium text-muted-foreground">Qty</th>
+                        <th className="text-left px-3 py-2 text-xs font-medium text-muted-foreground">Unit</th>
+                        <th className="text-right px-3 py-2 text-xs font-medium text-muted-foreground">Unit Cost</th>
+                        <th className="text-right px-3 py-2 text-xs font-medium text-muted-foreground">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {(pr as any).lineItems.map((item: any) => (
+                        <tr key={item.id}>
+                          <td className="px-3 py-2">{item.description}</td>
+                          <td className="px-3 py-2 text-right">{item.quantity}</td>
+                          <td className="px-3 py-2 text-muted-foreground">{item.unit || "—"}</td>
+                          <td className="px-3 py-2 text-right font-mono">
+                            {Number(item.unitCost).toLocaleString("en-GH", { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="px-3 py-2 text-right font-mono font-medium">
+                            {(Number(item.unitCost) * item.quantity).toLocaleString("en-GH", { minimumFractionDigits: 2 })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Approvals */}
+            {(pr as any).approvals?.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                  Approval History
+                </p>
+                <div className="space-y-1.5">
+                  {(pr as any).approvals.map((a: any) => (
+                    <div key={a.id} className="flex items-center gap-2 text-sm">
+                      <span
+                        className={`text-xs font-medium ${
+                          a.decision === "approved"
+                            ? "text-green-600"
+                            : a.decision === "rejected"
+                            ? "text-red-600"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {a.decision ?? "pending"}
+                      </span>
+                      <span className="text-muted-foreground">—</span>
+                      <span>{a.approver?.user?.name ?? "Unknown"}</span>
+                      {a.notes && (
+                        <span className="text-muted-foreground text-xs">({a.notes})</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-muted-foreground py-4">PR not found.</p>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function PRTable({
   data,
   isLoading,
   onApprove,
   onReject,
+  onView,
   showActions,
 }: {
   data: any[] | undefined;
   isLoading: boolean;
   onApprove?: (id: string) => void;
   onReject?: (id: string) => void;
+  onView?: (id: string) => void;
   showActions?: boolean;
 }) {
   if (isLoading) {
@@ -171,7 +334,13 @@ function PRTable({
             data.map((pr) => (
               <TableRow key={pr.id}>
                 <TableCell>
-                  <span className="font-medium">{pr.title}</span>
+                  <button
+                    type="button"
+                    className="font-medium hover:underline text-left"
+                    onClick={() => onView?.(pr.id)}
+                  >
+                    {pr.title}
+                  </button>
                   {pr.vendorName && (
                     <p className="text-xs text-muted-foreground mt-0.5">Vendor: {pr.vendorName}</p>
                   )}
@@ -229,6 +398,7 @@ function PRTable({
 function ProcurementPage() {
   const [status, setStatus] = useState<PRStatus | "">("");
   const [activeTab, setActiveTab] = useState<"all" | "mine" | "pending">("all");
+  const [viewPrId, setViewPrId] = useState<string | null>(null);
 
   const { data: allPRs, isLoading: allLoading, refetch } = useQuery(
     orpc.procurement.list.queryOptions({
@@ -270,6 +440,12 @@ function ProcurementPage() {
 
   return (
     <>
+      <PRDetailsDialog
+        prId={viewPrId}
+        open={!!viewPrId}
+        onOpenChange={(open) => !open && setViewPrId(null)}
+      />
+
       <Header fixed>
         <div className="flex items-center gap-2">
           <ShoppingCart className="size-4 text-muted-foreground" />
@@ -365,16 +541,17 @@ function ProcurementPage() {
 
         {/* Table content */}
         {activeTab === "all" && (
-          <PRTable data={allPRs} isLoading={allLoading} />
+          <PRTable data={allPRs} isLoading={allLoading} onView={setViewPrId} />
         )}
         {activeTab === "mine" && (
-          <PRTable data={myPRs} isLoading={myLoading} />
+          <PRTable data={myPRs} isLoading={myLoading} onView={setViewPrId} />
         )}
         {activeTab === "pending" && (
           <PRTable
             data={pendingApprovals}
             isLoading={pendingLoading}
             showActions
+            onView={setViewPrId}
             onApprove={(id) => approveMutation.mutate({ id, notes: "Approved" })}
             onReject={(id) => rejectMutation.mutate({ id, notes: "Rejected" })}
           />
