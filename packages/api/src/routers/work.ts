@@ -5,6 +5,8 @@ import {
   workItems,
   workItemComments,
   workItemWeeklyUpdates,
+  workInitiatives,
+  workItemDependencies,
   staffProfiles,
 } from "@ndma-dcs-staff-portal/db";
 import { and, desc, eq, lt, sql, isNotNull } from "drizzle-orm";
@@ -410,4 +412,222 @@ export const workRouter = {
 
     return { total: all.length, byStatus, byType, overdue };
   }),
+
+  // ── Initiatives ────────────────────────────────────────────────────────────
+
+  initiatives: {
+    list: protectedProcedure
+      .input(
+        z.object({
+          departmentId: z.string().optional(),
+          status: z.enum(["active", "completed", "cancelled"]).optional(),
+        }),
+      )
+      .handler(async ({ input }) => {
+        const conditions = [];
+        if (input.departmentId)
+          conditions.push(eq(workInitiatives.departmentId, input.departmentId));
+        if (input.status)
+          conditions.push(eq(workInitiatives.status, input.status));
+
+        return db.query.workInitiatives.findMany({
+          where: conditions.length > 0 ? and(...conditions) : undefined,
+          orderBy: [desc(workInitiatives.createdAt)],
+          with: { department: true, createdBy: true },
+        });
+      }),
+
+    get: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .handler(async ({ input }) => {
+        const initiative = await db.query.workInitiatives.findFirst({
+          where: eq(workInitiatives.id, input.id),
+          with: {
+            department: true,
+            createdBy: true,
+            workItems: {
+              with: {
+                assignedTo: { with: { user: true } },
+                department: true,
+              },
+            },
+          },
+        });
+        if (!initiative) throw new ORPCError("NOT_FOUND");
+        return initiative;
+      }),
+
+    create: requireRole("work", "create")
+      .input(
+        z.object({
+          title: z.string().min(1).max(200),
+          description: z.string().optional(),
+          departmentId: z.string().optional(),
+          targetDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const [initiative] = await db
+          .insert(workInitiatives)
+          .values({
+            ...input,
+            description: input.description ?? null,
+            departmentId: input.departmentId ?? null,
+            targetDate: input.targetDate ?? null,
+            createdById: context.session.user.id,
+          })
+          .returning();
+
+        if (!initiative) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "work.initiative.create",
+          module: "work",
+          resourceType: "initiative",
+          resourceId: initiative.id,
+          afterValue: initiative as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
+        });
+
+        return initiative;
+      }),
+
+    update: requireRole("work", "update")
+      .input(
+        z.object({
+          id: z.string(),
+          title: z.string().min(1).max(200).optional(),
+          description: z.string().optional(),
+          status: z.enum(["active", "completed", "cancelled"]).optional(),
+          departmentId: z.string().optional(),
+          targetDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const { id, ...updates } = input;
+
+        const before = await db.query.workInitiatives.findFirst({
+          where: eq(workInitiatives.id, id),
+        });
+        if (!before) throw new ORPCError("NOT_FOUND");
+
+        const [updated] = await db
+          .update(workInitiatives)
+          .set(updates)
+          .where(eq(workInitiatives.id, id))
+          .returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "work.initiative.update",
+          module: "work",
+          resourceType: "initiative",
+          resourceId: id,
+          beforeValue: before as Record<string, unknown>,
+          afterValue: updated as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
+        });
+
+        return updated;
+      }),
+  },
+
+  // ── Dependencies ───────────────────────────────────────────────────────────
+
+  dependencies: {
+    listForItem: protectedProcedure
+      .input(z.object({ workItemId: z.string() }))
+      .handler(async ({ input }) => {
+        return db.query.workItemDependencies.findMany({
+          where: eq(workItemDependencies.workItemId, input.workItemId),
+          with: {
+            dependsOn: {
+              with: { assignedTo: { with: { user: true } } },
+            },
+          },
+        });
+      }),
+
+    add: requireRole("work", "update")
+      .input(
+        z.object({
+          workItemId: z.string(),
+          dependsOnId: z.string(),
+          dependencyType: z.enum(["blocks", "relates_to"]).default("blocks"),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        if (input.workItemId === input.dependsOnId) {
+          throw new ORPCError("BAD_REQUEST", {
+            message: "A work item cannot depend on itself",
+          });
+        }
+
+        const [dep] = await db
+          .insert(workItemDependencies)
+          .values({
+            workItemId: input.workItemId,
+            dependsOnId: input.dependsOnId,
+            dependencyType: input.dependencyType,
+          })
+          .onConflictDoNothing()
+          .returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "work.dependency.add",
+          module: "work",
+          resourceType: "work_item",
+          resourceId: input.workItemId,
+          afterValue: { dependsOnId: input.dependsOnId, dependencyType: input.dependencyType },
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
+        });
+
+        return dep ?? null;
+      }),
+
+    remove: requireRole("work", "update")
+      .input(
+        z.object({ workItemId: z.string(), dependsOnId: z.string() }),
+      )
+      .handler(async ({ input, context }) => {
+        await db
+          .delete(workItemDependencies)
+          .where(
+            and(
+              eq(workItemDependencies.workItemId, input.workItemId),
+              eq(workItemDependencies.dependsOnId, input.dependsOnId),
+            ),
+          );
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "work.dependency.remove",
+          module: "work",
+          resourceType: "work_item",
+          resourceId: input.workItemId,
+          afterValue: { removedDependsOnId: input.dependsOnId },
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
+        });
+
+        return { success: true };
+      }),
+  },
 };

@@ -37,6 +37,36 @@ export const workItemPriorityEnum = pgEnum("work_item_priority", [
   "critical",
 ]);
 
+// ── Initiatives (major departmental goals that group work items) ──────────
+
+export const workInitiatives = pgTable(
+  "work_initiatives",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    title: text("title").notNull(),
+    description: text("description"),
+    status: text("status").notNull().default("active"), // active, completed, cancelled
+    departmentId: text("department_id").references(() => departments.id, {
+      onDelete: "set null",
+    }),
+    targetDate: date("target_date"),
+    createdById: text("created_by_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("work_initiatives_status_idx").on(table.status),
+    index("work_initiatives_departmentId_idx").on(table.departmentId),
+  ],
+);
+
 export const workItems = pgTable(
   "work_items",
   {
@@ -66,6 +96,13 @@ export const workItems = pgTable(
     completedAt: timestamp("completed_at"),
     // Time tracking (sourced from work tracker spreadsheet "Estimated Time (Hour)")
     estimatedHours: text("estimated_hours"),
+    // Follow-up date for external department work (OtherDept sheet)
+    followUpDate: date("follow_up_date"),
+    // Hierarchy — optional grouping under an initiative or parent task
+    initiativeId: text("initiative_id"),
+    parentId: text("parent_id"), // self-reference — bare text, constraint added by db:push
+    // Milestone marker date
+    milestoneDate: date("milestone_date"),
     // Audit
     createdById: text("created_by_id").references(() => user.id, {
       onDelete: "set null",
@@ -134,7 +171,46 @@ export const workItemWeeklyUpdates = pgTable(
   ],
 );
 
+// ── Dependencies table ────────────────────────────────────────────────────
+
+export const workItemDependencies = pgTable(
+  "work_item_dependencies",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    workItemId: text("work_item_id")
+      .notNull()
+      .references(() => workItems.id, { onDelete: "cascade" }),
+    dependsOnId: text("depends_on_id")
+      .notNull()
+      .references(() => workItems.id, { onDelete: "cascade" }),
+    // "blocks" = workItemId is blocked by dependsOnId; "relates_to" = soft link
+    dependencyType: text("dependency_type").notNull().default("blocks"),
+  },
+  (table) => [
+    unique("work_item_deps_unique").on(table.workItemId, table.dependsOnId),
+    index("work_item_deps_workItemId_idx").on(table.workItemId),
+    index("work_item_deps_dependsOnId_idx").on(table.dependsOnId),
+  ],
+);
+
 // ── Relations ─────────────────────────────────────────────────────────────────
+
+export const workInitiativesRelations = relations(
+  workInitiatives,
+  ({ one, many }) => ({
+    department: one(departments, {
+      fields: [workInitiatives.departmentId],
+      references: [departments.id],
+    }),
+    createdBy: one(user, {
+      fields: [workInitiatives.createdById],
+      references: [user.id],
+    }),
+    workItems: many(workItems),
+  }),
+);
 
 export const workItemsRelations = relations(workItems, ({ one, many }) => ({
   assignedTo: one(staffProfiles, {
@@ -149,8 +225,14 @@ export const workItemsRelations = relations(workItems, ({ one, many }) => ({
     fields: [workItems.createdById],
     references: [user.id],
   }),
+  initiative: one(workInitiatives, {
+    fields: [workItems.initiativeId],
+    references: [workInitiatives.id],
+  }),
   comments: many(workItemComments),
   weeklyUpdates: many(workItemWeeklyUpdates),
+  blockedBy: many(workItemDependencies, { relationName: "dependsOn" }),
+  blocking: many(workItemDependencies, { relationName: "workItem" }),
 }));
 
 export const workItemCommentsRelations = relations(
@@ -177,6 +259,22 @@ export const workItemWeeklyUpdatesRelations = relations(
     author: one(user, {
       fields: [workItemWeeklyUpdates.authorId],
       references: [user.id],
+    }),
+  }),
+);
+
+export const workItemDependenciesRelations = relations(
+  workItemDependencies,
+  ({ one }) => ({
+    workItem: one(workItems, {
+      fields: [workItemDependencies.workItemId],
+      references: [workItems.id],
+      relationName: "workItem",
+    }),
+    dependsOn: one(workItems, {
+      fields: [workItemDependencies.dependsOnId],
+      references: [workItems.id],
+      relationName: "dependsOn",
     }),
   }),
 );
