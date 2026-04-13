@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   BarChart3,
   Bell,
-  BookOpen,
   Bot,
   Building2,
   CalendarClock,
@@ -84,51 +83,27 @@ export const sidebarData: Omit<SidebarData, "user"> = {
             { title: "Planner", url: "/rota/planner" },
             { title: "Swap Requests", url: "/rota/swaps" },
             { title: "History", url: "/rota/history" },
+            { title: "Monthly Calendar", url: "/rota/calendar" },
+            { title: "Fairness Report", url: "/rota/fairness" },
+            { title: "Import Warnings", url: "/rota/warnings" },
           ],
         },
         {
           title: "Temp Changes",
-          url: "/changes",
           icon: Shuffle,
-        },
-        {
-          title: "Procurement",
-          url: "/procurement",
-          icon: ShoppingCart,
-        },
-      ],
-    },
-    {
-      title: "People",
-      items: [
-        {
-          title: "Staff Directory",
-          url: "/staff",
-          icon: Users,
-        },
-        {
-          title: "Leave",
-          icon: CalendarOff,
           items: [
-            { title: "Leave Requests", url: "/leave" },
-            { title: "Team Calendar", url: "/leave/calendar" },
+            { title: "All Changes", url: "/changes" },
+            { title: "New Change", url: "/changes/new" },
           ],
         },
         {
-          title: "Contracts",
-          url: "/contracts",
-          icon: FileText,
+          title: "Procurement",
+          icon: ShoppingCart,
+          items: [
+            { title: "Requisitions", url: "/procurement" },
+            { title: "New PR", url: "/procurement/new" },
+          ],
         },
-        {
-          title: "Appraisals",
-          url: "/appraisals",
-          icon: ClipboardCheck,
-        },
-      ],
-    },
-    {
-      title: "Services",
-      items: [
         {
           title: "Service Registry",
           url: "/services",
@@ -142,8 +117,32 @@ export const sidebarData: Omit<SidebarData, "user"> = {
       ],
     },
     {
-      title: "Compliance",
+      title: "People & Compliance",
       items: [
+        {
+          title: "Staff Directory",
+          url: "/staff",
+          icon: Users,
+        },
+        {
+          title: "Leave",
+          icon: CalendarOff,
+          items: [
+            { title: "Leave Requests", url: "/leave" },
+            { title: "Team Calendar", url: "/leave/calendar" },
+            { title: "New Request", url: "/leave/new" },
+          ],
+        },
+        {
+          title: "Contracts",
+          url: "/contracts",
+          icon: FileText,
+        },
+        {
+          title: "Appraisals",
+          url: "/appraisals",
+          icon: ClipboardCheck,
+        },
         {
           title: "Training",
           url: "/compliance/training",
@@ -165,14 +164,19 @@ export const sidebarData: Omit<SidebarData, "user"> = {
       title: "System",
       items: [
         {
+          title: "Analytics",
+          url: "/analytics",
+          icon: BarChart3,
+        },
+        {
           title: "Reports",
           url: "/reports",
-          icon: BarChart3,
+          icon: ScrollText,
         },
         {
           title: "Audit Log",
           url: "/audit",
-          icon: ScrollText,
+          icon: Activity,
         },
         {
           title: "Import Data",
@@ -185,18 +189,12 @@ export const sidebarData: Omit<SidebarData, "user"> = {
           icon: Bell,
         },
         {
-          title: "Documentation",
-          url: "http://localhost:4000",
-          icon: BookOpen,
-        },
-        {
           title: "Settings",
           icon: Settings,
           items: [
             {
               title: "General",
               url: "/settings/general",
-              icon: Activity,
             },
             {
               title: "Departments",

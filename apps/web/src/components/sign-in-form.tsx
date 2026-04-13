@@ -1,4 +1,4 @@
-// NDMA DCS Staff Portal login form
+// DCS Ops Center login form
 // Shows both local email/password AND Active Directory (LDAP) options — CLAUDE.md mandate
 import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
@@ -49,8 +49,8 @@ export default function SignInForm() {
         <div className="flex size-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <Shield className="size-6" />
         </div>
-        <h1 className="text-xl font-semibold">NDMA DCS Staff Portal</h1>
-        <p className="text-sm text-muted-foreground">Data Centre Services</p>
+        <h1 className="text-xl font-semibold">DCS Ops Center</h1>
+        <p className="text-sm text-muted-foreground">NDMA Data Centre Services</p>
       </div>
 
       {/* Email + Password form — always enabled (CLAUDE.md: emergency fallback) */}
