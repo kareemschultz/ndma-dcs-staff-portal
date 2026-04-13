@@ -4,7 +4,7 @@
 
 # DCS Ops Center
 
-### Work · Incidents · On-Call Roster · Leave · Procurement · Compliance · Access · Audit · Automation
+### Work · Incidents · On-Call Roster · Leave · Procurement · Compliance · Access · Temp Changes · Analytics · Audit · Automation
 
 *Replacing spreadsheets and WhatsApp coordination with a production-grade enterprise operations platform for the DCS.*
 
@@ -37,142 +37,59 @@
 
 ## Screenshots
 
-> All screenshots captured at 1440×900 from a live dev session. Light mode (left) · Dark mode (right).
+> 28 pages · 1920×1080 · zero console errors · no dev artifacts
+
+### Login
+![Login](docs/screenshots/login-light.png)
 
 ### Dashboard
-<table><tr>
-<td><img src="docs/screenshots/light/01-dashboard.png" alt="Dashboard – Light" /></td>
-<td><img src="docs/screenshots/dark/01-dashboard.png" alt="Dashboard – Dark" /></td>
-</tr></table>
+![Dashboard](docs/screenshots/dashboard-light.png)
+
+### Analytics
+![Analytics](docs/screenshots/analytics-light.png)
 
 ### Work Register
-<table><tr>
-<td><img src="docs/screenshots/light/03-work-list.png" alt="Work Register – Light" /></td>
-<td><img src="docs/screenshots/dark/03-work-list.png" alt="Work Register – Dark" /></td>
-</tr></table>
-
-### Workload View
-<table><tr>
-<td><img src="docs/screenshots/light/04-work-workload.png" alt="Workload – Light" /></td>
-<td><img src="docs/screenshots/dark/04-work-workload.png" alt="Workload – Dark" /></td>
-</tr></table>
+![Work Register](docs/screenshots/work-light.png)
 
 ### On-Call Roster
-<table><tr>
-<td><img src="docs/screenshots/light/07-rota.png" alt="Roster – Light" /></td>
-<td><img src="docs/screenshots/dark/07-rota.png" alt="Roster – Dark" /></td>
-</tr></table>
+![Roster](docs/screenshots/rota-light.png)
 
 ### Incidents
-<table><tr>
-<td><img src="docs/screenshots/light/06-incidents.png" alt="Incidents – Light" /></td>
-<td><img src="docs/screenshots/dark/06-incidents.png" alt="Incidents – Dark" /></td>
-</tr></table>
-
-### Platform Access & Identity Governance
-<table><tr>
-<td><img src="docs/screenshots/light/15-access.png" alt="Access – Light" /></td>
-<td><img src="docs/screenshots/dark/15-access.png" alt="Access – Dark" /></td>
-</tr></table>
-
-### Staff Directory
-<table><tr>
-<td><img src="docs/screenshots/light/10-staff.png" alt="Staff – Light" /></td>
-<td><img src="docs/screenshots/dark/10-staff.png" alt="Staff – Dark" /></td>
-</tr></table>
-
-### Procurement
-<table><tr>
-<td><img src="docs/screenshots/light/09-procurement.png" alt="Procurement – Light" /></td>
-<td><img src="docs/screenshots/dark/09-procurement.png" alt="Procurement – Dark" /></td>
-</tr></table>
-
-### Cycles / Sprint Board
-<table><tr>
-<td><img src="docs/screenshots/light/05-cycles.png" alt="Cycles – Light" /></td>
-<td><img src="docs/screenshots/dark/05-cycles.png" alt="Cycles – Dark" /></td>
-</tr></table>
-
-### Ops Readiness
-<table><tr>
-<td><img src="docs/screenshots/light/02-ops-readiness.png" alt="Ops Readiness – Light" /></td>
-<td><img src="docs/screenshots/dark/02-ops-readiness.png" alt="Ops Readiness – Dark" /></td>
-</tr></table>
-
-### Automation Rules Engine
-<table><tr>
-<td><img src="docs/screenshots/light/22-settings-automation.png" alt="Automation – Light" /></td>
-<td><img src="docs/screenshots/dark/22-settings-automation.png" alt="Automation – Dark" /></td>
-</tr></table>
-
-### Audit Log
-<table><tr>
-<td><img src="docs/screenshots/light/19-audit.png" alt="Audit – Light" /></td>
-<td><img src="docs/screenshots/dark/19-audit.png" alt="Audit – Dark" /></td>
-</tr></table>
-
-<details>
-<summary>More pages (Leave · Contracts · Appraisals · Services · Compliance · Reports · Settings)</summary>
-
-### Leave
-<table><tr>
-<td><img src="docs/screenshots/light/11-leave.png" alt="Leave – Light" /></td>
-<td><img src="docs/screenshots/dark/11-leave.png" alt="Leave – Dark" /></td>
-</tr></table>
-
-### Contracts
-<table><tr>
-<td><img src="docs/screenshots/light/12-contracts.png" alt="Contracts – Light" /></td>
-<td><img src="docs/screenshots/dark/12-contracts.png" alt="Contracts – Dark" /></td>
-</tr></table>
-
-### Appraisals
-<table><tr>
-<td><img src="docs/screenshots/light/13-appraisals.png" alt="Appraisals – Light" /></td>
-<td><img src="docs/screenshots/dark/13-appraisals.png" alt="Appraisals – Dark" /></td>
-</tr></table>
-
-### Service Registry
-<table><tr>
-<td><img src="docs/screenshots/light/14-services.png" alt="Services – Light" /></td>
-<td><img src="docs/screenshots/dark/14-services.png" alt="Services – Dark" /></td>
-</tr></table>
-
-### Compliance — Training
-<table><tr>
-<td><img src="docs/screenshots/light/16-compliance-training.png" alt="Compliance Training – Light" /></td>
-<td><img src="docs/screenshots/dark/16-compliance-training.png" alt="Compliance Training – Dark" /></td>
-</tr></table>
-
-### Compliance — PPE
-<table><tr>
-<td><img src="docs/screenshots/light/17-compliance-ppe.png" alt="Compliance PPE – Light" /></td>
-<td><img src="docs/screenshots/dark/17-compliance-ppe.png" alt="Compliance PPE – Dark" /></td>
-</tr></table>
-
-### Reports
-<table><tr>
-<td><img src="docs/screenshots/light/18-reports.png" alt="Reports – Light" /></td>
-<td><img src="docs/screenshots/dark/18-reports.png" alt="Reports – Dark" /></td>
-</tr></table>
+![Incidents](docs/screenshots/incidents-light.png)
 
 ### Temp Changes
-<table><tr>
-<td><img src="docs/screenshots/light/08-temp-changes.png" alt="Temp Changes – Light" /></td>
-<td><img src="docs/screenshots/dark/08-temp-changes.png" alt="Temp Changes – Dark" /></td>
-</tr></table>
+![Temp Changes](docs/screenshots/changes-light.png)
 
-### Notifications
-<table><tr>
-<td><img src="docs/screenshots/light/20-notifications.png" alt="Notifications – Light" /></td>
-<td><img src="docs/screenshots/dark/20-notifications.png" alt="Notifications – Dark" /></td>
-</tr></table>
+### Platform Access & Identity Governance
+![Access](docs/screenshots/access-light.png)
 
-### Settings — General
-<table><tr>
-<td><img src="docs/screenshots/light/21-settings-general.png" alt="Settings – Light" /></td>
-<td><img src="docs/screenshots/dark/21-settings-general.png" alt="Settings – Dark" /></td>
-</tr></table>
+### Staff Directory
+![Staff](docs/screenshots/staff-light.png)
+
+<details>
+<summary>More pages (Procurement · Cycles · Ops Readiness · Leave · Contracts · Appraisals · Services · Compliance · Reports · Audit · Import · Notifications · Settings)</summary>
+
+| Page | Screenshot |
+|------|-----------|
+| Ops Readiness | ![](docs/screenshots/ops-readiness-light.png) |
+| Cycles | ![](docs/screenshots/cycles-light.png) |
+| Procurement | ![](docs/screenshots/procurement-light.png) |
+| Leave | ![](docs/screenshots/leave-light.png) |
+| Contracts | ![](docs/screenshots/contracts-light.png) |
+| Appraisals | ![](docs/screenshots/appraisals-light.png) |
+| Service Registry | ![](docs/screenshots/services-light.png) |
+| Training | ![](docs/screenshots/compliance-training-light.png) |
+| PPE | ![](docs/screenshots/compliance-ppe-light.png) |
+| Policy Items | ![](docs/screenshots/compliance-items-light.png) |
+| Reports | ![](docs/screenshots/reports-light.png) |
+| Audit Log | ![](docs/screenshots/audit-light.png) |
+| Import Data | ![](docs/screenshots/import-light.png) |
+| Notifications | ![](docs/screenshots/notifications-light.png) |
+| Settings General | ![](docs/screenshots/settings-general-light.png) |
+| Settings Departments | ![](docs/screenshots/settings-departments-light.png) |
+| Settings Leave Types | ![](docs/screenshots/settings-leave-types-light.png) |
+| Settings Escalation | ![](docs/screenshots/settings-escalation-light.png) |
+| Settings Roles | ![](docs/screenshots/settings-roles-light.png) |
 
 </details>
 
@@ -225,6 +142,9 @@ Every action in the system is captured in an append-only audit log — who did w
 - Shift swap system with manager approval workflow
 - Escalation policy editor with timed steps per service or department
 - Override management for ad-hoc assignment changes
+- Monthly calendar view — 3-month look-ahead with role columns + "This Week" highlight
+- Fairness report — stacked bar chart of assignments per engineer per role; flags outliers ≥1.5× mean
+- Import warnings queue — review and resolve/dismiss Excel import anomalies
 
 **🛒 Purchase Requisitions**
 - PR creation with itemised line items (description, quantity, unit cost)
@@ -277,10 +197,21 @@ Every action in the system is captured in an append-only audit log — who did w
 - Policy acknowledgement log with version control
 - Cross-cutting compliance overview: all expiring items in one view
 
+**📊 Analytics Dashboard**
+- Cross-module analytics at `/analytics` with 6 tabbed views (Work, Incidents, Leave, Roster, Procurement, Compliance)
+- Charts: status breakdowns, priority distributions, monthly incident trends, roster fairness scores
+- On-call fairness: stacked bar chart of lead/ASN/core/enterprise assignments per engineer; balance warnings for outliers
+- PDF export of the entire analytics view via `window.print()`
+
 **🔧 Temporary Technical Changes**
-- Track all temporary infrastructure changes with remove-by dates
-- Overdue auto-flagging with rollback plan documentation
-- Service linkage for impact assessment
+- 5 categories: Public IP Exposure, Temporary Service, Temporary Access, Temporary Change, Other
+- Auto-derived risk levels: Critical (external + public IP + production) → High → Medium → Low
+- Owner accountability model: Internal Staff, External Contact, Department, or System
+- External agency tracking: agency name, type (government, vendor, contractor, partner)
+- Network exposure fields: publicIp, internalIp, port, protocol, externalExposure flag
+- Full lifecycle: Active → Expiring Soon (7 days) → Overdue (auto-flagged) → Removed
+- History log per record + cross-links to work items, incidents, and services
+- 4-tab UI: All Changes | Overdue | Expiring Soon | Public IPs
 
 **🔐 Audit & Governance**
 - Global append-only audit log for every mutation
@@ -330,7 +261,7 @@ Every action in the system is captured in an append-only audit log — who did w
 ```
 ndma-dcs-ops-center/
 ├── apps/
-│   ├── web/                    # React frontend (Vite, port 5173)
+│   ├── web/                    # React frontend (Vite, port 3001)
 │   │   └── src/
 │   │       ├── components/     # Layout shell + shared components
 │   │       ├── features/       # Feature modules (work, leave, rota, procurement...)
@@ -405,7 +336,7 @@ bun run dev         # Starts all apps via Turborepo
 
 | App | URL |
 |-----|-----|
-| Web App | http://localhost:5173 |
+| Web App | http://localhost:3001 |
 | API Server | http://localhost:3000 |
 | API Reference | http://localhost:3000/api-reference |
 | Documentation | http://localhost:4000 |
@@ -419,7 +350,7 @@ bun run dev         # Starts all apps via Turborepo
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:password@localhost:5432/ndma_dcs_portal` |
 | `BETTER_AUTH_SECRET` | Auth secret (min 32 chars) | `openssl rand -base64 32` |
 | `BETTER_AUTH_URL` | Backend base URL | `http://localhost:3000` |
-| `CORS_ORIGIN` | Frontend origin for CORS | `http://localhost:5173` |
+| `CORS_ORIGIN` | Frontend origin for CORS | `http://localhost:3001` |
 | `VITE_SERVER_URL` | Backend URL for frontend | `http://localhost:3000` |
 
 ---
@@ -435,6 +366,8 @@ bun run dev         # Starts all apps via Turborepo
 | **Read Only** | View-only access across all modules |
 
 All role checks are enforced server-side via `requireRole(resource, action)` middleware on every mutation — client role claims are never trusted. Read-only procedures use `protectedProcedure` (session check only).
+
+The sidebar also filters navigation items client-side based on the user's role (e.g. the `staff` role does not see Audit Log, Analytics, Appraisals, Import, or Settings). This is a UX convenience only — the server enforces the real boundary.
 
 ---
 
@@ -473,13 +406,14 @@ graph TB
 | Cycles | `cycles`, `cycle_work_items` |
 | Leave | `leave_types`, `leave_balances`, `leave_requests` |
 | Procurement | `purchase_requisitions`, `pr_line_items`, `pr_approvals` |
-| Temp Changes | `temporary_changes` (+ linkedWorkItemId) |
+| Temp Changes | `temporary_changes` (+ 14 new fields: category, riskLevel, network, owner, agency), `temp_change_history`, `temp_change_links` |
 | Access | `external_contacts`, `platform_accounts`, `access_groups`, `account_group_memberships`, `access_reviews`, `platform_integrations`, `sync_jobs`, `reconciliation_issues`, `service_owners` |
 | Contracts | `contracts` |
 | Appraisals | `appraisals` |
 | Compliance | `training_records`, `ppe_records`, `policy_acknowledgements` |
-| Import | `import_jobs` |
+| Import | `import_jobs` (supports staff, training, contracts, work, leave — 2026-only for leave) |
 | Automation | `automation_rules`, `automation_rule_logs` |
+| Ops Overlays | `operational_overlays` (priority tasks with assignees for the dashboard widget) |
 
 ---
 
@@ -488,7 +422,7 @@ graph TB
 ```bash
 # Development
 bun run dev              # Start all apps
-bun run dev:web          # Web app only (port 5173)
+bun run dev:web          # Web app only (port 3001)
 bun run dev:server       # Server only (port 3000)
 
 # Database
