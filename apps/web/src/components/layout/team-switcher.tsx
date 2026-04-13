@@ -1,7 +1,7 @@
 // Adapted from shadcn-admin/src/components/layout/team-switcher.tsx
 // Uses Base UI render prop pattern instead of Radix asChild
 import * as React from "react";
-import { ChevronsUpDown, Plus } from "lucide-react";
+import { ChevronsUpDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -78,13 +78,6 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2" disabled>
-              <div className="flex size-6 items-center justify-center rounded-xl border bg-background">
-                <Plus className="size-4" />
-              </div>
-              <div className="font-medium text-muted-foreground">Add organisation</div>
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

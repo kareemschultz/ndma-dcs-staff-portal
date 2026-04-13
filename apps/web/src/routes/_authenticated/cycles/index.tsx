@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -163,7 +163,8 @@ function CycleCard({ cycle }: { cycle: CycleRow }) {
   }
 
   return (
-    <Card className="flex flex-col gap-0 transition-shadow hover:shadow-md">
+    <Link to="/cycles/$cycleId" params={{ cycleId: cycle.id }} className="block">
+    <Card className="flex flex-col gap-0 transition-shadow hover:shadow-md cursor-pointer">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
@@ -226,6 +227,7 @@ function CycleCard({ cycle }: { cycle: CycleRow }) {
         <div className="mt-auto" />
       </CardContent>
     </Card>
+    </Link>
   );
 }
 

@@ -48,6 +48,7 @@ import { Route as AuthenticatedLeaveNewRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedLeaveCalendarRouteImport } from './routes/_authenticated/leave/calendar'
 import { Route as AuthenticatedIncidentsNewRouteImport } from './routes/_authenticated/incidents/new'
 import { Route as AuthenticatedIncidentsIncidentIdRouteImport } from './routes/_authenticated/incidents/$incidentId'
+import { Route as AuthenticatedCyclesCycleIdRouteImport } from './routes/_authenticated/cycles/$cycleId'
 import { Route as AuthenticatedComplianceTrainingRouteImport } from './routes/_authenticated/compliance/training'
 import { Route as AuthenticatedCompliancePpeRouteImport } from './routes/_authenticated/compliance/ppe'
 import { Route as AuthenticatedComplianceItemsRouteImport } from './routes/_authenticated/compliance/items'
@@ -280,6 +281,12 @@ const AuthenticatedIncidentsIncidentIdRoute =
     path: '/incidents/$incidentId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCyclesCycleIdRoute =
+  AuthenticatedCyclesCycleIdRouteImport.update({
+    id: '/cycles/$cycleId',
+    path: '/cycles/$cycleId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedComplianceTrainingRoute =
   AuthenticatedComplianceTrainingRouteImport.update({
     id: '/compliance/training',
@@ -343,6 +350,7 @@ export interface FileRoutesByFullPath {
   '/compliance/items': typeof AuthenticatedComplianceItemsRoute
   '/compliance/ppe': typeof AuthenticatedCompliancePpeRoute
   '/compliance/training': typeof AuthenticatedComplianceTrainingRoute
+  '/cycles/$cycleId': typeof AuthenticatedCyclesCycleIdRoute
   '/incidents/$incidentId': typeof AuthenticatedIncidentsIncidentIdRoute
   '/incidents/new': typeof AuthenticatedIncidentsNewRoute
   '/leave/calendar': typeof AuthenticatedLeaveCalendarRoute
@@ -392,6 +400,7 @@ export interface FileRoutesByTo {
   '/compliance/items': typeof AuthenticatedComplianceItemsRoute
   '/compliance/ppe': typeof AuthenticatedCompliancePpeRoute
   '/compliance/training': typeof AuthenticatedComplianceTrainingRoute
+  '/cycles/$cycleId': typeof AuthenticatedCyclesCycleIdRoute
   '/incidents/$incidentId': typeof AuthenticatedIncidentsIncidentIdRoute
   '/incidents/new': typeof AuthenticatedIncidentsNewRoute
   '/leave/calendar': typeof AuthenticatedLeaveCalendarRoute
@@ -443,6 +452,7 @@ export interface FileRoutesById {
   '/_authenticated/compliance/items': typeof AuthenticatedComplianceItemsRoute
   '/_authenticated/compliance/ppe': typeof AuthenticatedCompliancePpeRoute
   '/_authenticated/compliance/training': typeof AuthenticatedComplianceTrainingRoute
+  '/_authenticated/cycles/$cycleId': typeof AuthenticatedCyclesCycleIdRoute
   '/_authenticated/incidents/$incidentId': typeof AuthenticatedIncidentsIncidentIdRoute
   '/_authenticated/incidents/new': typeof AuthenticatedIncidentsNewRoute
   '/_authenticated/leave/calendar': typeof AuthenticatedLeaveCalendarRoute
@@ -494,6 +504,7 @@ export interface FileRouteTypes {
     | '/compliance/items'
     | '/compliance/ppe'
     | '/compliance/training'
+    | '/cycles/$cycleId'
     | '/incidents/$incidentId'
     | '/incidents/new'
     | '/leave/calendar'
@@ -543,6 +554,7 @@ export interface FileRouteTypes {
     | '/compliance/items'
     | '/compliance/ppe'
     | '/compliance/training'
+    | '/cycles/$cycleId'
     | '/incidents/$incidentId'
     | '/incidents/new'
     | '/leave/calendar'
@@ -593,6 +605,7 @@ export interface FileRouteTypes {
     | '/_authenticated/compliance/items'
     | '/_authenticated/compliance/ppe'
     | '/_authenticated/compliance/training'
+    | '/_authenticated/cycles/$cycleId'
     | '/_authenticated/incidents/$incidentId'
     | '/_authenticated/incidents/new'
     | '/_authenticated/leave/calendar'
@@ -914,6 +927,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIncidentsIncidentIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/cycles/$cycleId': {
+      id: '/_authenticated/cycles/$cycleId'
+      path: '/cycles/$cycleId'
+      fullPath: '/cycles/$cycleId'
+      preLoaderRoute: typeof AuthenticatedCyclesCycleIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/compliance/training': {
       id: '/_authenticated/compliance/training'
       path: '/compliance/training'
@@ -988,6 +1008,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedComplianceItemsRoute: typeof AuthenticatedComplianceItemsRoute
   AuthenticatedCompliancePpeRoute: typeof AuthenticatedCompliancePpeRoute
   AuthenticatedComplianceTrainingRoute: typeof AuthenticatedComplianceTrainingRoute
+  AuthenticatedCyclesCycleIdRoute: typeof AuthenticatedCyclesCycleIdRoute
   AuthenticatedIncidentsIncidentIdRoute: typeof AuthenticatedIncidentsIncidentIdRoute
   AuthenticatedIncidentsNewRoute: typeof AuthenticatedIncidentsNewRoute
   AuthenticatedLeaveCalendarRoute: typeof AuthenticatedLeaveCalendarRoute
@@ -1037,6 +1058,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedComplianceItemsRoute: AuthenticatedComplianceItemsRoute,
   AuthenticatedCompliancePpeRoute: AuthenticatedCompliancePpeRoute,
   AuthenticatedComplianceTrainingRoute: AuthenticatedComplianceTrainingRoute,
+  AuthenticatedCyclesCycleIdRoute: AuthenticatedCyclesCycleIdRoute,
   AuthenticatedIncidentsIncidentIdRoute: AuthenticatedIncidentsIncidentIdRoute,
   AuthenticatedIncidentsNewRoute: AuthenticatedIncidentsNewRoute,
   AuthenticatedLeaveCalendarRoute: AuthenticatedLeaveCalendarRoute,
