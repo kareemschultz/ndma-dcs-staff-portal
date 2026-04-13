@@ -106,7 +106,13 @@ packages/api/src/
 ├── context.ts         # createContext() — injects auth session, ipAddress, userAgent
 ├── lib/
 │   ├── audit.ts       # logAudit() helper — called by EVERY mutation
-│   └── notify.ts      # createNotification() helper
+│   ├── notify.ts      # createNotification() helper
+│   └── sync/          # Platform account sync framework
+│       ├── types.ts   # SyncConnector interface, ExternalAccount, SyncResult
+│       ├── index.ts   # runSyncJob() — reconciles external accounts
+│       └── connectors/
+│           ├── ipam.ts  # phpIPAM REST connector
+│           └── ldap.ts  # AD/LDAP connector (optional ldapts peer dep)
 └── routers/
     ├── index.ts       # appRouter — combines all sub-routers
     ├── audit.ts       # audit.list, audit.getByResource
@@ -123,7 +129,8 @@ packages/api/src/
     ├── contracts.ts   # contracts.list, get, create, update, getExpiringSoon
     ├── appraisals.ts  # appraisals.list, get, create, update, getOverdue, getByStaff
     ├── compliance.ts  # compliance.training.*, ppe.*, policyAck.*, getExpiringItems
-    └── dashboard.ts   # dashboard.main, opsReadiness, recentActivity
+    ├── dashboard.ts   # dashboard.main, opsReadiness, recentActivity
+    └── import.ts      # import.execute, import.getHistory
 ```
 
 ## Database Schema (16 files in packages/db/src/schema/)
@@ -141,10 +148,13 @@ work.ts          → work_items, work_item_comments, work_item_weekly_updates
 leave.ts         → leave_types, leave_balances, leave_requests
 procurement.ts   → purchase_requisitions, pr_line_items, pr_approvals
 temp-changes.ts  → temporary_changes
-access.ts        → platform_accounts, service_owners, platform_integrations, sync_jobs, reconciliation_issues
+access.ts        → external_contacts, platform_accounts (staffProfileId nullable), access_groups,
+                    account_group_memberships (soft-delete via removedAt), access_reviews,
+                    platform_integrations, sync_jobs, reconciliation_issues, service_owners
 contracts.ts     → contracts
 appraisals.ts    → appraisals
 compliance.ts    → training_records, ppe_records, policy_acknowledgements
+imports.ts       → import_jobs
 ```
 
 ## Known Gotchas

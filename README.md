@@ -29,7 +29,7 @@
 
 <br/>
 
-[**Documentation**](https://github.com/kareemschultz/ndma-dcs-staff-portal) · [**Report Bug**](https://github.com/kareemschultz/ndma-dcs-staff-portal/issues) · [**Request Feature**](https://github.com/kareemschultz/ndma-dcs-staff-portal/issues)
+[**Documentation**](https://github.com/kareemschultz/ndma-dcs-ops-center) · [**Report Bug**](https://github.com/kareemschultz/ndma-dcs-ops-center/issues) · [**Request Feature**](https://github.com/kareemschultz/ndma-dcs-ops-center/issues)
 
 </div>
 
@@ -160,7 +160,7 @@ Every action in the system is captured in an append-only audit log — who did w
 ## Project Structure
 
 ```
-ndma-dcs-staff-portal/
+ndma-dcs-ops-center/
 ├── apps/
 │   ├── web/                    # React frontend (Vite, port 5173)
 │   │   └── src/
@@ -173,11 +173,11 @@ ndma-dcs-staff-portal/
 ├── packages/
 │   ├── api/                    # oRPC procedures + context (shared by server)
 │   │   └── src/
-│   │       ├── routers/        # 15 domain routers + index
-│   │       └── lib/            # logAudit() + createNotification() helpers
+│   │       ├── routers/        # 16 domain routers + index
+│   │       └── lib/            # logAudit(), createNotification(), sync/ connectors
 │   ├── auth/                   # Better Auth config (shared by server + web)
 │   ├── db/                     # Drizzle schema + migrations
-│   │   └── src/schema/         # 16 schema files, one per domain
+│   │   └── src/schema/         # 17 schema files, one per domain
 │   ├── env/                    # Type-safe env validation
 │   ├── ui/                     # Shared shadcn/ui components
 │   └── config/                 # Shared TypeScript config
@@ -204,8 +204,8 @@ ndma-dcs-staff-portal/
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/kareemschultz/ndma-dcs-staff-portal.git
-cd ndma-dcs-staff-portal
+git clone https://github.com/kareemschultz/ndma-dcs-ops-center.git
+cd ndma-dcs-ops-center
 bun install
 ```
 
@@ -308,6 +308,7 @@ graph TB
 | Contracts | `contracts` |
 | Appraisals | `appraisals` |
 | Compliance | `training_records`, `ppe_records`, `policy_acknowledgements` |
+| Import | `import_jobs` |
 
 ---
 
