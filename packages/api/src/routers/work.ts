@@ -7,6 +7,7 @@ import {
   workItemWeeklyUpdates,
   workInitiatives,
   workItemDependencies,
+  workItemTemplates,
   staffProfiles,
 } from "@ndma-dcs-staff-portal/db";
 import { and, desc, eq, lt, sql, isNotNull } from "drizzle-orm";
@@ -628,6 +629,123 @@ export const workRouter = {
         });
 
         return { success: true };
+      }),
+  },
+
+  // ── Recurring task templates ─────────────────────────────────────────────
+
+  templates: {
+    list: protectedProcedure
+      .input(
+        z.object({
+          departmentId: z.string().optional(),
+          limit: z.number().min(1).max(100).default(50),
+          offset: z.number().min(0).default(0),
+        }),
+      )
+      .handler(async ({ input }) => {
+        const conditions = [];
+        if (input.departmentId)
+          conditions.push(eq(workItemTemplates.departmentId, input.departmentId));
+
+        return db.query.workItemTemplates.findMany({
+          where: conditions.length > 0 ? and(...conditions) : undefined,
+          orderBy: workItemTemplates.title,
+          limit: input.limit,
+          offset: input.offset,
+          with: { department: true, createdBy: true },
+        });
+      }),
+
+    create: requireRole("work", "create")
+      .input(
+        z.object({
+          title: z.string().min(1).max(200),
+          description: z.string().optional(),
+          type: z.enum(["routine", "project", "external_request", "ad_hoc"]),
+          priority: z.enum(["low", "medium", "high", "critical"]),
+          departmentId: z.string().optional(),
+          estimatedHours: z.number().int().positive().optional(),
+          recurrencePattern: z.string().min(1),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const [template] = await db
+          .insert(workItemTemplates)
+          .values({
+            title: input.title,
+            description: input.description ?? null,
+            type: input.type,
+            priority: input.priority,
+            departmentId: input.departmentId ?? null,
+            estimatedHours: input.estimatedHours ?? null,
+            recurrencePattern: input.recurrencePattern,
+            createdById: context.session.user.id,
+          })
+          .returning();
+        if (!template) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
+          action: "work.template.create",
+          module: "work",
+          resourceType: "work_item_template",
+          resourceId: template.id,
+          afterValue: template as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return template;
+      }),
+
+    generate: requireRole("work", "create")
+      .input(
+        z.object({
+          templateId: z.string(),
+          dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+          assignedToId: z.string().optional(),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const template = await db.query.workItemTemplates.findFirst({
+          where: eq(workItemTemplates.id, input.templateId),
+        });
+        if (!template) throw new ORPCError("NOT_FOUND", { message: "Template not found" });
+
+        const [item] = await db
+          .insert(workItems)
+          .values({
+            title: template.title,
+            description: template.description ?? null,
+            type: template.type,
+            priority: template.priority,
+            departmentId: template.departmentId ?? null,
+            dueDate: input.dueDate,
+            assignedToId: input.assignedToId ?? null,
+            createdById: context.session.user.id,
+          })
+          .returning();
+        if (!item) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
+          action: "work_item.create",
+          module: "work",
+          resourceType: "work_item",
+          resourceId: item.id,
+          afterValue: { ...item, fromTemplateId: template.id } as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return item;
       }),
   },
 };

@@ -1,14 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, startOfISOWeek, endOfISOWeek } from "date-fns";
 import {
   AlertCircle,
   AlertTriangle,
+  BarChart2,
   CalendarClock,
   CalendarOff,
   CheckCircle,
   ClipboardCheck,
   LayoutDashboard,
+  RefreshCw,
   ShoppingCart,
   Users,
   Wrench,
@@ -80,6 +82,14 @@ function friendlyAction(action: string, resourceType: string): string {
 
 // ── Dashboard page ─────────────────────────────────────────────────────────
 
+function isoWeekBounds() {
+  const now = new Date();
+  return {
+    weekStart: format(startOfISOWeek(now), "yyyy-MM-dd"),
+    weekEnd: format(endOfISOWeek(now), "yyyy-MM-dd"),
+  };
+}
+
 function DashboardPage() {
   const { data, isLoading } = useQuery(orpc.dashboard.main.queryOptions());
   const { data: readiness, isLoading: readinessLoading } = useQuery(
@@ -87,6 +97,15 @@ function DashboardPage() {
   );
   const { data: activity, isLoading: activityLoading } = useQuery(
     orpc.dashboard.recentActivity.queryOptions({ input: { limit: 10 } })
+  );
+
+  const { weekStart, weekEnd } = isoWeekBounds();
+
+  const { data: cycles, isLoading: cyclesLoading } = useQuery(
+    orpc.cycles.list.queryOptions({ input: { status: "active", limit: 5 } })
+  );
+  const { data: workload, isLoading: workloadLoading } = useQuery(
+    orpc.workload.get.queryOptions({ input: { weekStart, weekEnd } })
   );
 
   const onCallCount = data?.currentSchedule?.assignments?.length ?? 0;
@@ -367,6 +386,138 @@ function DashboardPage() {
               )}
             </CardContent>
           </Card>
+        </div>
+
+        {/* Active Cycles + Workload Imbalance widgets */}
+        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+
+          {/* Active Cycles */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <RefreshCw className="size-4 text-indigo-500" />
+                Active Cycles
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-0 divide-y">
+              {cyclesLoading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="py-3 space-y-1.5">
+                    <Skeleton className="h-3.5 w-40" />
+                    <Skeleton className="h-2 w-full rounded-full" />
+                    <Skeleton className="h-3 w-28" />
+                  </div>
+                ))
+              ) : !cycles?.length ? (
+                <p className="py-8 text-center text-sm text-muted-foreground">
+                  No active cycles.
+                </p>
+              ) : (
+                cycles.map((cycle) => {
+                  const total = cycle.cycleWorkItems?.length ?? 0;
+                  const done = cycle.cycleWorkItems?.filter(
+                    (cwi) => cwi.workItem?.status === "done"
+                  ).length ?? 0;
+                  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+                  return (
+                    <div key={cycle.id} className="py-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium truncate max-w-[60%]">
+                          {cycle.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground shrink-0 capitalize">
+                          {cycle.period}
+                        </span>
+                      </div>
+                      <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-indigo-500 transition-all"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-xs text-muted-foreground">
+                          {done}/{total} items · {pct}%
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(cycle.startDate), "d MMM")} –{" "}
+                          {format(new Date(cycle.endDate), "d MMM")}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Workload Imbalance */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <BarChart2 className="size-4 text-amber-500" />
+                Workload Imbalance
+                <span className="ml-auto text-xs font-normal text-muted-foreground">
+                  {weekStart} – {weekEnd}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {workloadLoading ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton key={i} className="h-6 w-full" />
+                  ))}
+                </div>
+              ) : !workload?.length ? (
+                <p className="py-8 text-center text-sm text-muted-foreground">
+                  No workload data for this week.
+                </p>
+              ) : (
+                <div className="grid grid-cols-2 gap-x-6 gap-y-1">
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-red-600 dark:text-red-400">
+                      Overloaded
+                    </p>
+                    {workload.filter((e) => e.loadLevel === "overloaded").length === 0 ? (
+                      <p className="text-xs text-muted-foreground">None</p>
+                    ) : (
+                      workload
+                        .filter((e) => e.loadLevel === "overloaded")
+                        .map((e) => (
+                          <div key={e.staff.id} className="flex items-center justify-between py-0.5">
+                            <span className="text-sm truncate">{e.staff.name}</span>
+                            <span className="ml-2 shrink-0 rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                              {e.loadScore}
+                            </span>
+                          </div>
+                        ))
+                    )}
+                  </div>
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+                      Low Load
+                    </p>
+                    {workload.filter((e) => e.loadLevel === "low").length === 0 ? (
+                      <p className="text-xs text-muted-foreground">None</p>
+                    ) : (
+                      workload
+                        .filter((e) => e.loadLevel === "low")
+                        .map((e) => (
+                          <div key={e.staff.id} className="flex items-center justify-between py-0.5">
+                            <span className="text-sm truncate">{e.staff.name}</span>
+                            <span className="ml-2 shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                              {e.openWorkItems}
+                            </span>
+                          </div>
+                        ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
         </div>
       </Main>
     </>

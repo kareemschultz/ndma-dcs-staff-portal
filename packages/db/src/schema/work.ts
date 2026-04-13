@@ -1,6 +1,7 @@
 import {
   date,
   index,
+  integer,
   pgEnum,
   pgTable,
   text,
@@ -171,6 +172,32 @@ export const workItemWeeklyUpdates = pgTable(
   ],
 );
 
+// ── Recurring task templates ───────────────────────────────────────────────
+
+export const workItemTemplates = pgTable("work_item_templates", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  title: text("title").notNull(),
+  description: text("description"),
+  type: workItemTypeEnum("type").notNull().default("routine"),
+  priority: workItemPriorityEnum("priority").notNull().default("medium"),
+  departmentId: text("department_id").references(() => departments.id, {
+    onDelete: "set null",
+  }),
+  estimatedHours: integer("estimated_hours"),
+  // "weekly", "monthly", "annually", or a cron-like description
+  recurrencePattern: text("recurrence_pattern").notNull(),
+  createdById: text("created_by_id").references(() => user.id, {
+    onDelete: "set null",
+  }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
 // ── Dependencies table ────────────────────────────────────────────────────
 
 export const workItemDependencies = pgTable(
@@ -275,6 +302,20 @@ export const workItemDependenciesRelations = relations(
       fields: [workItemDependencies.dependsOnId],
       references: [workItems.id],
       relationName: "dependsOn",
+    }),
+  }),
+);
+
+export const workItemTemplatesRelations = relations(
+  workItemTemplates,
+  ({ one }) => ({
+    department: one(departments, {
+      fields: [workItemTemplates.departmentId],
+      references: [departments.id],
+    }),
+    createdBy: one(user, {
+      fields: [workItemTemplates.createdById],
+      references: [user.id],
     }),
   }),
 );
