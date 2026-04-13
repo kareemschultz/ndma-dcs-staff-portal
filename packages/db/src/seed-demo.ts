@@ -19,8 +19,12 @@ import {
   incidentTimeline,
   incidentAffectedServices,
   incidentResponders,
+  postIncidentReviews,
 } from "./schema/incidents";
-import { workItems, workItemAssignees, workItemTeamAllocations, workInitiatives } from "./schema/work";
+import {
+  workItems, workItemAssignees, workItemTeamAllocations, workInitiatives,
+  workItemComments, workItemWeeklyUpdates, workItemDependencies,
+} from "./schema/work";
 import { cycles, cycleWorkItems } from "./schema/cycles";
 import {
   leaveTypes,
@@ -33,7 +37,9 @@ import {
   platformAccounts,
   platformIntegrations,
   accessReviews,
+  reconciliationIssues,
 } from "./schema/access";
+import { importJobs } from "./schema/imports";
 import {
   trainingRecords,
   ppeRecords,
@@ -50,15 +56,15 @@ import { onCallSwaps } from "./schema/rota";
 // ── ID registries (for targeted clear) ─────────────────────────────────────
 
 const DEMO_SERVICE_IDS       = ["svc-dcn", "svc-inet", "svc-ad", "svc-monitoring", "svc-ipam", "svc-email"] as const;
-const DEMO_WORK_ITEM_IDS     = ["wi-001","wi-002","wi-003","wi-004","wi-005","wi-006","wi-007","wi-008","wi-009","wi-010","wi-011","wi-012"] as const;
+const DEMO_WORK_ITEM_IDS     = ["wi-001","wi-002","wi-003","wi-004","wi-005","wi-006","wi-007","wi-008","wi-009","wi-010","wi-011","wi-012","wi-013"] as const;
 const DEMO_INCIDENT_IDS      = ["inc-001","inc-002","inc-003","inc-004"] as const;
 const DEMO_LEAVE_TYPE_IDS    = ["lt-annual","lt-sick","lt-emergency","lt-study"] as const;
 const DEMO_LEAVE_BALANCE_IDS = ["lb-kareem-annual","lb-shemar-annual","lb-bheesham-annual","lb-timothy-annual","lb-timothy-study","lb-richie-sick","lb-gerard-annual"] as const;
-const DEMO_LEAVE_REQUEST_IDS = ["lr-001","lr-002","lr-003","lr-004","lr-005","lr-006","lr-007"] as const;
-const DEMO_PR_IDS            = ["pr-001","pr-002","pr-003","pr-004"] as const;
-const DEMO_TC_IDS            = ["tc-001","tc-002","tc-003","tc-004","tc-005"] as const;
+const DEMO_LEAVE_REQUEST_IDS = ["lr-001","lr-002","lr-003","lr-004","lr-005","lr-006","lr-007","lr-008"] as const;
+const DEMO_PR_IDS            = ["pr-001","pr-002","pr-003","pr-004","pr-005","pr-006"] as const;
+const DEMO_TC_IDS            = ["tc-001","tc-002","tc-003","tc-004","tc-005","tc-006"] as const;
 const DEMO_INTEGRATION_IDS   = ["pi-ad","pi-vpn","pi-ipam"] as const;
-const DEMO_ACCOUNT_IDS       = ["pa-001","pa-002","pa-003","pa-004","pa-005","pa-006","pa-007","pa-008"] as const;
+const DEMO_ACCOUNT_IDS       = ["pa-001","pa-002","pa-003","pa-004","pa-005","pa-006","pa-007","pa-008","pa-009","pa-010","pa-011","pa-012","pa-013","pa-014","pa-015","pa-016","pa-017","pa-018","pa-019","pa-020","pa-021","pa-022","pa-023","pa-024","pa-025","pa-026","pa-027","pa-028","pa-029","pa-030"] as const;
 const DEMO_TRAINING_IDS      = ["tr-001","tr-002","tr-003","tr-004","tr-005","tr-006","tr-007","tr-008"] as const;
 const DEMO_PPE_IDS           = ["ppe-001","ppe-002","ppe-003","ppe-004"] as const;
 const DEMO_POLICY_ACK_IDS    = ["pk-001","pk-002","pk-003","pk-004"] as const;
@@ -74,6 +80,12 @@ const DEMO_ESC_STEP_IDS      = ["es-001","es-002","es-003","es-004","es-005"] as
 const DEMO_NOTIFICATION_IDS  = ["notif-001","notif-002","notif-003","notif-004","notif-005","notif-006"] as const;
 const DEMO_ACCESS_REVIEW_IDS = ["arev-001","arev-002","arev-003","arev-004"] as const;
 const DEMO_SWAP_IDS          = ["swap-001","swap-002"] as const;
+const DEMO_COMMENT_IDS       = ["wic-001","wic-002","wic-003","wic-004","wic-005","wic-006"] as const;
+const DEMO_UPDATE_IDS        = ["wiu-001","wiu-002","wiu-003","wiu-004"] as const;
+const DEMO_DEP_IDS           = ["wid-001","wid-002","wid-003"] as const;
+const DEMO_PIR_IDS           = ["pir-001","pir-002"] as const;
+const DEMO_RECON_IDS         = ["ri-001","ri-002","ri-003"] as const;
+const DEMO_IMPORT_IDS        = ["ij-001","ij-002","ij-003"] as const;
 
 // ── Clear all demo data (reverse FK order) ──────────────────────────────────
 
@@ -89,6 +101,20 @@ async function clearDemo() {
     "sp-richie",
   ];
   await db.delete(auditLogs).where(inArray(auditLogs.resourceId, demoResourceIds));
+
+  // Import jobs
+  await db.delete(importJobs).where(inArray(importJobs.id, [...DEMO_IMPORT_IDS]));
+
+  // Reconciliation issues
+  await db.delete(reconciliationIssues).where(inArray(reconciliationIssues.id, [...DEMO_RECON_IDS]));
+
+  // Work item sub-records (cascade but be explicit)
+  await db.delete(workItemDependencies).where(inArray(workItemDependencies.id, [...DEMO_DEP_IDS]));
+  await db.delete(workItemWeeklyUpdates).where(inArray(workItemWeeklyUpdates.id, [...DEMO_UPDATE_IDS]));
+  await db.delete(workItemComments).where(inArray(workItemComments.id, [...DEMO_COMMENT_IDS]));
+
+  // PIRs
+  await db.delete(postIncidentReviews).where(inArray(postIncidentReviews.id, [...DEMO_PIR_IDS]));
 
   // Cycle links (before cycles and work items)
   await db.delete(cycleWorkItems).where(inArray(cycleWorkItems.cycleId, [...DEMO_CYCLE_IDS]));
@@ -191,6 +217,7 @@ async function seedDemo() {
     { id: "wi-010", title: "Patch management cycle – April 2026",  type: "routine",   status: "in_progress", priority: "medium",   assignedToId: "sp-bheesham",  description: "Apply OS patches to all Windows and Linux servers per the monthly patch schedule.", dueDate: "2026-04-10", createdById: "user-sachin" },
     { id: "wi-011", title: "Setup Grafana dashboard for LTE monitoring", type: "project", status: "review", priority: "medium",   assignedToId: "sp-shemar",    description: "Create Grafana panels pulling from LTE gateway SNMP metrics to monitor signal quality and throughput.", dueDate: "2026-04-20", createdById: "user-sachin" },
     { id: "wi-012", title: "Decommission legacy PBX system",       type: "project",   status: "done",        priority: "medium",   assignedToId: "sp-devon",     description: "Remove Panasonic KX-TDA100 PBX and migrate remaining extensions to MS Teams calling.", dueDate: "2026-03-15", completedAt: new Date("2026-03-12"), createdById: "user-sachin" },
+    { id: "wi-013", title: "Replace UPS batteries in Room A",       type: "project",   status: "blocked",     priority: "critical", assignedToId: "sp-gerard",    description: "APC battery replacement approved in PR-003. Blocked on vendor delivery — Schneider confirmed shipment delayed to 2026-04-28.", dueDate: "2026-04-28", createdById: "user-sachin" },
   ]).onConflictDoNothing();
 
   // ── Work Item Multi-Assignees ──────────────────────────────────────────────
@@ -221,6 +248,58 @@ async function seedDemo() {
     { id: "wta-004", workItemId: "wi-003", departmentId: "dept-enterprise",  requiredCount: 1, addedById: "user-sachin" }, // Enterprise ×1 for downstream validation
     { id: "wta-005", workItemId: "wi-005", departmentId: "dept-core",       requiredCount: 1, addedById: "user-sachin" }, // Core ×1 for rack install
     { id: "wta-006", workItemId: "wi-005", departmentId: "dept-asn",        requiredCount: 1, addedById: "user-sachin" }, // ASN ×1 for cabling + patch panel
+  ]).onConflictDoNothing();
+
+  // ── Work Item Initiative Links ─────────────────────────────────────────────
+  console.log("🔗 Linking work items to initiatives...");
+  // Use direct SQL update — onConflictDoNothing is only for inserts
+  await db.update(workItems).set({ initiativeId: "win-001" }).where(inArray(workItems.id, ["wi-001","wi-003","wi-005","wi-009","wi-013"]));
+  await db.update(workItems).set({ initiativeId: "win-002" }).where(inArray(workItems.id, ["wi-004","wi-008"]));
+  await db.update(workItems).set({ initiativeId: "win-003" }).where(inArray(workItems.id, ["wi-011","wi-010","wi-002"]));
+
+  // ── Work Item Dependencies ─────────────────────────────────────────────────
+  console.log("🔀 Seeding work item dependencies...");
+  await db.insert(workItemDependencies).values([
+    { id: "wid-001", workItemId: "wi-013", dependsOnId: "wi-005", dependencyType: "blocks" }, // UPS replacement blocked until rack install complete
+    { id: "wid-002", workItemId: "wi-003", dependsOnId: "wi-001", dependencyType: "blocks" }, // BGP redundancy needs firmware upgrade first
+    { id: "wid-003", workItemId: "wi-008", dependsOnId: "wi-005", dependencyType: "blocks" }, // phpIPAM subnet config needs Annex rack in place
+  ]).onConflictDoNothing();
+
+  // ── Work Item Comments ─────────────────────────────────────────────────────
+  console.log("💬 Seeding work item comments...");
+  await db.insert(workItemComments).values([
+    { id: "wic-001", workItemId: "wi-001", authorId: "user-kareem",  body: "Tested firmware 17.11.1a on lab switch NDMA-SW-LAB01 — no issues with OSPF adjacency. Scheduling production window for Saturday 03:00–06:00.", createdAt: new Date("2026-04-11T14:30:00Z") },
+    { id: "wic-002", workItemId: "wi-001", authorId: "user-sachin",  body: "Saturday maintenance window approved. Notify all department heads by COB Thursday. Ensure rollback procedure is documented in the runbook.", createdAt: new Date("2026-04-11T16:00:00Z") },
+    { id: "wic-003", workItemId: "wi-003", authorId: "user-devon",   body: "ISP confirmed secondary BGP session config. Waiting on LOA (Letter of Authorisation) from upstream. ETA: 5 business days.", createdAt: new Date("2026-04-09T10:15:00Z") },
+    { id: "wic-004", workItemId: "wi-004", authorId: "user-kareem",  body: "Found 12 stale accounts in the DCS-Security-Admins group — 3 are ex-contractors, 9 are staff who changed roles. Flagged for SP-Sachin to approve removal.", createdAt: new Date("2026-04-14T09:00:00Z") },
+    { id: "wic-005", workItemId: "wi-013", authorId: "user-gerard",  body: "Schneider Electric confirmed delivery of 7× RBC5 cartridges pushed to 28 April. Coordinated with facilities for access to Room A during battery swap.", createdAt: new Date("2026-04-13T11:30:00Z") },
+    { id: "wic-006", workItemId: "wi-009", authorId: "user-sachin",  body: "Scheduling DRP tabletop exercise for 15 May with all team leads. Each department to submit updated RTO/RPO targets by 30 April.", createdAt: new Date("2026-04-07T15:00:00Z") },
+  ]).onConflictDoNothing();
+
+  // ── Work Item Weekly Updates ───────────────────────────────────────────────
+  console.log("📅 Seeding work item weekly updates...");
+  await db.insert(workItemWeeklyUpdates).values([
+    {
+      id: "wiu-001", workItemId: "wi-001", authorId: "user-kareem", weekStart: "2026-04-07",
+      statusSummary: "Lab testing of firmware 17.11.1a completed successfully on 2 test switches. No OSPF or spanning-tree regressions observed.",
+      nextSteps: "Schedule production maintenance window for Sat 18 Apr 03:00. Notify stakeholders Thursday.",
+    },
+    {
+      id: "wiu-002", workItemId: "wi-003", authorId: "user-devon", weekStart: "2026-04-07",
+      statusSummary: "Submitted BGP peering request to ISP. Received draft LOA — legal review in progress.",
+      blockers: "LOA approval from ISP legal team still pending.",
+      nextSteps: "Follow up with ISP TAC on LOA status. Pre-configure secondary peer on edge router.",
+    },
+    {
+      id: "wiu-003", workItemId: "wi-005", authorId: "user-gerard", weekStart: "2026-04-07",
+      statusSummary: "42U rack delivered and staged in Room B. PDU installation scheduled with electrical contractor for 22 Apr.",
+      nextSteps: "Complete PDU install, run power tests, begin patch panel cabling.",
+    },
+    {
+      id: "wiu-004", workItemId: "wi-009", authorId: "user-sachin", weekStart: "2026-04-07",
+      statusSummary: "Kicked off DRP review kick-off meeting. Assigned sections to each team lead.",
+      nextSteps: "Collect RTO/RPO inputs from all departments by 30 Apr. Schedule tabletop for 15 May.",
+    },
   ]).onConflictDoNothing();
 
   // ── Incidents ──────────────────────────────────────────────────────────────
@@ -261,6 +340,38 @@ async function seedDemo() {
     { incidentId: "inc-004", eventType: "status_change", content: "Mitigation in progress. Primary unit restarted. Investigating HA heartbeat interface for faults.", staffProfileId: "sp-devon", createdAt: new Date("2026-04-12T23:00:00Z") },
   ]).onConflictDoNothing();
 
+  // ── Post-Incident Reviews ──────────────────────────────────────────────────
+  console.log("📋 Seeding post-incident reviews...");
+  await db.insert(postIncidentReviews).values([
+    {
+      id: "pir-001",
+      incidentId: "inc-002",
+      ledById: "sp-nicolai",
+      reviewDate: "2026-04-10",
+      status: "completed",
+      summary: "NDMA-DC01 domain controller failed due to /var/log partition reaching 100% capacity, causing AD authentication services to become unresponsive for 3h 15m.",
+      lessonsLearned: "1. Log rotation was misconfigured — max log size was uncapped. 2. No disk-space alert was set for the system drive on DC01. 3. Runbook for DC unresponsive scenario was outdated.",
+      actionItems: [
+        { action: "Configure disk space alert on all DCs at 80% threshold", owner: "sp-shemar", dueDate: "2026-04-20", status: "done" },
+        { action: "Audit and cap log rotation on all Windows servers", owner: "sp-kareem", dueDate: "2026-04-30", status: "in_progress" },
+        { action: "Update DC incident runbook with current recovery steps", owner: "sp-nicolai", dueDate: "2026-04-25", status: "in_progress" },
+      ],
+    },
+    {
+      id: "pir-002",
+      incidentId: "inc-003",
+      ledById: "sp-shemar",
+      reviewDate: "2026-04-03",
+      status: "completed",
+      summary: "Zabbix server exhausted memory due to unbounded discovery rules scanning too many subnets. Monitoring alerts suppressed for 2h 20m.",
+      lessonsLearned: "1. Discovery rules had no host limit — scanned entire RFC1918 range. 2. No health monitoring on Zabbix server itself. 3. Alert suppression window of 2+ hours was not noticed until user report.",
+      actionItems: [
+        { action: "Set discovery rule scope limits to known subnet ranges only", owner: "sp-shemar", dueDate: "2026-04-10", status: "done" },
+        { action: "Add Zabbix self-monitoring template to track server health", owner: "sp-shemar", dueDate: "2026-04-15", status: "done" },
+      ],
+    },
+  ]).onConflictDoNothing();
+
   // ── Leave Types + Balances + Requests ──────────────────────────────────────
   console.log("🏖️  Seeding leave data...");
   await db.insert(leaveTypes).values([
@@ -288,6 +399,7 @@ async function seedDemo() {
     { id: "lr-005", staffProfileId: "sp-richie",   leaveTypeId: "lt-sick",      startDate: "2026-04-09", endDate: "2026-04-09", totalDays: 1,  reason: "Flu",                     status: "approved", approvedById: "user-sachin", overlapOverride: false },
     { id: "lr-006", staffProfileId: "sp-gerard",   leaveTypeId: "lt-annual",    startDate: "2026-03-23", endDate: "2026-03-25", totalDays: 3,  reason: "Annual leave",            status: "approved", approvedById: "user-sachin", overlapOverride: false },
     { id: "lr-007", staffProfileId: "sp-nicolai",  leaveTypeId: "lt-emergency", startDate: "2026-04-28", endDate: "2026-04-29", totalDays: 2,  reason: "Family emergency",        status: "pending",  overlapOverride: false },
+    { id: "lr-008", staffProfileId: "sp-devon",    leaveTypeId: "lt-annual",    startDate: "2026-04-19", endDate: "2026-04-20", totalDays: 2,  reason: "Easter weekend extension", status: "rejected", rejectionReason: "Devon is the on-call lead engineer for week starting 19 Apr. Cannot be approved during active on-call week.", overlapOverride: false },
   ]).onConflictDoNothing();
 
   // ── Procurement ────────────────────────────────────────────────────────────
@@ -297,6 +409,8 @@ async function seedDemo() {
     { id: "pr-002", title: "Zabbix Enterprise annual licence renewal",  priority: "medium", status: "submitted", requestedById: "sp-kareem",   departmentId: "dept-asn",        currency: "TTD", totalEstimatedCost: "18500.00", vendorName: "Zabbix LLC",       justification: "Existing licence expires May 2026. Required for continued monitoring alerting." },
     { id: "pr-003", title: "UPS replacement batteries – Room A",        priority: "urgent", status: "approved",  requestedById: "sp-gerard",   departmentId: "dept-enterprise", currency: "TTD", totalEstimatedCost: "9800.00",  vendorName: "APC by Schneider", justification: "Batteries last replaced 4 years ago. Self-test failure rate at 30%.", approvedById: "user-sachin", approvedAt: new Date("2026-04-10") },
     { id: "pr-004", title: "Cat6A cabling and patch panels – Annex",    priority: "medium", status: "received",  requestedById: "sp-bheesham", departmentId: "dept-core",       currency: "TTD", totalEstimatedCost: "14200.00", vendorName: "CommScope",        justification: "Structured cabling for 48-port Annex network expansion." },
+    { id: "pr-005", title: "Sophos XGS firewall appliances ×2",         priority: "high",   status: "rejected",  requestedById: "sp-devon",    departmentId: "dept-core",       currency: "TTD", totalEstimatedCost: "88000.00", vendorName: "Sophos/Westcon",   justification: "Replace ageing Fortigate units with Sophos XGS3100 HA pair.", rejectionReason: "Budget not available in Q2. Defer to Q3 2026 budget cycle. Revisit in July." },
+    { id: "pr-006", title: "KVM over IP console server – 16-port",      priority: "medium", status: "ordered",   requestedById: "sp-kareem",   departmentId: "dept-asn",        currency: "TTD", totalEstimatedCost: "7200.00",  vendorName: "Raritan",          justification: "Out-of-band access to servers during network outages. Current 4-port unit is at capacity.", approvedById: "user-sachin", approvedAt: new Date("2026-04-08") },
   ]).onConflictDoNothing();
 
   await db.insert(prLineItems).values([
@@ -307,6 +421,9 @@ async function seedDemo() {
     { prId: "pr-004", description: "Cat6A shielded cable (500m drum)",          quantity: 3, unitCost: "2800.00",  unit: "drum",    totalCost: "8400.00"  },
     { prId: "pr-004", description: "24-port keystone patch panel",              quantity: 6, unitCost: "300.00",   unit: "unit",    totalCost: "1800.00"  },
     { prId: "pr-004", description: "Cable management D-rings and velcro ties",  quantity: 1, unitCost: "400.00",   unit: "lot",     totalCost: "400.00"   },
+    { prId: "pr-005", description: "Sophos XGS3100 appliance",                  quantity: 2, unitCost: "38000.00", unit: "unit",    totalCost: "76000.00" },
+    { prId: "pr-005", description: "Sophos Xstream Protection licence (3 yr)",  quantity: 2, unitCost: "6000.00",  unit: "unit",    totalCost: "12000.00" },
+    { prId: "pr-006", description: "Raritan Dominion KX IV-116 console server", quantity: 1, unitCost: "7200.00",  unit: "unit",    totalCost: "7200.00"  },
     { prId: "pr-004", description: "RJ45 toolless keystone jacks (box of 100)", quantity: 4, unitCost: "400.00",   unit: "box",     totalCost: "1600.00"  },
   ]).onConflictDoNothing();
 
@@ -317,7 +434,8 @@ async function seedDemo() {
     { id: "tc-002", title: "Temporary VLAN 999 for external audit team",      status: "active",   category: "temporary_access",   riskLevel: "medium",   environment: "production", systemName: "Core Switch Stack",                              externalExposure: false, ownerType: "external_contact", externalAgencyName: "ISACA Audit Firm", externalAgencyType: "government", implementationDate: "2026-04-10", removeByDate: "2026-04-17", createdById: "user-sachin" },
     { id: "tc-003", title: "Bypass firewall rule for treasury data transfer",  status: "overdue",  category: "temporary_change",   riskLevel: "high",     environment: "production", systemName: "Fortigate FW01",                                 externalExposure: false, ownerType: "internal_staff",   ownerId: "sp-devon",                                        implementationDate: "2026-03-20", removeByDate: "2026-04-05", createdById: "user-devon" },
     { id: "tc-004", title: "Test server exposed in DMZ for API integration",  status: "active",   category: "temporary_service",  riskLevel: "critical", environment: "staging",    systemName: "DMZ-TESTSVR-01",       publicIp: "198.51.100.22", internalIp: "10.10.50.22", port: "8443", protocol: "tcp", externalExposure: true, ownerType: "internal_staff", ownerId: "sp-shemar", implementationDate: "2026-04-05", removeByDate: "2026-05-31", createdById: "user-shemar" },
-    { id: "tc-005", title: "Static NAT for NDMA Head Office remote audit",    status: "removed",  category: "temporary_access",   riskLevel: "low",      environment: "production", systemName: "Edge Router",                                    actualRemovalDate: "2026-03-31", implementationDate: "2026-03-01", removeByDate: "2026-03-31", createdById: "user-kareem" },
+    { id: "tc-005", title: "Static NAT for NDMA Head Office remote audit",    status: "removed",      category: "temporary_access",   riskLevel: "low",      environment: "production", systemName: "Edge Router",                                     actualRemovalDate: "2026-03-31", implementationDate: "2026-03-01", removeByDate: "2026-03-31", createdById: "user-kareem" },
+    { id: "tc-006", title: "Maintenance VLAN for patch cycle – April 2026", status: "implemented",  category: "temporary_change",   riskLevel: "low",      environment: "production", systemName: "Core Switch Stack",                               implementationDate: "2026-04-08", removeByDate: "2026-04-30", createdById: "user-bheesham" },
   ]).onConflictDoNothing();
 
   // ── Platform Integrations & Accounts ──────────────────────────────────────
@@ -336,7 +454,113 @@ async function seedDemo() {
     { id: "pa-005", platform: "ad",      accountIdentifier: "g.budhan",          displayName: "Gerard Budhan",      affiliationType: "ndma_internal", authSource: "local",            status: "active", vpnEnabled: false, syncMode: "synced", staffProfileId: "sp-gerard",   integrationId: "pi-ad"  },
     { id: "pa-006", platform: "phpipam", accountIdentifier: "rg_admin",          displayName: "Richie Goring",      affiliationType: "ndma_internal", authSource: "local",            status: "active", vpnEnabled: false, syncMode: "manual", staffProfileId: "sp-richie"  },
     { id: "pa-007", platform: "zabbix",  accountIdentifier: "shemar.henry",      displayName: "Shemar Henry",       affiliationType: "ndma_internal", authSource: "local",            status: "active", vpnEnabled: false, syncMode: "manual", staffProfileId: "sp-shemar"  },
-    { id: "pa-008", platform: "vpn",     accountIdentifier: "vendor.cisco.tac",  displayName: "Cisco TAC Account",  affiliationType: "vendor",        authSource: "local",            status: "active", vpnEnabled: true,  syncMode: "manual" },
+    { id: "pa-008", platform: "vpn",     accountIdentifier: "vendor.cisco.tac",  displayName: "Cisco TAC Account",  affiliationType: "vendor",        authSource: "local",            status: "active",   vpnEnabled: true,  syncMode: "manual" },
+    // Edge-case accounts for reconciliation demo
+    { id: "pa-009", platform: "ad",      accountIdentifier: "j.thompson",        displayName: "Jerome Thompson",    affiliationType: "ndma_internal", authSource: "active_directory", status: "orphaned",  vpnEnabled: false, syncMode: "synced", integrationId: "pi-ad" },
+    { id: "pa-010", platform: "vpn",     accountIdentifier: "contractor.ws01",   displayName: "WS Engineering VPN", affiliationType: "contractor",    authSource: "local",            status: "disabled",  vpnEnabled: false, syncMode: "manual" },
+
+    // ── Real NDMA org-wide VPN accounts (from AccountManagementMarch_20260312.xlsx) ──
+    // These are non-DCS NDMA staff managed by DCS — no staffProfileId (not in DCS system)
+    { id: "pa-011", platform: "vpn", accountIdentifier: "orson.smith",         displayName: "Orson Smith",         affiliationType: "ndma_internal", authSource: "active_directory", status: "active",  vpnEnabled: true,  syncMode: "synced", vpnGroup: "NOCUsers1",         privilegeLevel: "standard",  integrationId: "pi-vpn" },
+    { id: "pa-012", platform: "vpn", accountIdentifier: "anisha.hintzen",      displayName: "Anisha Hintzen",      affiliationType: "ndma_internal", authSource: "active_directory", status: "active",  vpnEnabled: true,  syncMode: "synced", vpnGroup: "PME_Users1",        privilegeLevel: "standard",  integrationId: "pi-vpn" },
+    { id: "pa-013", platform: "vpn", accountIdentifier: "kevin.henry",         displayName: "Kevin Henry",         affiliationType: "ndma_internal", authSource: "active_directory", status: "active",  vpnEnabled: true,  syncMode: "synced", vpnGroup: "CPUsers1",          privilegeLevel: "standard",  integrationId: "pi-vpn" },
+    { id: "pa-014", platform: "vpn", accountIdentifier: "maria.augustine",     displayName: "Maria Augustine",     affiliationType: "ndma_internal", authSource: "active_directory", status: "active",  vpnEnabled: true,  syncMode: "synced", vpnGroup: "TransmissionUsers", privilegeLevel: "standard",  integrationId: "pi-vpn" },
+    { id: "pa-015", platform: "vpn", accountIdentifier: "jerome.baptiste",     displayName: "Jerome Baptiste",     affiliationType: "ndma_internal", authSource: "active_directory", status: "active",  vpnEnabled: true,  syncMode: "synced", vpnGroup: "VSATUsers1",        privilegeLevel: "standard",  integrationId: "pi-vpn" },
+    { id: "pa-016", platform: "vpn", accountIdentifier: "sylvia.williams",     displayName: "Sylvia Williams",     affiliationType: "ndma_internal", authSource: "active_directory", status: "active",  vpnEnabled: true,  syncMode: "synced", vpnGroup: "CloudUsers1",       privilegeLevel: "standard",  integrationId: "pi-vpn" },
+    { id: "pa-017", platform: "vpn", accountIdentifier: "andy.ramsaran",       displayName: "Andy Ramsaran",       affiliationType: "ndma_internal", authSource: "active_directory", status: "active",  vpnEnabled: true,  syncMode: "synced", vpnGroup: "NOCUsers1",         privilegeLevel: "standard",  integrationId: "pi-vpn" },
+    { id: "pa-018", platform: "vpn", accountIdentifier: "priya.seepersad",     displayName: "Priya Seepersad",     affiliationType: "ndma_internal", authSource: "active_directory", status: "active",  vpnEnabled: true,  syncMode: "synced", vpnGroup: "CPUsers1",          privilegeLevel: "standard",  integrationId: "pi-vpn" },
+    { id: "pa-019", platform: "vpn", accountIdentifier: "calvin.jack",         displayName: "Calvin Jack",         affiliationType: "ndma_internal", authSource: "active_directory", status: "active",  vpnEnabled: true,  syncMode: "synced", vpnGroup: "PME_Users1",        privilegeLevel: "standard",  integrationId: "pi-vpn" },
+    { id: "pa-020", platform: "vpn", accountIdentifier: "david.sookdeo",       displayName: "David Sookdeo",       affiliationType: "ndma_internal", authSource: "active_directory", status: "active",  vpnEnabled: true,  syncMode: "synced", vpnGroup: "TransmissionUsers", privilegeLevel: "standard",  integrationId: "pi-vpn" },
+    { id: "pa-021", platform: "vpn", accountIdentifier: "rachel.narine",       displayName: "Rachel Narine",       affiliationType: "ndma_internal", authSource: "active_directory", status: "suspended", vpnEnabled: false, syncMode: "synced", vpnGroup: "NOCUsers1",        privilegeLevel: "standard",  integrationId: "pi-vpn" },  // suspended — pending offboard review
+    { id: "pa-022", platform: "vpn", accountIdentifier: "consultant.netdesign", displayName: "Network Design Consultant", affiliationType: "consultant", authSource: "local",      status: "active",  vpnEnabled: true,  syncMode: "manual", vpnGroup: "CloudUsers1",       privilegeLevel: "standard" }, // external consultant
+
+    // ── Real NDMA Zabbix accounts (from AccountManagementMarch_20260312.xlsx) ──
+    // DCS engineers are Super Admin; other NDMA staff have User/Admin roles
+    { id: "pa-023", platform: "zabbix", accountIdentifier: "sachin.ramsuran",  displayName: "Sachin Ramsuran",     affiliationType: "ndma_internal", authSource: "local", status: "active", vpnEnabled: false, syncMode: "manual", privilegeLevel: "super_admin", staffProfileId: "sp-sachin" },
+    { id: "pa-024", platform: "zabbix", accountIdentifier: "devon.abrams",     displayName: "Devon Abrams",        affiliationType: "ndma_internal", authSource: "local", status: "active", vpnEnabled: false, syncMode: "manual", privilegeLevel: "super_admin", staffProfileId: "sp-devon"  },
+    { id: "pa-025", platform: "zabbix", accountIdentifier: "nicolai.mahangi",  displayName: "Nicolai Mahangi",     affiliationType: "ndma_internal", authSource: "local", status: "active", vpnEnabled: false, syncMode: "manual", privilegeLevel: "super_admin", staffProfileId: "sp-nicolai" },
+    { id: "pa-026", platform: "zabbix", accountIdentifier: "timothy.charles",  displayName: "Timothy Charles",     affiliationType: "ndma_internal", authSource: "local", status: "active", vpnEnabled: false, syncMode: "manual", privilegeLevel: "admin",       staffProfileId: "sp-timothy" },
+    { id: "pa-027", platform: "zabbix", accountIdentifier: "orson.smith",      displayName: "Orson Smith",         affiliationType: "ndma_internal", authSource: "active_directory", status: "active",  vpnEnabled: false, syncMode: "synced", privilegeLevel: "user"  },  // cross-platform: also has VPN (pa-011)
+    { id: "pa-028", platform: "zabbix", accountIdentifier: "kevin.henry",      displayName: "Kevin Henry",         affiliationType: "ndma_internal", authSource: "active_directory", status: "active",  vpnEnabled: false, syncMode: "synced", privilegeLevel: "admin" },   // cross-platform: also has VPN (pa-013)
+    { id: "pa-029", platform: "zabbix", accountIdentifier: "alice.maharaj",    displayName: "Alice Maharaj",       affiliationType: "ndma_internal", authSource: "active_directory", status: "active",  vpnEnabled: false, syncMode: "synced", privilegeLevel: "user"  },
+    { id: "pa-030", platform: "zabbix", accountIdentifier: "zabbix.guest",     displayName: "NOC Read-Only",       affiliationType: "shared_service", authSource: "local",            status: "active",  vpnEnabled: false, syncMode: "manual", privilegeLevel: "guest"  },  // shared guest account for NOC viewing
+  ]).onConflictDoNothing();
+
+  // ── Reconciliation Issues ──────────────────────────────────────────────────
+  console.log("⚠️  Seeding reconciliation issues...");
+  await db.insert(reconciliationIssues).values([
+    {
+      id: "ri-001",
+      integrationId: "pi-ad",
+      issueType: "orphaned_account",
+      platformAccountId: "pa-009",
+      details: "AD account j.thompson exists in the directory but has no matching staff profile in DCS Ops Center. Staff member may have left without offboarding completing.",
+    },
+    {
+      id: "ri-002",
+      integrationId: "pi-vpn",
+      issueType: "disabled_staff_active_account",
+      platformAccountId: "pa-001",
+      staffProfileId: "sp-kareem",
+      details: "VPN account kareem.schultz is active, but staff profile shows extended leave from 2026-03-10. Confirm whether VPN access should be suspended during leave period.",
+      resolvedAt: new Date("2026-04-05T09:00:00Z"),
+      resolutionNote: "Confirmed with HR — staff member is on approved leave but retains VPN access per policy. No action required.",
+    },
+    {
+      id: "ri-003",
+      integrationId: "pi-vpn",
+      issueType: "expired_contractor",
+      platformAccountId: "pa-010",
+      details: "VPN account contractor.ws01 belongs to WS Engineering Ltd whose contract ended 2026-02-28. Account should have been disabled at contract expiry.",
+    },
+  ]).onConflictDoNothing();
+
+  // ── Import Jobs ────────────────────────────────────────────────────────────
+  console.log("📥 Seeding import job history...");
+  await db.insert(importJobs).values([
+    {
+      id: "ij-001",
+      importType: "staff",
+      status: "completed",
+      fileName: "DCS_Staff_Roster_2026.xlsx",
+      totalRows: 9,
+      successCount: 9,
+      errorCount: 0,
+      skippedCount: 0,
+      createdByUserId: "user-sachin",
+      completedAt: new Date("2026-01-15T10:30:00Z"),
+      createdAt: new Date("2026-01-15T10:28:00Z"),
+    },
+    {
+      id: "ij-002",
+      importType: "leave",
+      status: "completed",
+      fileName: "LeaveDates_DCS.xlsx",
+      totalRows: 7,
+      successCount: 7,
+      errorCount: 0,
+      skippedCount: 0,
+      createdByUserId: "user-sachin",
+      completedAt: new Date("2026-02-01T09:15:00Z"),
+      createdAt: new Date("2026-02-01T09:12:00Z"),
+    },
+    {
+      id: "ij-003",
+      importType: "platform_accounts",
+      status: "partial",
+      fileName: "AD_Account_Export_Mar2026.xlsx",
+      totalRows: 45,
+      successCount: 42,
+      errorCount: 2,
+      skippedCount: 1,
+      errors: [
+        { row: 18, field: "staffProfileId", message: "No matching staff profile for account 'j.mccoy'" },
+        { row: 33, field: "platform", message: "Unrecognised platform value 'ldap' — expected one of: ad, vpn, phpipam..." },
+      ],
+      createdByUserId: "user-sachin",
+      completedAt: new Date("2026-03-12T14:05:00Z"),
+      createdAt: new Date("2026-03-12T14:00:00Z"),
+    },
   ]).onConflictDoNothing();
 
   // ── Compliance Training + PPE ──────────────────────────────────────────────
