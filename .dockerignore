@@ -11,6 +11,8 @@ docs/
 apps/docs/.next/
 apps/docs/node_modules/
 apps/docs/tsconfig.tsbuildinfo
+# .source/ contains hardcoded local absolute paths — must be regenerated in Docker
+apps/docs/.source/
 # Exclude web build output (rebuilt in web-builder stage)
 apps/web/dist/
 apps/web/node_modules/

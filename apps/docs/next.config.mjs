@@ -5,8 +5,8 @@ const withMDX = createMDX();
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
-  // Standalone output bundles only the files needed to run the server,
-  // enabling a minimal Docker image without copying all of node_modules.
+  // Standalone output: Next.js bundles only the files needed to run the server.
+  // Recommended by fumadocs for Docker deployments.
   output: "standalone",
 };
 

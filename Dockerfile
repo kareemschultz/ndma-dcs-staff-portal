@@ -77,14 +77,14 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 
 CMD ["bun", "run", "--cwd", "apps/server", "src/index.ts"]
 
-# ── Stage 5: Build docs (Fumadocs / Next.js) ─────────────────────────────────
-# Next.js standalone output lets us run the docs without shipping all of
-# node_modules — only the files the server actually imports are included.
+# ── Stage 5: Build docs (Fumadocs / Next.js static export) ───────────────────
+# Uses bun with the workspace lockfile so versions exactly match dev.
+# output: "export" generates plain HTML/CSS/JS — no Node server needed.
 FROM oven/bun:1.3-slim AS docs-builder
 
 WORKDIR /app
 
-# Copy ALL workspace manifests so bun can resolve the full workspace graph
+# Install workspace deps using the bun.lock so versions are pinned
 COPY package.json bun.lock turbo.json ./
 COPY apps/docs/package.json apps/docs/
 COPY apps/web/package.json apps/web/
@@ -98,31 +98,29 @@ COPY packages/config/package.json packages/config/
 
 RUN bun install --frozen-lockfile
 
-# Copy only the docs source — nothing else is needed for the build
 COPY apps/docs ./apps/docs
 
-# next build — bun invokes the local next binary via Node
-RUN bun run --cwd apps/docs build
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# ── Stage 6: Docs production runtime ─────────────────────────────────────────
-FROM node:20-alpine AS docs-runner
+# fumadocs-mdx resolves content/docs relative to process.cwd(),
+# so WORKDIR must be the docs app root when next build runs.
+WORKDIR /app/apps/docs
 
-WORKDIR /app
+RUN bun run build
 
-ENV NODE_ENV=production \
-    PORT=4000 \
-    HOSTNAME=0.0.0.0 \
-    NEXT_TELEMETRY_DISABLED=1
+# ── Stage 6: Docs production runtime (nginx static) ──────────────────────────
+# Static export in out/ — served by nginx, no Node process needed at all.
+FROM nginx:alpine AS docs-runner
 
-# Next.js standalone output: root server.js + node_modules included by Next
-# Static assets and public dir must be copied alongside it
-COPY --from=docs-builder /app/apps/docs/.next/standalone ./
-COPY --from=docs-builder /app/apps/docs/.next/static ./apps/docs/.next/static
-COPY --from=docs-builder /app/apps/docs/public ./apps/docs/public
+COPY --from=docs-builder /app/apps/docs/out /usr/share/nginx/html
+
+# Single-page-app style: all unknown paths fall back to index.html
+# (Fumadocs generates one HTML file per page, so 404 fallback isn't strictly
+# needed, but it's good practice for any /docs/* deep-links.)
+RUN printf 'server {\n  listen 4000;\n  root /usr/share/nginx/html;\n  index index.html;\n  location / {\n    try_files $uri $uri.html $uri/ /404.html =404;\n  }\n}\n' \
+    > /etc/nginx/conf.d/default.conf
 
 EXPOSE 4000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -qO- http://localhost:4000 > /dev/null 2>&1 || exit 1
-
-CMD ["node", "apps/docs/server.js"]

@@ -66,13 +66,13 @@ Managing automation rules requires the `settings` RBAC resource (`admin`, `hrAdm
 **Notify manager when a critical work item goes overdue:**
 - Trigger: `work` / `overdue`
 - Condition: `priority = critical`
-- Action: Notify → "Critical item overdue: {{title}}"
+- Action: Notify → `"Critical item overdue: {{title}}"`
 
 **Notify team when a leave request is approved:**
 - Trigger: `leave` / `approved`
-- Action: Notify → "Leave approved for {{staffProfileId}} from {{startDate}} to {{endDate}}"
+- Action: Notify → `"Leave approved for {{staffProfileId}} from {{startDate}} to {{endDate}}"`
 
 **Alert on new high-risk temp change:**
 - Trigger: `temp_changes` / `created`
 - Condition: `riskLevel = high`
-- Action: Notify → "High-risk change created: {{title}} — remove by {{removeByDate}}"
+- Action: Notify → `"High-risk change created: {{title}} — remove by {{removeByDate}}"`
