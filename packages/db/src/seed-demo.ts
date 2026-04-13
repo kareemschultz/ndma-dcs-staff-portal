@@ -60,10 +60,10 @@ const DEMO_WORK_ITEM_IDS     = ["wi-001","wi-002","wi-003","wi-004","wi-005","wi
 const DEMO_TEMPLATE_IDS      = ["wt-001","wt-002","wt-003","wt-004"] as const;
 const DEMO_INCIDENT_IDS      = ["inc-001","inc-002","inc-003","inc-004"] as const;
 const DEMO_LEAVE_TYPE_IDS    = ["lt-annual","lt-sick","lt-emergency","lt-study"] as const;
-const DEMO_LEAVE_BALANCE_IDS = ["lb-kareem-annual","lb-shemar-annual","lb-bheesham-annual","lb-timothy-annual","lb-timothy-study","lb-richie-sick","lb-gerard-annual"] as const;
-const DEMO_LEAVE_REQUEST_IDS = ["lr-001","lr-002","lr-003","lr-004","lr-005","lr-006","lr-007","lr-008"] as const;
+const DEMO_LEAVE_BALANCE_IDS = ["lb-kareem-annual","lb-shemar-annual","lb-bheesham-annual","lb-timothy-annual","lb-timothy-study","lb-richie-sick","lb-gerard-annual","lb-sachin-annual","lb-devon-annual","lb-nicolai-annual"] as const;
+const DEMO_LEAVE_REQUEST_IDS = ["lr-001","lr-002","lr-003","lr-004","lr-005","lr-006","lr-007","lr-008","lr-009","lr-010","lr-011","lr-012","lr-013","lr-014","lr-015"] as const;
 const DEMO_PR_IDS            = ["pr-001","pr-002","pr-003","pr-004","pr-005","pr-006"] as const;
-const DEMO_TC_IDS            = ["tc-001","tc-002","tc-003","tc-004","tc-005","tc-006"] as const;
+const DEMO_TC_IDS            = ["tc-001","tc-002","tc-003","tc-004","tc-005","tc-006","tc-007","tc-008","tc-009","tc-010","tc-011","tc-012"] as const;
 const DEMO_INTEGRATION_IDS   = ["pi-ad","pi-vpn","pi-ipam"] as const;
 const DEMO_ACCOUNT_IDS       = ["pa-001","pa-002","pa-003","pa-004","pa-005","pa-006","pa-007","pa-008","pa-009","pa-010","pa-011","pa-012","pa-013","pa-014","pa-015","pa-016","pa-017","pa-018","pa-019","pa-020","pa-021","pa-022","pa-023","pa-024","pa-025","pa-026","pa-027","pa-028","pa-029","pa-030"] as const;
 const DEMO_TRAINING_IDS      = ["tr-001","tr-002","tr-003","tr-004","tr-005","tr-006","tr-007","tr-008"] as const;
@@ -476,6 +476,10 @@ async function seedDemo() {
     { id: "lb-timothy-study",   staffProfileId: "sp-timothy",  leaveTypeId: "lt-study",     contractYearStart: "2026-01-01", contractYearEnd: "2026-12-31", entitlement: 10, used: 10, carriedOver: 0, adjustment: 0 },
     { id: "lb-richie-sick",     staffProfileId: "sp-richie",   leaveTypeId: "lt-sick",      contractYearStart: "2026-01-01", contractYearEnd: "2026-12-31", entitlement: 14, used: 1,  carriedOver: 0, adjustment: 0 },
     { id: "lb-gerard-annual",   staffProfileId: "sp-gerard",   leaveTypeId: "lt-annual",    contractYearStart: "2026-01-01", contractYearEnd: "2026-12-31", entitlement: 20, used: 3,  carriedOver: 5, adjustment: 0 },
+    // Balances for managers/leads — missing from initial seed (from LeaveDates_DCS.xlsx)
+    { id: "lb-sachin-annual",   staffProfileId: "sp-sachin",   leaveTypeId: "lt-annual",    contractYearStart: "2026-01-01", contractYearEnd: "2026-12-31", entitlement: 28, used: 14, carriedOver: 0, adjustment: 0 },  // Manager allowance 28d; Jan 12-25 already taken
+    { id: "lb-devon-annual",    staffProfileId: "sp-devon",    leaveTypeId: "lt-annual",     contractYearStart: "2026-01-01", contractYearEnd: "2026-12-31", entitlement: 20, used: 14, carriedOver: 5, adjustment: 0 },  // Jan 26-Feb 8 taken
+    { id: "lb-nicolai-annual",  staffProfileId: "sp-nicolai",  leaveTypeId: "lt-annual",    contractYearStart: "2026-01-01", contractYearEnd: "2026-12-31", entitlement: 20, used: 0,  carriedOver: 3, adjustment: 0 },
   ]).onConflictDoNothing();
 
   await db.insert(leaveRequests).values([
@@ -487,6 +491,14 @@ async function seedDemo() {
     { id: "lr-006", staffProfileId: "sp-gerard",   leaveTypeId: "lt-annual",    startDate: "2026-03-23", endDate: "2026-03-25", totalDays: 3,  reason: "Annual leave",            status: "approved", approvedById: "user-sachin", overlapOverride: false },
     { id: "lr-007", staffProfileId: "sp-nicolai",  leaveTypeId: "lt-emergency", startDate: "2026-04-28", endDate: "2026-04-29", totalDays: 2,  reason: "Family emergency",        status: "pending",  overlapOverride: false },
     { id: "lr-008", staffProfileId: "sp-devon",    leaveTypeId: "lt-annual",    startDate: "2026-04-19", endDate: "2026-04-20", totalDays: 2,  reason: "Easter weekend extension", status: "rejected", rejectionReason: "Devon is the on-call lead engineer for week starting 19 Apr. Cannot be approved during active on-call week.", overlapOverride: false },
+    // Real 2026 leave dates from LeaveDates_DCS.xlsx
+    { id: "lr-009", staffProfileId: "sp-sachin",  leaveTypeId: "lt-annual",    startDate: "2026-01-12", endDate: "2026-01-25", totalDays: 14, reason: "Annual leave – Q1",            status: "approved", approvedById: "user-sachin", overlapOverride: false },  // approved by self (manager)
+    { id: "lr-010", staffProfileId: "sp-devon",   leaveTypeId: "lt-annual",    startDate: "2026-01-26", endDate: "2026-02-08", totalDays: 14, reason: "Annual leave",                 status: "approved", approvedById: "user-sachin", overlapOverride: false },
+    { id: "lr-011", staffProfileId: "sp-kareem",  leaveTypeId: "lt-annual",    startDate: "2026-04-07", endDate: "2026-04-12", totalDays: 6,  reason: "Annual leave",                 status: "approved", approvedById: "user-sachin", overlapOverride: false },
+    { id: "lr-012", staffProfileId: "sp-sachin",  leaveTypeId: "lt-annual",    startDate: "2026-04-13", endDate: "2026-05-18", totalDays: 26, reason: "Annual leave – Q2 block",      status: "pending",  overlapOverride: false },
+    { id: "lr-013", staffProfileId: "sp-devon",   leaveTypeId: "lt-annual",    startDate: "2026-07-20", endDate: "2026-08-16", totalDays: 28, reason: "Annual leave – July/August",   status: "pending",  overlapOverride: false },
+    { id: "lr-014", staffProfileId: "sp-nicolai", leaveTypeId: "lt-annual",    startDate: "2026-06-29", endDate: "2026-07-26", totalDays: 28, reason: "Annual leave",                 status: "pending",  overlapOverride: false },
+    { id: "lr-015", staffProfileId: "sp-gerard",  leaveTypeId: "lt-annual",    startDate: "2026-06-08", endDate: "2026-06-14", totalDays: 7,  reason: "Annual leave",                 status: "pending",  overlapOverride: false },
   ]).onConflictDoNothing();
 
   // ── Procurement ────────────────────────────────────────────────────────────
@@ -523,6 +535,14 @@ async function seedDemo() {
     { id: "tc-004", title: "Test server exposed in DMZ for API integration",  status: "active",   category: "temporary_service",  riskLevel: "critical", environment: "staging",    systemName: "DMZ-TESTSVR-01",       publicIp: "198.51.100.22", internalIp: "10.10.50.22", port: "8443", protocol: "tcp", externalExposure: true, ownerType: "internal_staff", ownerId: "sp-shemar", implementationDate: "2026-04-05", removeByDate: "2026-05-31", createdById: "user-shemar" },
     { id: "tc-005", title: "Static NAT for NDMA Head Office remote audit",    status: "removed",      category: "temporary_access",   riskLevel: "low",      environment: "production", systemName: "Edge Router",                                     actualRemovalDate: "2026-03-31", implementationDate: "2026-03-01", removeByDate: "2026-03-31", createdById: "user-kareem" },
     { id: "tc-006", title: "Maintenance VLAN for patch cycle – April 2026", status: "implemented",  category: "temporary_change",   riskLevel: "low",      environment: "production", systemName: "Core Switch Stack",                               implementationDate: "2026-04-08", removeByDate: "2026-04-30", createdById: "user-bheesham" },
+
+    // ── Real temporary changes from TemporaryTracker_20241231_v01.xlsx ──────────
+    { id: "tc-007", title: "Temporary VPN accounts testvpn1 / testvpn2 on UTM", status: "active",   category: "temporary_access",   riskLevel: "high",   environment: "production", systemName: "Fortigate UTM (10.6.0.29)",                         externalExposure: false, ownerType: "internal_staff",   ownerId: "sp-sachin",  implementationDate: "2026-02-02", removeByDate: "2026-05-25", createdById: "user-sachin" },
+    { id: "tc-008", title: "chensuixin.huawei VPN account — pending removal",     status: "overdue",  category: "temporary_access",   riskLevel: "high",   environment: "production", systemName: "Fortigate UTM 1 & 2",                               externalExposure: false, ownerType: "external_contact", externalAgencyName: "Huawei Technologies", externalAgencyType: "vendor", implementationDate: "2025-11-14", removeByDate: "2026-01-31", createdById: "user-timothy" },
+    { id: "tc-009", title: "Temporary Public IP for Owen ESD Internal Identity",  status: "active",   category: "public_ip_exposure", riskLevel: "medium", environment: "production", systemName: "Core Router",                 publicIp: "168.232.144.82", internalIp: "10.9.0.211", externalExposure: true,  ownerType: "external_contact", externalAgencyName: "ESD / Owen",          externalAgencyType: "government", implementationDate: "2025-12-02", removeByDate: "2026-06-30", createdById: "user-sachin" },
+    { id: "tc-010", title: "Parika/Skeldon/Cane Grove microwave vlanif shutdown", status: "active",   category: "temporary_change",   riskLevel: "medium", environment: "production", systemName: "Transmission PEs (Parika, Skeldon, Cane Grove, Zeeburg)", externalExposure: false, ownerType: "internal_staff", ownerId: "sp-kareem", implementationDate: "2025-10-23", removeByDate: "2026-06-30", createdById: "user-kareem" },
+    { id: "tc-011", title: "Allow SSH to Cash Grant Server for GCTO",             status: "active",   category: "temporary_change",   riskLevel: "high",   environment: "production", systemName: "Fortigate FW01",                                    externalExposure: false, ownerType: "external_contact", externalAgencyName: "GCTO",               externalAgencyType: "government", implementationDate: "2026-03-29", removeByDate: "2026-04-30", createdById: "user-sachin" },
+    { id: "tc-012", title: "Loaned 3 routers to GPL for Solarfarm Project",       status: "active",   category: "temporary_access",   riskLevel: "low",    environment: "production", systemName: "Equipment Loan",                                    externalExposure: false, ownerType: "external_contact", externalAgencyName: "Guyana Power & Light (GPL)", externalAgencyType: "government", implementationDate: "2026-03-18", removeByDate: "2026-06-30", createdById: "user-richie" },
   ]).onConflictDoNothing();
 
   // ── Platform Integrations & Accounts ──────────────────────────────────────
