@@ -10,6 +10,7 @@ import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import { serveStatic } from "hono/bun";
 
 const app = new Hono();
 
@@ -70,6 +71,20 @@ app.use("/*", async (c, next) => {
 
   await next();
 });
+
+app.get("/health", (c) => {
+  return c.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// In production the Hono server also serves the Vite-built SPA.
+// The Dockerfile copies apps/web/dist to /app/apps/web/dist; the server
+// runs with CWD /app/apps/server, so the relative path is ../web/dist.
+if (process.env.NODE_ENV === "production") {
+  app.use("/assets/*", serveStatic({ root: "../web/dist" }));
+  app.use("/*", serveStatic({ root: "../web/dist" }));
+  // SPA fallback — send index.html for all unmatched client-side routes
+  app.get("*", serveStatic({ root: "../web/dist", path: "index.html" }));
+}
 
 app.get("/", (c) => {
   return c.text("OK");

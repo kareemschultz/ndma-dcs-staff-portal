@@ -68,6 +68,7 @@ export const staffRouter = {
           startDate: new Date(input.startDate),
         })
         .returning();
+      if (!profile) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       await logAudit({
         actorId: context.session.user.id,

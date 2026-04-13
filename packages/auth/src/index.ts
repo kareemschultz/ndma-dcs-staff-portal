@@ -128,6 +128,7 @@ export function createAuth() {
     // even when LDAP is the primary auth method.
     emailAndPassword: {
       enabled: true,
+      signUpDisabled: true, // Only admins create users via import/admin UI — no public self-registration
     },
 
     secret: env.BETTER_AUTH_SECRET,

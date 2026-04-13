@@ -63,6 +63,7 @@ export const contractsRouter = {
           endDate: input.endDate ?? null,
         })
         .returning();
+      if (!contract) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       await logAudit({
         actorId: context.session.user.id,
@@ -128,7 +129,7 @@ export const contractsRouter = {
     .handler(async ({ input }) => {
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() + input.withinDays);
-      const cutoffStr = cutoff.toISOString().split("T")[0];
+      const cutoffStr = cutoff.toISOString().slice(0, 10);
 
       return db.query.contracts.findMany({
         where: and(

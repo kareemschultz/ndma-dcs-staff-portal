@@ -64,7 +64,7 @@ const HistoryFilterInput = z.object({
 function getWeekEnd(weekStart: string): string {
   const d = new Date(weekStart);
   d.setDate(d.getDate() + 6);
-  return d.toISOString().split("T")[0];
+  return d.toISOString().slice(0, 10);
 }
 
 // ── Helper: log history event ──────────────────────────────────────────────
@@ -97,7 +97,7 @@ async function logHistory(params: {
 export const rotaRouter = {
   // Get the currently published (active) schedule
   getCurrent: protectedProcedure.handler(async () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().slice(0, 10);
     const schedule = await db.query.onCallSchedules.findFirst({
       where: and(
         eq(onCallSchedules.status, "published"),
@@ -117,7 +117,7 @@ export const rotaRouter = {
 
   // Get upcoming published schedules (next 4 weeks)
   getUpcoming: protectedProcedure.handler(async () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().slice(0, 10);
     return db.query.onCallSchedules.findMany({
       where: and(
         eq(onCallSchedules.status, "published"),
@@ -169,6 +169,7 @@ export const rotaRouter = {
         .insert(onCallSchedules)
         .values({ weekStart: input.weekStart, weekEnd, notes: input.notes, status: "draft" })
         .returning();
+      if (!schedule) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       await logHistory({
         scheduleId: schedule.id,
@@ -221,6 +222,7 @@ export const rotaRouter = {
           role: input.role,
         })
         .returning();
+      if (!assignment) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       await logHistory({
         scheduleId: input.scheduleId,
@@ -324,6 +326,7 @@ export const rotaRouter = {
         })
         .where(eq(onCallSchedules.id, input.scheduleId))
         .returning();
+      if (!published) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       await logHistory({
         scheduleId: input.scheduleId,
@@ -367,7 +370,7 @@ export const rotaRouter = {
         });
       }
 
-      const deptCode = departmentCodeMap[input.role];
+      const deptCode = departmentCodeMap[input.role]!;
       return db
         .select()
         .from(staffProfiles)
@@ -436,6 +439,7 @@ export const rotaRouter = {
             reason: input.reason,
           })
           .returning();
+        if (!swap) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,
@@ -491,6 +495,7 @@ export const rotaRouter = {
           })
           .where(eq(onCallSwaps.id, input.swapId))
           .returning();
+        if (!updated) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,

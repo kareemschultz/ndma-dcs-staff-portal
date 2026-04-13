@@ -116,6 +116,7 @@ export const procurementRouter = {
           createdById: context.session.user.id,
         })
         .returning();
+      if (!pr) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       // Insert line items
       await db.insert(prLineItems).values(
@@ -172,6 +173,7 @@ export const procurementRouter = {
         .set(updates)
         .where(eq(purchaseRequisitions.id, id))
         .returning();
+      if (!updated) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       await logAudit({
         actorId: context.session.user.id,

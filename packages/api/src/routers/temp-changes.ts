@@ -90,6 +90,7 @@ export const tempChangesRouter = {
           rollbackPlan: input.rollbackPlan ?? null,
         })
         .returning();
+      if (!change) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       await logAudit({
         actorId: context.session.user.id,
@@ -155,7 +156,7 @@ export const tempChangesRouter = {
   markRemoved: protectedProcedure
     .input(z.object({ id: z.string(), followUpNotes: z.string().optional() }))
     .handler(async ({ input, context }) => {
-      const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toISOString().slice(0, 10);
       const [updated] = await db
         .update(temporaryChanges)
         .set({
@@ -182,7 +183,7 @@ export const tempChangesRouter = {
     }),
 
   getOverdue: protectedProcedure.handler(async () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().slice(0, 10);
     return db.query.temporaryChanges.findMany({
       where: and(
         sql`${temporaryChanges.removeByDate} IS NOT NULL`,
@@ -200,7 +201,7 @@ export const tempChangesRouter = {
     const all = await db.query.temporaryChanges.findMany({
       columns: { id: true, status: true, removeByDate: true },
     });
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().slice(0, 10);
     const byStatus: Record<string, number> = {};
     let overdue = 0;
 

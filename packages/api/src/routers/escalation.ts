@@ -5,11 +5,8 @@ import {
   escalationPolicies,
   escalationSteps,
   onCallOverrides,
-  staffProfiles,
-  services,
-  departments,
 } from "@ndma-dcs-staff-portal/db";
-import { eq, asc, and, lte, gte } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 import { protectedProcedure } from "../index";
 import { logAudit } from "../lib/audit";
 
@@ -112,6 +109,7 @@ export const escalationRouter = {
           .insert(escalationPolicies)
           .values(input)
           .returning();
+        if (!policy) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,
@@ -198,6 +196,7 @@ export const escalationRouter = {
         if (!policy) throw new ORPCError("NOT_FOUND", { message: "Policy not found" });
 
         const [step] = await db.insert(escalationSteps).values(input).returning();
+        if (!step) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,
@@ -297,6 +296,7 @@ export const escalationRouter = {
           .insert(onCallOverrides)
           .values({ ...input, createdById: context.session.user.id })
           .returning();
+        if (!override) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,

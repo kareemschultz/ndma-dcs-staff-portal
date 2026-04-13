@@ -78,6 +78,7 @@ export const appraisalsRouter = {
           objectives: input.objectives ?? null,
         })
         .returning();
+      if (!appraisal) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       await logAudit({
         actorId: context.session.user.id,
@@ -147,7 +148,7 @@ export const appraisalsRouter = {
     }),
 
   getOverdue: protectedProcedure.handler(async () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().slice(0, 10);
     return db.query.appraisals.findMany({
       where: and(
         sql`${appraisals.scheduledDate} IS NOT NULL`,

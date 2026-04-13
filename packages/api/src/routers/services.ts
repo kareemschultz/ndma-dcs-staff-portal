@@ -53,6 +53,7 @@ export const servicesRouter = {
           ownerStaffId: input.ownerStaffId ?? null,
         })
         .returning();
+      if (!service) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       await logAudit({
         actorId: context.session.user.id,

@@ -12,7 +12,6 @@ import { and, desc, eq, sql } from "drizzle-orm";
 
 import { protectedProcedure } from "../index";
 import { logAudit } from "../lib/audit";
-import { createNotification } from "../lib/notify";
 
 // ── Input Schemas ──────────────────────────────────────────────────────────
 
@@ -156,6 +155,7 @@ export const incidentsRouter = {
           detectedAt: input.detectedAt ? new Date(input.detectedAt) : new Date(),
         })
         .returning();
+      if (!incident) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       // Auto-add first timeline entry
       await db.insert(incidentTimeline).values({
@@ -349,6 +349,7 @@ export const incidentsRouter = {
           },
         })
         .returning();
+      if (!pir) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       await logAudit({
         actorId: context.session.user.id,
