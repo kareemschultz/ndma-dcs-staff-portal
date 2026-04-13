@@ -8,9 +8,11 @@ import {
   workInitiatives,
   workItemDependencies,
   workItemTemplates,
+  workItemAssignees,
+  workItemTeamAllocations,
   staffProfiles,
 } from "@ndma-dcs-staff-portal/db";
-import { and, desc, eq, lt, sql, isNotNull } from "drizzle-orm";
+import { and, desc, eq, inArray, lt, sql, isNotNull } from "drizzle-orm";
 
 import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
@@ -43,6 +45,11 @@ const CreateWorkItemInput = z.object({
   type: WorkItemTypeSchema.default("routine"),
   priority: WorkItemPrioritySchema.default("medium"),
   assignedToId: z.string().optional(),
+  contributorIds: z.array(z.string()).optional(),
+  teamAllocations: z.array(z.object({
+    departmentId: z.string(),
+    requiredCount: z.number().int().positive(),
+  })).optional(),
   departmentId: z.string().optional(),
   requesterName: z.string().optional(),
   requesterEmail: z.string().email().optional(),
@@ -125,6 +132,8 @@ export const workRouter = {
         offset: input.offset,
         with: {
           assignedTo: { with: { user: true } },
+          assignees: { with: { staffProfile: { with: { user: true, department: true } } } },
+          teamAllocations: { with: { department: true } },
           department: true,
           createdBy: true,
         },
@@ -138,6 +147,8 @@ export const workRouter = {
         where: eq(workItems.id, input.id),
         with: {
           assignedTo: { with: { user: true } },
+          assignees: { with: { staffProfile: { with: { user: true, department: true } } } },
+          teamAllocations: { with: { department: true } },
           department: true,
           createdBy: true,
           comments: {
@@ -157,16 +168,41 @@ export const workRouter = {
   create: requireRole("work", "create")
     .input(CreateWorkItemInput)
     .handler(async ({ input, context }) => {
+      const { contributorIds, teamAllocations: allocInput, ...itemFields } = input;
+
       const [item] = await db
         .insert(workItems)
         .values({
-          ...input,
+          ...itemFields,
           dueDate: input.dueDate ?? null,
           createdById: context.session.user.id,
         })
         .returning();
 
       if (!item) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
+      // Insert contributors (many-to-many assignees)
+      if (contributorIds && contributorIds.length > 0) {
+        await db.insert(workItemAssignees).values(
+          contributorIds.map((staffProfileId) => ({
+            workItemId: item.id,
+            staffProfileId,
+            addedById: context.session.user.id,
+          })),
+        ).onConflictDoNothing();
+      }
+
+      // Insert team allocations
+      if (allocInput && allocInput.length > 0) {
+        await db.insert(workItemTeamAllocations).values(
+          allocInput.map((a) => ({
+            workItemId: item.id,
+            departmentId: a.departmentId,
+            requiredCount: a.requiredCount,
+            addedById: context.session.user.id,
+          })),
+        ).onConflictDoNothing();
+      }
 
       await logAudit({
         actorId: context.session.user.id,
@@ -182,7 +218,7 @@ export const workRouter = {
         correlationId: context.requestId,
       });
 
-      // Notify assignee if set
+      // Notify primary assignee if set
       if (item.assignedToId) {
         const profile = await db.query.staffProfiles.findFirst({
           where: eq(staffProfiles.id, item.assignedToId),
@@ -413,6 +449,194 @@ export const workRouter = {
 
     return { total: all.length, byStatus, byType, overdue };
   }),
+
+  // ── Assignees (contributors) ───────────────────────────────────────────────
+
+  assignees: {
+    list: protectedProcedure
+      .input(z.object({ workItemId: z.string() }))
+      .handler(async ({ input }) => {
+        return db.query.workItemAssignees.findMany({
+          where: eq(workItemAssignees.workItemId, input.workItemId),
+          with: {
+            staffProfile: { with: { user: true, department: true } },
+          },
+        });
+      }),
+
+    add: requireRole("work", "assign")
+      .input(z.object({ workItemId: z.string(), staffProfileId: z.string() }))
+      .handler(async ({ input, context }) => {
+        const item = await db.query.workItems.findFirst({
+          where: eq(workItems.id, input.workItemId),
+        });
+        if (!item) throw new ORPCError("NOT_FOUND", { message: "Work item not found" });
+
+        const [assignee] = await db
+          .insert(workItemAssignees)
+          .values({
+            workItemId: input.workItemId,
+            staffProfileId: input.staffProfileId,
+            addedById: context.session.user.id,
+          })
+          .onConflictDoNothing()
+          .returning();
+
+        // Notify the contributor
+        const profile = await db.query.staffProfiles.findFirst({
+          where: eq(staffProfiles.id, input.staffProfileId),
+        });
+        if (profile) {
+          await createNotification({
+            recipientId: profile.userId,
+            title: "You've been added to a work item",
+            body: item.title,
+            module: "work",
+            resourceType: "work_item",
+            resourceId: input.workItemId,
+            linkUrl: `/work/${input.workItemId}`,
+          });
+        }
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "work_item.assignee.add",
+          module: "work",
+          resourceType: "work_item",
+          resourceId: input.workItemId,
+          afterValue: { staffProfileId: input.staffProfileId },
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
+        });
+
+        return assignee ?? null;
+      }),
+
+    remove: requireRole("work", "assign")
+      .input(z.object({ workItemId: z.string(), staffProfileId: z.string() }))
+      .handler(async ({ input, context }) => {
+        await db
+          .delete(workItemAssignees)
+          .where(
+            and(
+              eq(workItemAssignees.workItemId, input.workItemId),
+              eq(workItemAssignees.staffProfileId, input.staffProfileId),
+            ),
+          );
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "work_item.assignee.remove",
+          module: "work",
+          resourceType: "work_item",
+          resourceId: input.workItemId,
+          afterValue: { removedStaffProfileId: input.staffProfileId },
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
+        });
+
+        return { success: true };
+      }),
+  },
+
+  // ── Team Allocations ───────────────────────────────────────────────────────
+
+  teamAllocations: {
+    list: protectedProcedure
+      .input(z.object({ workItemId: z.string() }))
+      .handler(async ({ input }) => {
+        return db.query.workItemTeamAllocations.findMany({
+          where: eq(workItemTeamAllocations.workItemId, input.workItemId),
+          with: { department: true },
+        });
+      }),
+
+    set: requireRole("work", "assign")
+      .input(
+        z.object({
+          workItemId: z.string(),
+          allocations: z.array(
+            z.object({
+              departmentId: z.string(),
+              requiredCount: z.number().int().min(1),
+            }),
+          ),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const item = await db.query.workItems.findFirst({
+          where: eq(workItems.id, input.workItemId),
+        });
+        if (!item) throw new ORPCError("NOT_FOUND");
+
+        // Replace all existing allocations atomically
+        await db
+          .delete(workItemTeamAllocations)
+          .where(eq(workItemTeamAllocations.workItemId, input.workItemId));
+
+        const inserted = input.allocations.length > 0
+          ? await db.insert(workItemTeamAllocations).values(
+              input.allocations.map((a) => ({
+                workItemId: input.workItemId,
+                departmentId: a.departmentId,
+                requiredCount: a.requiredCount,
+                addedById: context.session.user.id,
+              })),
+            ).returning()
+          : [];
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "work_item.team_allocations.set",
+          module: "work",
+          resourceType: "work_item",
+          resourceId: input.workItemId,
+          afterValue: { allocations: input.allocations },
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
+        });
+
+        return inserted;
+      }),
+
+    remove: requireRole("work", "assign")
+      .input(z.object({ workItemId: z.string(), departmentId: z.string() }))
+      .handler(async ({ input, context }) => {
+        await db
+          .delete(workItemTeamAllocations)
+          .where(
+            and(
+              eq(workItemTeamAllocations.workItemId, input.workItemId),
+              eq(workItemTeamAllocations.departmentId, input.departmentId),
+            ),
+          );
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "work_item.team_allocation.remove",
+          module: "work",
+          resourceType: "work_item",
+          resourceId: input.workItemId,
+          afterValue: { removedDepartmentId: input.departmentId },
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
+        });
+
+        return { success: true };
+      }),
+  },
 
   // ── Initiatives ────────────────────────────────────────────────────────────
 

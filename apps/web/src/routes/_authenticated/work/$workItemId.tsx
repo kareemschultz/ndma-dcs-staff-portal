@@ -9,14 +9,19 @@ import {
   ClipboardCheck,
   MessageSquare,
   User,
+  Users,
   Building2,
   Clock,
+  Plus,
+  X,
+  LayoutGrid,
 } from "lucide-react";
 import { Button } from "@ndma-dcs-staff-portal/ui/components/button";
 import { Textarea } from "@ndma-dcs-staff-portal/ui/components/textarea";
 import { Label } from "@ndma-dcs-staff-portal/ui/components/label";
 import { Skeleton } from "@ndma-dcs-staff-portal/ui/components/skeleton";
 import { Separator } from "@ndma-dcs-staff-portal/ui/components/separator";
+import { Badge } from "@ndma-dcs-staff-portal/ui/components/badge";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
 import { orpc, queryClient } from "@/utils/orpc";
@@ -30,6 +35,278 @@ import type { WorkStatus, WorkPriority, WorkType } from "@/features/work/compone
 export const Route = createFileRoute("/_authenticated/work/$workItemId")({
   component: WorkItemDetailPage,
 });
+
+function TeamAllocationBadges({ allocations }: {
+  allocations: Array<{ department: { name: string; code: string } | null; requiredCount: number }>;
+}) {
+  if (!allocations || allocations.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {allocations.map((a, i) => (
+        <Badge key={i} variant="secondary" className="text-xs gap-1">
+          <Building2 className="size-3" />
+          {a.department?.code ?? "?"} ×{a.requiredCount}
+        </Badge>
+      ))}
+    </div>
+  );
+}
+
+function AssignmentPanel({ workItemId }: { workItemId: string }) {
+  const [showAddContributor, setShowAddContributor] = useState(false);
+  const [selectedContributor, setSelectedContributor] = useState("");
+  const [showSetOwner, setShowSetOwner] = useState(false);
+  const [selectedOwner, setSelectedOwner] = useState("");
+
+  const { data: staffList } = useQuery(
+    orpc.staff.list.queryOptions({ input: { limit: 200, offset: 0 } })
+  );
+  const { data: departments } = useQuery(orpc.staff.getDepartments.queryOptions());
+  const { data: item } = useQuery(
+    orpc.work.get.queryOptions({ input: { id: workItemId } })
+  );
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: orpc.work.get.key({ input: { id: workItemId } }) });
+    queryClient.invalidateQueries({ queryKey: orpc.work.list.key() });
+  };
+
+  const assignOwnerMutation = useMutation(
+    orpc.work.assign.mutationOptions({
+      onSuccess: () => { invalidate(); setShowSetOwner(false); toast.success("Primary owner updated"); },
+      onError: (err) => toast.error(err.message),
+    })
+  );
+
+  const addContributorMutation = useMutation(
+    orpc.work.assignees.add.mutationOptions({
+      onSuccess: () => { invalidate(); setShowAddContributor(false); setSelectedContributor(""); toast.success("Contributor added"); },
+      onError: (err) => toast.error(err.message),
+    })
+  );
+
+  const removeContributorMutation = useMutation(
+    orpc.work.assignees.remove.mutationOptions({
+      onSuccess: () => { invalidate(); toast.success("Contributor removed"); },
+      onError: (err) => toast.error(err.message),
+    })
+  );
+
+  const [allocEditing, setAllocEditing] = useState(false);
+  const [allocRows, setAllocRows] = useState<Array<{ departmentId: string; requiredCount: number }>>([]);
+
+  const setAllocMutation = useMutation(
+    orpc.work.teamAllocations.set.mutationOptions({
+      onSuccess: () => { invalidate(); setAllocEditing(false); toast.success("Team allocations updated"); },
+      onError: (err) => toast.error(err.message),
+    })
+  );
+
+  const currentAssignees = item?.assignees ?? [];
+  const currentAllocations = item?.teamAllocations ?? [];
+
+  const availableContributors = staffList?.filter(
+    (s) =>
+      s.id !== item?.assignedToId &&
+      !currentAssignees.some((a) => a.staffProfileId === s.id)
+  ) ?? [];
+
+  return (
+    <div className="rounded-xl border p-4 space-y-4 text-sm">
+      <h3 className="font-semibold flex items-center gap-2">
+        <Users className="size-4" />
+        Assignment
+      </h3>
+
+      {/* Primary owner */}
+      <div className="space-y-1.5">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Primary Owner</p>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+              {item?.assignedTo?.user?.name?.[0] ?? "?"}
+            </div>
+            <span className="font-medium">{item?.assignedTo?.user?.name ?? "Unassigned"}</span>
+          </div>
+          <button
+            onClick={() => setShowSetOwner((v) => !v)}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Change
+          </button>
+        </div>
+        {showSetOwner && (
+          <div className="flex gap-2 mt-1">
+            <select
+              value={selectedOwner}
+              onChange={(e) => setSelectedOwner(e.target.value)}
+              className="flex-1 rounded-lg border bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">Select staff...</option>
+              {staffList?.map((s) => (
+                <option key={s.id} value={s.id}>{s.user?.name} — {s.jobTitle}</option>
+              ))}
+            </select>
+            <Button
+              size="sm"
+              disabled={!selectedOwner || assignOwnerMutation.isPending}
+              onClick={() => assignOwnerMutation.mutate({ id: workItemId, staffProfileId: selectedOwner })}
+            >
+              Set
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <Separator />
+
+      {/* Contributors */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Contributors</p>
+          <button
+            onClick={() => setShowAddContributor((v) => !v)}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
+          >
+            <Plus className="size-3" /> Add
+          </button>
+        </div>
+
+        {currentAssignees.length === 0 && !showAddContributor && (
+          <p className="text-xs text-muted-foreground italic">No contributors yet</p>
+        )}
+
+        <div className="space-y-1.5">
+          {currentAssignees.map((a) => (
+            <div key={a.id} className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="size-6 rounded-full bg-muted flex items-center justify-center text-xs font-semibold">
+                  {a.staffProfile?.user?.name?.[0] ?? "?"}
+                </div>
+                <span>{a.staffProfile?.user?.name}</span>
+                {a.staffProfile?.department && (
+                  <Badge variant="outline" className="text-xs px-1.5 py-0">
+                    {a.staffProfile.department.code}
+                  </Badge>
+                )}
+              </div>
+              <button
+                onClick={() => removeContributorMutation.mutate({ workItemId, staffProfileId: a.staffProfileId })}
+                disabled={removeContributorMutation.isPending}
+                className="text-muted-foreground hover:text-destructive transition-colors"
+              >
+                <X className="size-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {showAddContributor && (
+          <div className="flex gap-2 mt-1">
+            <select
+              value={selectedContributor}
+              onChange={(e) => setSelectedContributor(e.target.value)}
+              className="flex-1 rounded-lg border bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">Select contributor...</option>
+              {availableContributors.map((s) => (
+                <option key={s.id} value={s.id}>{s.user?.name} — {s.department?.code ?? s.jobTitle}</option>
+              ))}
+            </select>
+            <Button
+              size="sm"
+              disabled={!selectedContributor || addContributorMutation.isPending}
+              onClick={() => addContributorMutation.mutate({ workItemId, staffProfileId: selectedContributor })}
+            >
+              Add
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <Separator />
+
+      {/* Team allocations */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Team Allocation</p>
+          <button
+            onClick={() => {
+              setAllocRows(currentAllocations.map((a) => ({ departmentId: a.departmentId, requiredCount: a.requiredCount })));
+              setAllocEditing((v) => !v);
+            }}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {allocEditing ? "Cancel" : "Edit"}
+          </button>
+        </div>
+
+        {!allocEditing && (
+          currentAllocations.length > 0
+            ? <TeamAllocationBadges allocations={currentAllocations} />
+            : <p className="text-xs text-muted-foreground italic">No team allocations set</p>
+        )}
+
+        {allocEditing && (
+          <div className="space-y-2">
+            {allocRows.map((row, i) => (
+              <div key={i} className="flex gap-2 items-center">
+                <select
+                  value={row.departmentId}
+                  onChange={(e) => {
+                    const next = [...allocRows];
+                    next[i] = { ...next[i]!, departmentId: e.target.value };
+                    setAllocRows(next);
+                  }}
+                  className="flex-1 rounded-lg border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="">Department...</option>
+                  {departments?.map((d) => (
+                    <option key={d.id} value={d.id}>{d.code} — {d.name}</option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={row.requiredCount}
+                  onChange={(e) => {
+                    const next = [...allocRows];
+                    next[i] = { ...next[i]!, requiredCount: Number(e.target.value) };
+                    setAllocRows(next);
+                  }}
+                  className="w-14 rounded-lg border bg-background px-2 py-1 text-xs text-center focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                <button
+                  onClick={() => setAllocRows(allocRows.filter((_, j) => j !== i))}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            ))}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAllocRows([...allocRows, { departmentId: "", requiredCount: 1 }])}
+              >
+                <Plus className="size-3.5 mr-1" /> Add team
+              </Button>
+              <Button
+                size="sm"
+                disabled={setAllocMutation.isPending || allocRows.some((r) => !r.departmentId)}
+                onClick={() => setAllocMutation.mutate({ workItemId, allocations: allocRows })}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function WorkItemDetailPage() {
   const { workItemId } = Route.useParams();
@@ -113,6 +390,9 @@ function WorkItemDetailPage() {
     "backlog", "todo", "in_progress", "blocked", "review", "done", "cancelled",
   ];
 
+  const teamAllocations = item.teamAllocations ?? [];
+  const contributors = item.assignees ?? [];
+
   return (
     <>
       <Header fixed>
@@ -138,8 +418,31 @@ function WorkItemDetailPage() {
               <TypeBadge type={item.type as WorkType} />
               <StatusBadge status={item.status as WorkStatus} />
               <PriorityBadge priority={item.priority as WorkPriority} />
+              {/* Team allocation summary badges */}
+              {teamAllocations.map((a) => (
+                <Badge key={a.id} variant="secondary" className="text-xs gap-1">
+                  <Building2 className="size-3" />
+                  {a.department?.code ?? "?"} ×{a.requiredCount}
+                </Badge>
+              ))}
             </div>
             <h1 className="text-2xl font-bold tracking-tight">{item.title}</h1>
+            {/* Contributor pill row */}
+            {contributors.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {contributors.map((a) => (
+                  <div key={a.id} className="flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-0.5 text-xs">
+                    <div className="size-4 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-semibold text-primary">
+                      {a.staffProfile?.user?.name?.[0] ?? "?"}
+                    </div>
+                    {a.staffProfile?.user?.name}
+                    {a.staffProfile?.department && (
+                      <span className="text-muted-foreground">({a.staffProfile.department.code})</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -162,7 +465,7 @@ function WorkItemDetailPage() {
               </h2>
 
               {/* Add update form */}
-              <div className="rounded-md border p-4 mb-4 space-y-3">
+              <div className="rounded-xl border p-4 mb-4 space-y-3">
                 <p className="text-xs text-muted-foreground">Week of {thisWeekStart}</p>
                 <div className="space-y-1.5">
                   <Label>Status Summary *</Label>
@@ -214,7 +517,7 @@ function WorkItemDetailPage() {
               {item.weeklyUpdates?.length ? (
                 <div className="space-y-3">
                   {item.weeklyUpdates.map((u) => (
-                    <div key={u.id} className="rounded-md border p-3 text-sm">
+                    <div key={u.id} className="rounded-xl border p-3 text-sm">
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-medium">Week of {u.weekStart}</span>
                         <span className="text-xs text-muted-foreground">{u.author?.name}</span>
@@ -291,7 +594,7 @@ function WorkItemDetailPage() {
           {/* Sidebar */}
           <div className="space-y-4">
             {/* Status changer */}
-            <div className="rounded-md border p-4 space-y-3">
+            <div className="rounded-xl border p-4 space-y-3">
               <h3 className="font-semibold text-sm">Status</h3>
               <div className="flex flex-wrap gap-1.5">
                 {STATUS_TRANSITIONS.map((s) => (
@@ -301,28 +604,24 @@ function WorkItemDetailPage() {
                       statusMutation.mutate({ id: workItemId, status: s })
                     }
                     disabled={item.status === s || statusMutation.isPending}
-                    className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
                       item.status === s
                         ? "bg-primary text-primary-foreground"
                         : "border hover:bg-muted"
                     }`}
                   >
-                    {s.replace("_", " ")}
+                    {s.replace(/_/g, " ")}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Details */}
-            <div className="rounded-md border p-4 space-y-3 text-sm">
-              <h3 className="font-semibold">Details</h3>
+            {/* Multi-assignee panel */}
+            <AssignmentPanel workItemId={workItemId} />
 
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <User className="size-3.5 shrink-0" />
-                <span className="font-medium text-foreground">
-                  {item.assignedTo?.user?.name ?? "Unassigned"}
-                </span>
-              </div>
+            {/* Details */}
+            <div className="rounded-xl border p-4 space-y-3 text-sm">
+              <h3 className="font-semibold">Details</h3>
 
               {item.department && (
                 <div className="flex items-center gap-2 text-muted-foreground">

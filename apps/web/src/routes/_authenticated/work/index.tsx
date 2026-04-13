@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   AlertCircle,
   BarChart2,
+  Building2,
   CalendarDays,
   CheckCircle2,
   ChevronLeft,
@@ -18,6 +19,7 @@ import {
   Timer,
   User,
 } from "lucide-react";
+import { Badge } from "@ndma-dcs-staff-portal/ui/components/badge";
 import {
   format,
   isPast,
@@ -154,6 +156,8 @@ type WorkItem = {
   sourceSystem?: string | null;
   sourceReference?: string | null;
   assignedTo?: { user?: { name?: string | null } | null } | null;
+  assignees?: Array<{ staffProfileId: string; staffProfile?: { user?: { name?: string | null } | null; department?: { code?: string | null } | null } | null }>;
+  teamAllocations?: Array<{ departmentId: string; requiredCount: number; department?: { code?: string | null; name?: string | null } | null }>;
   department?: { name?: string | null } | null;
 };
 
@@ -173,7 +177,7 @@ function isOverdue(item: WorkItem) {
 function WorkListView({ items }: { items: WorkItem[] }) {
   if (!items.length) {
     return (
-      <div className="rounded-md border">
+      <div className="rounded-xl border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -202,7 +206,7 @@ function WorkListView({ items }: { items: WorkItem[] }) {
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-xl border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -250,9 +254,23 @@ function WorkListView({ items }: { items: WorkItem[] }) {
                   <PriorityBadge priority={item.priority as WorkPriority} />
                 </TableCell>
                 <TableCell>
-                  {item.assignedTo?.user?.name ?? (
-                    <span className="text-muted-foreground">—</span>
-                  )}
+                  <div className="space-y-1">
+                    <span className="text-sm">
+                      {item.assignedTo?.user?.name ?? (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </span>
+                    {(item.teamAllocations?.length ?? 0) > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {item.teamAllocations!.map((a, i) => (
+                          <Badge key={i} variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5">
+                            <Building2 className="size-2.5" />
+                            {a.department?.code ?? "?"} ×{a.requiredCount}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
                   {item.department?.name ?? (
@@ -318,7 +336,7 @@ function WorkKanbanView({ items }: { items: WorkItem[] }) {
 
             <div className="space-y-2">
               {columnItems.length === 0 ? (
-                <div className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground">
+                <div className="rounded-xl border border-dashed p-4 text-center text-xs text-muted-foreground">
                   Empty
                 </div>
               ) : (
@@ -344,6 +362,16 @@ function WorkKanbanView({ items }: { items: WorkItem[] }) {
                             <p className="text-xs text-muted-foreground truncate">
                               {item.assignedTo.user.name}
                             </p>
+                          )}
+                          {(item.teamAllocations?.length ?? 0) > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {item.teamAllocations!.map((a, i) => (
+                                <Badge key={i} variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5">
+                                  <Building2 className="size-2.5" />
+                                  {a.department?.code ?? "?"} ×{a.requiredCount}
+                                </Badge>
+                              ))}
+                            </div>
                           )}
                           {item.dueDate && (
                             <p
@@ -514,7 +542,7 @@ function WorkAnalyticsView({ items }: { items: WorkItem[] }) {
           <CardTitle className="text-sm font-medium">Breakdown by Engineer</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="rounded-b-md overflow-hidden">
+          <div className="rounded-b-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/50 text-xs text-muted-foreground uppercase tracking-wide">
@@ -580,14 +608,14 @@ function WorkCalendarView({ items }: { items: WorkItem[] }) {
       <div className="mb-4 flex items-center justify-between">
         <button
           onClick={() => setMonth((m) => subMonths(m, 1))}
-          className="rounded-md border p-1.5 hover:bg-muted transition-colors"
+          className="rounded-xl border p-1.5 hover:bg-muted transition-colors"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
         <h2 className="text-sm font-semibold">{format(month, "MMMM yyyy")}</h2>
         <button
           onClick={() => setMonth((m) => addMonths(m, 1))}
-          className="rounded-md border p-1.5 hover:bg-muted transition-colors"
+          className="rounded-xl border p-1.5 hover:bg-muted transition-colors"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
@@ -735,7 +763,7 @@ function LoadingSkeleton({ view }: { view: ViewMode }) {
     );
   }
   return (
-    <div className="rounded-md border">
+    <div className="rounded-xl border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -813,7 +841,7 @@ function WorkPage() {
         </div>
         <div className="ms-auto flex items-center gap-2">
           {/* View switcher */}
-          <div className="flex items-center rounded-md border p-0.5 gap-0.5">
+          <div className="flex items-center rounded-xl border p-0.5 gap-0.5">
             {(
               [
                 { mode: "list", icon: <LayoutList className="size-4" />, title: "List view" },
@@ -956,7 +984,7 @@ function WorkPage() {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as WorkStatus | "")}
-            className="rounded-md border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             {STATUS_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
@@ -968,7 +996,7 @@ function WorkPage() {
           <select
             value={type}
             onChange={(e) => setType(e.target.value as WorkType | "")}
-            className="rounded-md border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             {TYPE_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
@@ -980,7 +1008,7 @@ function WorkPage() {
           <select
             value={priority}
             onChange={(e) => setPriority(e.target.value as WorkPriority | "")}
-            className="rounded-md border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             {PRIORITY_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
@@ -993,7 +1021,7 @@ function WorkPage() {
             <select
               value={departmentId}
               onChange={(e) => setDepartmentId(e.target.value)}
-              className="rounded-md border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">All Departments</option>
               {departments.map((d) => (

@@ -8,10 +8,10 @@ import {
   timestamp,
   unique,
 } from "drizzle-orm/pg-core";
+import { departments } from "./departments";
 import { relations } from "drizzle-orm";
 
 import { user } from "./auth";
-import { departments } from "./departments";
 import { staffProfiles } from "./staff";
 
 export const workItemTypeEnum = pgEnum("work_item_type", [
@@ -222,6 +222,64 @@ export const workItemDependencies = pgTable(
   ],
 );
 
+// ── Multi-assignee tables ─────────────────────────────────────────────────────
+
+/**
+ * Named contributors on a work item (excluding the primary owner stored on
+ * work_items.assigned_to_id). Supports cross-team collaboration tracking.
+ */
+export const workItemAssignees = pgTable(
+  "work_item_assignees",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    workItemId: text("work_item_id")
+      .notNull()
+      .references(() => workItems.id, { onDelete: "cascade" }),
+    staffProfileId: text("staff_profile_id")
+      .notNull()
+      .references(() => staffProfiles.id, { onDelete: "cascade" }),
+    addedAt: timestamp("added_at").defaultNow().notNull(),
+    addedById: text("added_by_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+  },
+  (t) => [
+    unique("work_item_assignees_unique").on(t.workItemId, t.staffProfileId),
+    index("work_item_assignees_work_item_idx").on(t.workItemId),
+    index("work_item_assignees_staff_idx").on(t.staffProfileId),
+  ],
+);
+
+/**
+ * Optional sub-department headcount allocations for a work item.
+ * e.g. "ASN ×2, Enterprise ×1" means 2 people from ASN and 1 from ENT are needed.
+ */
+export const workItemTeamAllocations = pgTable(
+  "work_item_team_allocations",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    workItemId: text("work_item_id")
+      .notNull()
+      .references(() => workItems.id, { onDelete: "cascade" }),
+    departmentId: text("department_id")
+      .notNull()
+      .references(() => departments.id, { onDelete: "cascade" }),
+    requiredCount: integer("required_count").notNull().default(1),
+    addedAt: timestamp("added_at").defaultNow().notNull(),
+    addedById: text("added_by_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+  },
+  (t) => [
+    unique("work_item_team_alloc_unique").on(t.workItemId, t.departmentId),
+    index("work_item_team_alloc_work_item_idx").on(t.workItemId),
+  ],
+);
+
 // ── Relations ─────────────────────────────────────────────────────────────────
 
 export const workInitiativesRelations = relations(
@@ -260,6 +318,9 @@ export const workItemsRelations = relations(workItems, ({ one, many }) => ({
   weeklyUpdates: many(workItemWeeklyUpdates),
   blockedBy: many(workItemDependencies, { relationName: "dependsOn" }),
   blocking: many(workItemDependencies, { relationName: "workItem" }),
+  // Multi-assignee
+  assignees: many(workItemAssignees),
+  teamAllocations: many(workItemTeamAllocations),
 }));
 
 export const workItemCommentsRelations = relations(
@@ -316,6 +377,38 @@ export const workItemTemplatesRelations = relations(
     createdBy: one(user, {
       fields: [workItemTemplates.createdById],
       references: [user.id],
+    }),
+  }),
+);
+
+export const workItemAssigneesRelations = relations(
+  workItemAssignees,
+  ({ one }) => ({
+    workItem: one(workItems, {
+      fields: [workItemAssignees.workItemId],
+      references: [workItems.id],
+    }),
+    staffProfile: one(staffProfiles, {
+      fields: [workItemAssignees.staffProfileId],
+      references: [staffProfiles.id],
+    }),
+    addedBy: one(user, {
+      fields: [workItemAssignees.addedById],
+      references: [user.id],
+    }),
+  }),
+);
+
+export const workItemTeamAllocationsRelations = relations(
+  workItemTeamAllocations,
+  ({ one }) => ({
+    workItem: one(workItems, {
+      fields: [workItemTeamAllocations.workItemId],
+      references: [workItems.id],
+    }),
+    department: one(departments, {
+      fields: [workItemTeamAllocations.departmentId],
+      references: [departments.id],
     }),
   }),
 );

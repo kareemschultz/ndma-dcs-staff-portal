@@ -3,6 +3,7 @@ import {
   db,
   staffProfiles,
   workItems,
+  workItemAssignees,
   leaveRequests,
   onCallAssignments,
   onCallSchedules,
@@ -44,29 +45,39 @@ export const workloadRouter = {
             onLeaveThisWeek,
             overdueChangesResult,
           ] = await Promise.all([
-            // Open assigned work items (not done/cancelled)
-            db
-              .select({ count: sql<number>`count(*)::int` })
-              .from(workItems)
-              .where(
-                and(
-                  eq(workItems.assignedToId, staff.id),
-                  sql`${workItems.status} NOT IN ('done', 'cancelled')`,
-                ),
-              ),
+            // Open work items — primary owner OR contributor (deduplicated)
+            db.execute(
+              sql<{ count: number }>`
+                SELECT COUNT(DISTINCT id)::int AS count
+                FROM work_items
+                WHERE status NOT IN ('done','cancelled')
+                  AND (
+                    assigned_to_id = ${staff.id}
+                    OR id IN (
+                      SELECT work_item_id FROM work_item_assignees
+                      WHERE staff_profile_id = ${staff.id}
+                    )
+                  )
+              `,
+            ),
 
-            // Overdue assigned work items
-            db
-              .select({ count: sql<number>`count(*)::int` })
-              .from(workItems)
-              .where(
-                and(
-                  eq(workItems.assignedToId, staff.id),
-                  sql`${workItems.dueDate} IS NOT NULL`,
-                  sql`${workItems.dueDate} < ${today}`,
-                  sql`${workItems.status} NOT IN ('done', 'cancelled')`,
-                ),
-              ),
+            // Overdue work items — primary owner OR contributor
+            db.execute(
+              sql<{ count: number }>`
+                SELECT COUNT(DISTINCT id)::int AS count
+                FROM work_items
+                WHERE due_date IS NOT NULL
+                  AND due_date < ${today}
+                  AND status NOT IN ('done','cancelled')
+                  AND (
+                    assigned_to_id = ${staff.id}
+                    OR id IN (
+                      SELECT work_item_id FROM work_item_assignees
+                      WHERE staff_profile_id = ${staff.id}
+                    )
+                  )
+              `,
+            ),
 
             // On-call role in the requested week
             db
@@ -109,8 +120,8 @@ export const workloadRouter = {
               ),
           ]);
 
-          const openWorkItems = openWorkResult[0]?.count ?? 0;
-          const overdueWorkItems = overdueWorkResult[0]?.count ?? 0;
+          const openWorkItems = Number((openWorkResult.rows[0] as { count: string } | undefined)?.count ?? 0);
+          const overdueWorkItems = Number((overdueWorkResult.rows[0] as { count: string } | undefined)?.count ?? 0);
           const overdueChanges = overdueChangesResult[0]?.count ?? 0;
           const onCallRole = onCallThisWeek[0]?.role ?? null;
           const onLeave = !!onLeaveThisWeek;

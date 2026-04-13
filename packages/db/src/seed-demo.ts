@@ -20,7 +20,7 @@ import {
   incidentAffectedServices,
   incidentResponders,
 } from "./schema/incidents";
-import { workItems } from "./schema/work";
+import { workItems, workItemAssignees, workItemTeamAllocations } from "./schema/work";
 import { cycles, cycleWorkItems } from "./schema/cycles";
 import {
   leaveTypes,
@@ -60,6 +60,8 @@ const DEMO_POLICY_ACK_IDS    = ["pk-001","pk-002","pk-003","pk-004"] as const;
 const DEMO_CYCLE_IDS         = ["cyc-001","cyc-002","cyc-003"] as const;
 const DEMO_CONTRACT_IDS      = ["con-001","con-002","con-003","con-004","con-005"] as const;
 const DEMO_APPRAISAL_IDS     = ["apr-001","apr-002","apr-003","apr-004"] as const;
+const DEMO_ASSIGNEE_IDS      = ["wia-001","wia-002","wia-003","wia-004","wia-005","wia-006","wia-007","wia-008","wia-009"] as const;
+const DEMO_TEAM_ALLOC_IDS    = ["wta-001","wta-002","wta-003","wta-004","wta-005","wta-006"] as const;
 
 // ── Clear all demo data (reverse FK order) ──────────────────────────────────
 
@@ -113,6 +115,10 @@ async function clearDemo() {
   await db.delete(incidentAffectedServices).where(inArray(incidentAffectedServices.incidentId, [...DEMO_INCIDENT_IDS]));
   await db.delete(incidents).where(inArray(incidents.id, [...DEMO_INCIDENT_IDS]));
 
+  // Work item assignees + team allocations (cascade deletes with work items, but be explicit)
+  await db.delete(workItemAssignees).where(inArray(workItemAssignees.id, [...DEMO_ASSIGNEE_IDS]));
+  await db.delete(workItemTeamAllocations).where(inArray(workItemTeamAllocations.id, [...DEMO_TEAM_ALLOC_IDS]));
+
   // Work items
   await db.delete(workItems).where(inArray(workItems.id, [...DEMO_WORK_ITEM_IDS]));
 
@@ -154,6 +160,36 @@ async function seedDemo() {
     { id: "wi-010", title: "Patch management cycle – April 2026",  type: "routine",   status: "in_progress", priority: "medium",   assignedToId: "sp-bheesham",  description: "Apply OS patches to all Windows and Linux servers per the monthly patch schedule.", dueDate: "2026-04-10", createdById: "user-sachin" },
     { id: "wi-011", title: "Setup Grafana dashboard for LTE monitoring", type: "project", status: "review", priority: "medium",   assignedToId: "sp-shemar",    description: "Create Grafana panels pulling from LTE gateway SNMP metrics to monitor signal quality and throughput.", dueDate: "2026-04-20", createdById: "user-sachin" },
     { id: "wi-012", title: "Decommission legacy PBX system",       type: "project",   status: "done",        priority: "medium",   assignedToId: "sp-devon",     description: "Remove Panasonic KX-TDA100 PBX and migrate remaining extensions to MS Teams calling.", dueDate: "2026-03-15", completedAt: new Date("2026-03-12"), createdById: "user-sachin" },
+  ]).onConflictDoNothing();
+
+  // ── Work Item Multi-Assignees ──────────────────────────────────────────────
+  // wi-001 "Migrate core switches" — cross-team: Core (Devon) + ASN (Kareem)
+  // wi-003 "BGP peers" — Core (Nicolai) + Enterprise (Gerard)
+  // wi-005 "Install server rack" — Core (Gerard) + ASN (Bheesham)
+  // wi-010 "Patch management" — shared: ASN + Enterprise
+  console.log("👥 Seeding work item multi-assignees...");
+  await db.insert(workItemAssignees).values([
+    { id: "wia-001", workItemId: "wi-001", staffProfileId: "sp-kareem",   addedById: "user-sachin" }, // ASN contributor on Core task
+    { id: "wia-002", workItemId: "wi-001", staffProfileId: "sp-nicolai",  addedById: "user-sachin" }, // Core contributor
+    { id: "wia-003", workItemId: "wi-003", staffProfileId: "sp-gerard",   addedById: "user-sachin" }, // Enterprise contributor on Core BGP task
+    { id: "wia-004", workItemId: "wi-005", staffProfileId: "sp-bheesham", addedById: "user-sachin" }, // ASN contributor on rack install
+    { id: "wia-005", workItemId: "wi-005", staffProfileId: "sp-devon",    addedById: "user-sachin" }, // Core contributor on rack install
+    { id: "wia-006", workItemId: "wi-009", staffProfileId: "sp-devon",    addedById: "user-sachin" }, // DRP — Core contributor
+    { id: "wia-007", workItemId: "wi-009", staffProfileId: "sp-nicolai",  addedById: "user-sachin" }, // DRP — Core contributor
+    { id: "wia-008", workItemId: "wi-010", staffProfileId: "sp-shemar",   addedById: "user-sachin" }, // Patch mgmt — ASN contributor
+    { id: "wia-009", workItemId: "wi-010", staffProfileId: "sp-timothy",  addedById: "user-sachin" }, // Patch mgmt — ENT contributor
+  ]).onConflictDoNothing();
+
+  // ── Work Item Team Allocations ─────────────────────────────────────────────
+  // Model the required headcount from each sub-department
+  console.log("🏢 Seeding work item team allocations...");
+  await db.insert(workItemTeamAllocations).values([
+    { id: "wta-001", workItemId: "wi-001", departmentId: "dept-core",       requiredCount: 1, addedById: "user-sachin" }, // Core ×1 for switch migration
+    { id: "wta-002", workItemId: "wi-001", departmentId: "dept-asn",        requiredCount: 2, addedById: "user-sachin" }, // ASN ×2 for monitoring + routing changes
+    { id: "wta-003", workItemId: "wi-003", departmentId: "dept-core",       requiredCount: 1, addedById: "user-sachin" }, // Core ×1 for BGP config
+    { id: "wta-004", workItemId: "wi-003", departmentId: "dept-enterprise",  requiredCount: 1, addedById: "user-sachin" }, // Enterprise ×1 for downstream validation
+    { id: "wta-005", workItemId: "wi-005", departmentId: "dept-core",       requiredCount: 1, addedById: "user-sachin" }, // Core ×1 for rack install
+    { id: "wta-006", workItemId: "wi-005", departmentId: "dept-asn",        requiredCount: 1, addedById: "user-sachin" }, // ASN ×1 for cabling + patch panel
   ]).onConflictDoNothing();
 
   // ── Incidents ──────────────────────────────────────────────────────────────

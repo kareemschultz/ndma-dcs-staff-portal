@@ -32,18 +32,21 @@ async function seed() {
         name: "Applications, Systems & NetOps",
         code: "ASN",
         description: "Application systems and network operations",
+        parentId: "dept-dcs",
       },
       {
         id: "dept-core",
         name: "Core Infrastructure",
         code: "CORE",
         description: "Core routing and switching",
+        parentId: "dept-dcs",
       },
       {
         id: "dept-enterprise",
         name: "Enterprise Systems",
         code: "ENT",
         description: "Enterprise network infrastructure",
+        parentId: "dept-dcs",
       },
     ])
     .onConflictDoNothing();
