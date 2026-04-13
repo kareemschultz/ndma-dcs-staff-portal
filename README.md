@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/shield-check.svg" alt="DCS Staff Portal" width="80" height="80" />
+<img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/shield-check.svg" alt="DCS Ops Center" width="80" height="80" />
 
 # DCS Ops Center
 
-### Work · Incidents · On-Call · Leave · Procurement · Compliance · Audit
+### Work · Incidents · On-Call · Leave · Procurement · Compliance · Access · Audit
 
-*Replacing spreadsheets and WhatsApp coordination with a production-grade enterprise operations platform.*
+*Replacing spreadsheets and WhatsApp coordination with a production-grade enterprise operations platform for the DCS.*
 
 <br/>
 
@@ -37,11 +37,13 @@
 
 ## What is DCS Ops Center?
 
-**DCS Ops Center** is a **production-ready enterprise operations platform** that combines:
+**DCS Ops Center** is a **production-ready enterprise operations platform** built for the **Data Centre Services (DCS)** division of the **National Data Management Authority (NDMA)**.
 
-> 👉 **Work Management** + **Incident Command** + **PagerDuty-style On-Call** + **HRMS** + **Procurement** + **Compliance** + **Audit**
+It replaces manual spreadsheets, WhatsApp coordination chains, and paper-based tracking with a centralized, role-aware, fully auditable system covering every DCS operational workflow:
 
-Built for the National Disaster Management Agency (NDMA) Department of Civil Service, it replaces manual spreadsheets, WhatsApp coordination, and paper-based tracking with a centralized, auditable, and role-aware system covering every DCS workflow.
+> **Work Management** · **Incident Command** · **PagerDuty-style On-Call** · **Leave & Availability** · **Purchase Requisitions** · **Compliance** · **Platform Access Control** · **Audit & Governance**
+
+Every action in the system is captured in an append-only audit log — who did what, when, from where — making the platform suitable for cybersecurity compliance reviews and governance reporting.
 
 ---
 
@@ -52,58 +54,69 @@ Built for the National Disaster Management Agency (NDMA) Department of Civil Ser
 <td width="50%">
 
 **📋 Work Management**
-- Work register replacing spreadsheet-based tracking
-- Routine, project, external request, and ad-hoc types
-- Weekly progress updates per item
-- Overdue alerts + stats dashboard
+- Centralized work register replacing spreadsheet-based tracking
+- Four work types: Routine, Project, External Request, Ad-hoc
+- Weekly progress updates per item (statusSummary, blockers, nextSteps)
+- Overdue alerts, per-assignee workload view, stats dashboard
+- Comments thread per work item
 
 **🚨 Incident Management**
 - Declare and track operational incidents (Sev1–Sev4)
 - Timeline of events, status changes, escalation notes
-- Incident responder assignment with roles
-- Post-Incident Review (PIR) with action items
-- MTTR analytics
+- Incident responder assignment with roles (Commander, Comms, Technical, Observer)
+- Post-Incident Review (PIR) with action items and lessons learned
+- Affected service linkage; MTTR analytics
 
 **🕒 On-Call Rota**
-- Weekly schedule planner with 4 roles (Lead, ASN, CORE, ENT)
-- Conflict detection (leave, training, double-booking)
-- Shift swap system with manager approval
-- Escalation policy editor with timed steps
-- Override management for ad-hoc changes
+- Weekly schedule planner with 4 on-call roles (Lead, ASN, CORE, ENT)
+- Conflict detection (leave overlap, double-booking)
+- Shift swap system with manager approval workflow
+- Escalation policy editor with timed steps per service or department
+- Override management for ad-hoc assignment changes
 
 **🛒 Purchase Requisitions**
-- PR creation with itemized line items
-- Draft → Submit → Approve → Order → Receive pipeline
-- Multi-level approval history
+- PR creation with itemised line items (description, quantity, unit cost)
+- Full pipeline: Draft → Submit → Approve → Order → Receive
+- Multi-level approval history with notes
 - Pending approvals queue for managers
+- Department-scoped spend tracking
 
 </td>
 <td width="50%">
 
 **👥 Staff & People**
-- Staff directory with full profile view
-- Contract lifecycle tracking with renewal reminders
-- Appraisal scheduling and ratings
-- Leave requests, balances, and team calendar
+- Staff directory with full profile view (overview, contracts, training, PPE, on-call, leave tabs)
+- Employment type, status, and department tracking
+- Contract lifecycle tracking with configurable renewal reminders
+- Appraisal scheduling and performance ratings
+- Leave requests, leave balances, team availability calendar
 
-**🛡️ Compliance & Security**
-- Training records with expiry alerting
-- PPE issue/return tracking
-- Policy acknowledgment log
-- Platform account registry (VPN, Fortigate, uPortal, biometric, AD)
-- Access review workflow for cybersecurity compliance
+**🔌 Platform Access & Accounts**
+- Account registry across all managed platforms (VPN, Fortigate, IPAM, RADIUS, AD, uPortal, biometric)
+- Multi-source auth tracking: Local · AD/LDAP · RADIUS · SAML · OAuth/OIDC · Service Accounts · API-only
+- Three sync modes: Manual (staff-entered), Synced (connector-owned), Hybrid (synced + local annotations)
+- Platform integration connectors with live status, sync frequency, and "Sync now" triggers
+- Sync job history with record counts and error logs
+- Reconciliation engine: detect orphaned accounts, unmatched externals, policy violations
+- Access review workflow for periodic cybersecurity audits
 
-**🔧 Temp Technical Changes**
-- Track all temporary infrastructure changes
-- Remove-by date alerting for overdue changes
-- Service linkage + rollback plan documentation
+**🛡️ Compliance**
+- Training records with provider, completion date, expiry, and certificate URL
+- PPE issuance and expiry tracking per staff member
+- Policy acknowledgement log with version control
+- Cross-cutting compliance overview: all expiring items in one view
+
+**🔧 Temporary Technical Changes**
+- Track all temporary infrastructure changes with remove-by dates
+- Overdue change alerts with rollback plan documentation
+- Service linkage for impact assessment
 
 **🔐 Audit & Governance**
 - Global append-only audit log for every mutation
-- IP address + user agent forensics
+- IP address + user agent captured for forensics
 - JSON before/after diff for every state change
-- Role-based access control (5 roles, 13 resources)
-- LDAP / Active Directory integration (planned)
+- 5-role RBAC over 13 resources: staff, work, leave, rota, compliance, contract, appraisal, report, audit, settings, procurement, notification, access
+- Emergency local admin fallback (always enabled, even with AD/LDAP active)
 
 </td>
 </tr>
@@ -149,22 +162,27 @@ ndma-dcs-staff-portal/
 │   ├── web/                    # React frontend (Vite, port 5173)
 │   │   └── src/
 │   │       ├── components/     # Layout shell + shared components
-│   │       ├── features/       # Feature modules (staff, leave, rota, procurement...)
+│   │       ├── features/       # Feature modules (work, leave, rota, procurement...)
 │   │       ├── routes/         # TanStack Router file-based routes
-│   │       └── utils/          # oRPC client + QueryClient
+│   │       └── utils/          # oRPC client + QueryClient setup
 │   ├── server/                 # Hono backend (port 3000)
 │   └── docs/                   # Fumadocs documentation (port 4000)
 ├── packages/
-│   ├── api/                    # oRPC procedures + context (shared)
-│   ├── auth/                   # Better Auth config (shared)
+│   ├── api/                    # oRPC procedures + context (shared by server)
+│   │   └── src/
+│   │       ├── routers/        # 15 domain routers + index
+│   │       └── lib/            # logAudit() + createNotification() helpers
+│   ├── auth/                   # Better Auth config (shared by server + web)
 │   ├── db/                     # Drizzle schema + migrations
+│   │   └── src/schema/         # 16 schema files, one per domain
 │   ├── env/                    # Type-safe env validation
 │   ├── ui/                     # Shared shadcn/ui components
 │   └── config/                 # Shared TypeScript config
-├── docs/                       # Developer reference (ADRs, architecture)
+├── docs/                       # Developer reference (architecture, ADRs)
+├── CHANGELOG.md                # Release history
 ├── docker-compose.yml          # PostgreSQL container
 ├── turbo.json                  # Turborepo task config
-└── CLAUDE.md                   # AI assistant context + gotchas
+└── CLAUDE.md                   # AI assistant context + critical gotchas
 ```
 
 ---
@@ -198,7 +216,13 @@ bun run db:start    # Start PostgreSQL via Docker
 bun run db:push     # Push schema to database
 ```
 
-### 4. Start Development
+### 4. Seed Sample Data (optional)
+
+```bash
+bun run db:seed     # Loads 11 DCS staff, 4 departments, demo rota schedule
+```
+
+### 5. Start Development
 
 ```bash
 bun run dev         # Starts all apps via Turborepo
@@ -229,11 +253,13 @@ bun run dev         # Starts all apps via Turborepo
 
 | Role | Access |
 |------|--------|
-| **Admin** | Full system access |
-| **Manager** | Staff management, leave approvals, rota management, appraisals |
-| **HR/Admin Ops** | Staff CRUD, all leave/rota/compliance, PR management |
-| **Staff** | Own profile, submit leave/PRs, view rota |
-| **Read Only** | View-only access to all modules |
+| **Admin** | Full system access — all modules, settings, user management |
+| **Manager** | Staff management, leave approvals, rota management, appraisals, PR approvals |
+| **HR/Admin Ops** | Staff CRUD, all leave/rota/compliance, procurement management |
+| **Staff** | Own profile, submit leave requests and PRs, view rota |
+| **Read Only** | View-only access across all modules |
+
+All role checks are enforced server-side via oRPC `protectedProcedure` — client role claims are never trusted.
 
 ---
 
@@ -241,16 +267,40 @@ bun run dev         # Starts all apps via Turborepo
 
 ```mermaid
 graph TB
-    A[Browser - React SPA] -->|/rpc/* oRPC| B[Hono Server - Bun]
+    A[Browser — React SPA] -->|/rpc/* oRPC| B[Hono Server — Bun]
     A -->|/api/auth/* cookie| B
-    B --> C[packages/api - oRPC Procedures]
-    B --> D[packages/auth - Better Auth]
-    C --> E[packages/db - Drizzle ORM]
+    B --> C[packages/api — oRPC Procedures]
+    B --> D[packages/auth — Better Auth]
+    C --> E[packages/db — Drizzle ORM]
     D --> E
-    E --> F[(PostgreSQL)]
-    G[apps/docs - Fumadocs] -.->|reads| H[content/docs/*.mdx]
-    B -->|/api/openapi.json| I[External Integrations]
+    E --> F[(PostgreSQL 16)]
+    C --> G[Audit Log — every mutation]
+    C --> H[Notification Engine]
+    I[apps/docs — Fumadocs] -.->|reads| J[content/docs/*.mdx]
+    B -->|/api/openapi.json| K[External Integrations / IPAM / AD Sync]
 ```
+
+---
+
+## Database Schema Overview
+
+| Module | Tables |
+|--------|--------|
+| Auth | `user`, `session`, `account`, `verification` (Better Auth managed) |
+| Audit | `audit_logs` (append-only, all mutations) |
+| Notifications | `notifications` |
+| Org | `departments`, `staff_profiles` |
+| On-Call | `on_call_schedules`, `on_call_assignments`, `on_call_swaps`, `assignment_history` |
+| Escalation | `escalation_policies`, `escalation_steps`, `on_call_overrides` |
+| Incidents | `services`, `incidents`, `incident_affected_services`, `incident_responders`, `incident_timeline`, `post_incident_reviews` |
+| Work | `work_items`, `work_item_comments`, `work_item_weekly_updates` |
+| Leave | `leave_types`, `leave_balances`, `leave_requests` |
+| Procurement | `purchase_requisitions`, `pr_line_items`, `pr_approvals` |
+| Temp Changes | `temporary_changes` |
+| Access | `platform_accounts`, `service_owners`, `platform_integrations`, `sync_jobs`, `reconciliation_issues` |
+| Contracts | `contracts` |
+| Appraisals | `appraisals` |
+| Compliance | `training_records`, `ppe_records`, `policy_acknowledgements` |
 
 ---
 
@@ -259,8 +309,8 @@ graph TB
 ```bash
 # Development
 bun run dev              # Start all apps
-bun run dev:web          # Web app only
-bun run dev:server       # Server only
+bun run dev:web          # Web app only (port 5173)
+bun run dev:server       # Server only (port 3000)
 
 # Database
 bun run db:start         # Start Docker PostgreSQL
@@ -283,9 +333,9 @@ The server exposes two API surfaces:
 
 | Endpoint | Protocol | Purpose |
 |----------|----------|---------|
-| `/rpc/*` | oRPC binary | Internal web app (type-safe) |
-| `/api-reference/*` | REST/OpenAPI | External integrations |
-| `/api/auth/*` | Better Auth | Authentication |
+| `/rpc/*` | oRPC | Internal web app (end-to-end type-safe) |
+| `/api-reference/*` | REST/OpenAPI | External integrations and tools |
+| `/api/auth/*` | Better Auth | Authentication (cookie-based sessions) |
 
 View the full API reference at **http://localhost:3000/api-reference** when running locally.
 
@@ -309,7 +359,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-Built with ❤️ for the **National Disaster Management Agency (NDMA)**
-Department of Civil Service — Digital Transformation Initiative
+Built for the **National Data Management Authority (NDMA)**
+Data Centre Services (DCS) — Digital Transformation Initiative
 
 </div>

@@ -49,7 +49,7 @@ function GeneralSettingsPage() {
             </CardHeader>
             <CardContent>
               <SettingRow label="Organisation" value="NDMA" />
-              <SettingRow label="Division" value="Department of Civil Service (DCS)" />
+              <SettingRow label="Division" value="Data Centre Services (DCS)" />
               <SettingRow label="Platform" value="DCS Ops Center" />
               <SettingRow label="Environment" value="Production" />
             </CardContent>

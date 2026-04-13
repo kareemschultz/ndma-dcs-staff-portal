@@ -1,7 +1,7 @@
 # CLAUDE.md — DCS Ops Center
 
 ## Project Overview
-Enterprise internal operations platform for NDMA Department of Civil Service.
+Enterprise internal operations platform for NDMA Data Centre Services (DCS).
 Modules: Work Management · Incident Management · On-Call Rota · Procurement · Leave · Staff/Compliance · Audit · Access Management.
 
 See `/docs/architecture/` for detailed reference docs.
@@ -189,7 +189,7 @@ The login page must show BOTH:
 | `leave.ts` | leave_types, leave_balances, leave_requests + leave_request_status enum |
 | `procurement.ts` | purchase_requisitions, pr_line_items, pr_approvals + pr_status / pr_priority enums |
 | `temp-changes.ts` | temporary_changes + temp_change_status enum |
-| `access.ts` | platform_accounts, service_owners + platform_type / account_status enums |
+| `access.ts` | platform_accounts, platform_integrations, sync_jobs, reconciliation_issues, service_owners + platform_type / account_status / auth_source / sync_mode / sync_direction / integration_status / sync_job_status / reconciliation_issue_type enums |
 | `contracts.ts` | contracts + contract_status enum |
 | `appraisals.ts` | appraisals + appraisal_status enum |
 | `compliance.ts` | training_records, ppe_records, policy_acknowledgements + compliance_item_status enum |

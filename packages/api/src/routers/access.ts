@@ -1,23 +1,63 @@
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
-import { db, platformAccounts, serviceOwners } from "@ndma-dcs-staff-portal/db";
-import { and, eq, lte, sql } from "drizzle-orm";
+import {
+  db,
+  platformAccounts,
+  platformIntegrations,
+  reconciliationIssues,
+  serviceOwners,
+  syncJobs,
+} from "@ndma-dcs-staff-portal/db";
+import { and, eq, isNull, lte, sql } from "drizzle-orm";
 
 import { protectedProcedure } from "../index";
 import { logAudit } from "../lib/audit";
 
+// ── Shared enum values ────────────────────────────────────────────────────
+
+const PLATFORM_VALUES = [
+  "vpn",
+  "fortigate",
+  "uportal",
+  "biometric",
+  "ad",
+  "ipam",
+  "radius",
+  "other",
+] as const;
+
+const ACCOUNT_STATUS_VALUES = [
+  "active",
+  "suspended",
+  "disabled",
+  "pending_creation",
+] as const;
+
+const AUTH_SOURCE_VALUES = [
+  "local",
+  "active_directory",
+  "ldap",
+  "radius",
+  "saml",
+  "oauth_oidc",
+  "service_account",
+  "api_only",
+] as const;
+
+const SYNC_MODE_VALUES = ["manual", "synced", "hybrid"] as const;
+
 export const accessRouter = {
+  // ── Platform Accounts ───────────────────────────────────────────────────
+
   accounts: {
     list: protectedProcedure
       .input(
         z.object({
           staffProfileId: z.string().optional(),
-          platform: z
-            .enum(["vpn", "fortigate", "uportal", "biometric", "ad", "other"])
-            .optional(),
-          status: z
-            .enum(["active", "suspended", "disabled", "pending_creation"])
-            .optional(),
+          platform: z.enum(PLATFORM_VALUES).optional(),
+          status: z.enum(ACCOUNT_STATUS_VALUES).optional(),
+          syncMode: z.enum(SYNC_MODE_VALUES).optional(),
+          authSource: z.enum(AUTH_SOURCE_VALUES).optional(),
         }),
       )
       .handler(async ({ input }) => {
@@ -28,10 +68,15 @@ export const accessRouter = {
           conditions.push(eq(platformAccounts.platform, input.platform));
         if (input.status)
           conditions.push(eq(platformAccounts.status, input.status));
+        if (input.syncMode)
+          conditions.push(eq(platformAccounts.syncMode, input.syncMode));
+        if (input.authSource)
+          conditions.push(eq(platformAccounts.authSource, input.authSource));
 
         return db.query.platformAccounts.findMany({
           where: conditions.length > 0 ? and(...conditions) : undefined,
           with: { staffProfile: { with: { user: true, department: true } } },
+          orderBy: (t, { desc }) => [desc(t.createdAt)],
         });
       }),
 
@@ -40,15 +85,12 @@ export const accessRouter = {
       .handler(async ({ input }) => {
         return db.query.platformAccounts.findMany({
           where: eq(platformAccounts.staffProfileId, input.staffProfileId),
+          orderBy: (t, { asc }) => [asc(t.platform)],
         });
       }),
 
     getByPlatform: protectedProcedure
-      .input(
-        z.object({
-          platform: z.enum(["vpn", "fortigate", "uportal", "biometric", "ad", "other"]),
-        }),
-      )
+      .input(z.object({ platform: z.enum(PLATFORM_VALUES) }))
       .handler(async ({ input }) => {
         return db.query.platformAccounts.findMany({
           where: eq(platformAccounts.platform, input.platform),
@@ -73,15 +115,32 @@ export const accessRouter = {
         });
       }),
 
+    /** Accounts with no linked staff profile — potential orphans. */
+    getOrphaned: protectedProcedure.handler(async () => {
+      return db.query.platformAccounts.findMany({
+        where: and(
+          // synced records with no staff link (staffProfileId is always set by FK,
+          // but we can find stale ones via reconciliation_issues)
+          eq(platformAccounts.syncMode, "synced"),
+          eq(platformAccounts.status, "active"),
+        ),
+        with: { staffProfile: { with: { user: true } } },
+      });
+    }),
+
     create: protectedProcedure
       .input(
         z.object({
           staffProfileId: z.string(),
-          platform: z.enum(["vpn", "fortigate", "uportal", "biometric", "ad", "other"]),
+          platform: z.enum(PLATFORM_VALUES),
           accountIdentifier: z.string().min(1),
-          status: z
-            .enum(["active", "suspended", "disabled", "pending_creation"])
-            .default("active"),
+          displayName: z.string().optional(),
+          authSource: z.enum(AUTH_SOURCE_VALUES).default("local"),
+          privilegeLevel: z.string().optional(),
+          status: z.enum(ACCOUNT_STATUS_VALUES).default("active"),
+          syncMode: z.enum(SYNC_MODE_VALUES).default("manual"),
+          externalAccountId: z.string().optional(),
+          syncSourceSystem: z.string().optional(),
           provisionedAt: z.string().optional(),
           expiresAt: z.string().optional(),
           notes: z.string().optional(),
@@ -95,6 +154,7 @@ export const accessRouter = {
             provisionedAt: input.provisionedAt ?? null,
             expiresAt: input.expiresAt ?? null,
             notes: input.notes ?? null,
+            createdByUserId: context.session.user.id,
           })
           .returning();
 
@@ -117,10 +177,13 @@ export const accessRouter = {
       .input(
         z.object({
           id: z.string(),
-          status: z
-            .enum(["active", "suspended", "disabled", "pending_creation"])
-            .optional(),
+          displayName: z.string().optional(),
+          authSource: z.enum(AUTH_SOURCE_VALUES).optional(),
+          privilegeLevel: z.string().optional(),
+          status: z.enum(ACCOUNT_STATUS_VALUES).optional(),
+          syncMode: z.enum(SYNC_MODE_VALUES).optional(),
           expiresAt: z.string().optional(),
+          lastVerifiedAt: z.string().optional(),
           notes: z.string().optional(),
         }),
       )
@@ -178,6 +241,248 @@ export const accessRouter = {
         return updated;
       }),
   },
+
+  // ── Platform Integrations ───────────────────────────────────────────────
+
+  integrations: {
+    list: protectedProcedure.handler(async () => {
+      return db.query.platformIntegrations.findMany({
+        with: { syncJobs: { limit: 1, orderBy: (t, { desc }) => [desc(t.createdAt)] } },
+        orderBy: (t, { asc }) => [asc(t.platform)],
+      });
+    }),
+
+    get: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .handler(async ({ input }) => {
+        const integration = await db.query.platformIntegrations.findFirst({
+          where: eq(platformIntegrations.id, input.id),
+          with: {
+            syncJobs: {
+              limit: 10,
+              orderBy: (t, { desc }) => [desc(t.createdAt)],
+            },
+            reconciliationIssues: {
+              where: isNull(reconciliationIssues.resolvedAt),
+              limit: 50,
+            },
+          },
+        });
+        if (!integration) throw new ORPCError("NOT_FOUND");
+        return integration;
+      }),
+
+    create: protectedProcedure
+      .input(
+        z.object({
+          name: z.string().min(1),
+          platform: z.enum(PLATFORM_VALUES),
+          description: z.string().optional(),
+          hasApi: z.boolean().default(false),
+          syncEnabled: z.boolean().default(false),
+          syncDirection: z.enum(["inbound", "outbound", "bidirectional"]).default("inbound"),
+          syncFrequencyMinutes: z.number().optional(),
+          authoritativeSource: z.string().default("external"),
+          manualFallbackAllowed: z.boolean().default(true),
+          apiBaseUrl: z.string().url().optional(),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const [integration] = await db
+          .insert(platformIntegrations)
+          .values({ ...input, status: "pending" })
+          .returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "access.integration.create",
+          module: "access",
+          resourceType: "platform_integration",
+          resourceId: integration.id,
+          afterValue: integration as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return integration;
+      }),
+
+    update: protectedProcedure
+      .input(
+        z.object({
+          id: z.string(),
+          name: z.string().optional(),
+          description: z.string().optional(),
+          syncEnabled: z.boolean().optional(),
+          syncFrequencyMinutes: z.number().optional(),
+          manualFallbackAllowed: z.boolean().optional(),
+          apiBaseUrl: z.string().url().optional(),
+          status: z.enum(["active", "inactive", "error", "pending"]).optional(),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const { id, ...updates } = input;
+        const [updated] = await db
+          .update(platformIntegrations)
+          .set(updates)
+          .where(eq(platformIntegrations.id, id))
+          .returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "access.integration.update",
+          module: "access",
+          resourceType: "platform_integration",
+          resourceId: id,
+          afterValue: updated as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return updated;
+      }),
+
+    /** Manually trigger a sync run (stub — actual sync logic is a future connector). */
+    triggerSync: protectedProcedure
+      .input(z.object({ integrationId: z.string() }))
+      .handler(async ({ input, context }) => {
+        const integration = await db.query.platformIntegrations.findFirst({
+          where: eq(platformIntegrations.id, input.integrationId),
+        });
+        if (!integration) throw new ORPCError("NOT_FOUND");
+        if (!integration.syncEnabled)
+          throw new ORPCError("BAD_REQUEST", { message: "Sync is not enabled for this integration" });
+
+        // Create a pending job record — the actual sync worker picks this up
+        const [job] = await db
+          .insert(syncJobs)
+          .values({
+            integrationId: input.integrationId,
+            triggeredBy: "manual",
+            triggeredByUserId: context.session.user.id,
+            status: "pending",
+          })
+          .returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "access.integration.sync_trigger",
+          module: "access",
+          resourceType: "sync_job",
+          resourceId: job.id,
+          afterValue: { integrationId: input.integrationId, triggeredBy: "manual" },
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return job;
+      }),
+  },
+
+  // ── Sync Jobs ───────────────────────────────────────────────────────────
+
+  syncJobs: {
+    list: protectedProcedure
+      .input(
+        z.object({
+          integrationId: z.string().optional(),
+          limit: z.number().default(20),
+          offset: z.number().default(0),
+        }),
+      )
+      .handler(async ({ input }) => {
+        return db.query.syncJobs.findMany({
+          where: input.integrationId
+            ? eq(syncJobs.integrationId, input.integrationId)
+            : undefined,
+          with: {
+            integration: true,
+            triggeredByUser: true,
+          },
+          orderBy: (t, { desc }) => [desc(t.createdAt)],
+          limit: input.limit,
+          offset: input.offset,
+        });
+      }),
+  },
+
+  // ── Reconciliation Issues ───────────────────────────────────────────────
+
+  reconciliation: {
+    list: protectedProcedure
+      .input(
+        z.object({
+          integrationId: z.string().optional(),
+          issueType: z
+            .enum([
+              "orphaned_account",
+              "stale_account",
+              "no_staff_link",
+              "username_mismatch",
+              "duplicate",
+            ])
+            .optional(),
+          resolved: z.boolean().default(false),
+        }),
+      )
+      .handler(async ({ input }) => {
+        const conditions = [];
+        if (input.integrationId)
+          conditions.push(eq(reconciliationIssues.integrationId, input.integrationId));
+        if (input.issueType)
+          conditions.push(eq(reconciliationIssues.issueType, input.issueType));
+        if (!input.resolved)
+          conditions.push(isNull(reconciliationIssues.resolvedAt));
+
+        return db.query.reconciliationIssues.findMany({
+          where: conditions.length > 0 ? and(...conditions) : undefined,
+          with: {
+            integration: true,
+            platformAccount: { with: { staffProfile: { with: { user: true } } } },
+            staffProfile: { with: { user: true } },
+          },
+          orderBy: (t, { desc }) => [desc(t.createdAt)],
+        });
+      }),
+
+    resolve: protectedProcedure
+      .input(
+        z.object({
+          id: z.string(),
+          resolutionNote: z.string().optional(),
+        }),
+      )
+      .handler(async ({ input, context }) => {
+        const [resolved] = await db
+          .update(reconciliationIssues)
+          .set({
+            resolvedAt: new Date(),
+            resolvedByUserId: context.session.user.id,
+            resolutionNote: input.resolutionNote ?? null,
+          })
+          .where(eq(reconciliationIssues.id, input.id))
+          .returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "access.reconciliation.resolve",
+          module: "access",
+          resourceType: "reconciliation_issue",
+          resourceId: input.id,
+          afterValue: { resolvedAt: new Date(), note: input.resolutionNote },
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return resolved;
+      }),
+  },
+
+  // ── Service Owners ──────────────────────────────────────────────────────
 
   serviceOwners: {
     list: protectedProcedure
