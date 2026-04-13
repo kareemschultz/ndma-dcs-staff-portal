@@ -26,8 +26,11 @@ FROM deps AS web-builder
 # Copy full source
 COPY . .
 
-# Build the Vite frontend — outputs to apps/web/dist
-RUN bun run --cwd apps/web build
+# Build the Vite frontend — outputs to apps/web/dist.
+# VITE_SERVER_URL must be empty in production so the browser uses relative
+# URLs (/rpc, /api/auth) against the current origin. The .env file contains
+# the dev default (localhost:3000) which we override here via env var.
+RUN VITE_SERVER_URL= bun run --cwd apps/web build
 
 # ── Stage 3: Build server ─────────────────────────────────────────────────────
 FROM deps AS server-builder

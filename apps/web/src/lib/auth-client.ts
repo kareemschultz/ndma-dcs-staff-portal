@@ -3,7 +3,9 @@ import { adminClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
-  baseURL: env.VITE_SERVER_URL,
+  // Empty string → Better Auth auto-detects current window.location.origin.
+  // Set VITE_SERVER_URL in .env.local for dev (http://localhost:3000).
+  baseURL: env.VITE_SERVER_URL || undefined,
   plugins: [
     adminClient(),
   ],

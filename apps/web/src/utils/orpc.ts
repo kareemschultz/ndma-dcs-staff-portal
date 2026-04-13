@@ -20,6 +20,7 @@ export const queryClient = new QueryClient({
 });
 
 export const link = new RPCLink({
+  // Empty VITE_SERVER_URL → relative /rpc (same origin). Set in .env.local for dev.
   url: `${env.VITE_SERVER_URL}/rpc`,
   fetch(url, options) {
     return fetch(url, {
