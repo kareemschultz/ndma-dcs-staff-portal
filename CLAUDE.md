@@ -254,6 +254,28 @@ correlationId: context.requestId,
 - v4 uses CSS-first config (`@import "tailwindcss"` in CSS, no `tailwind.config.ts`).
 - shadcn/ui components are configured for Tailwind v4.
 
+### Workload router return shape — DO NOT confuse with browser session stub
+- Our `workload.get` returns `{ staff: { id, name, email, department }, openWorkItems, overdueWorkItems, onCallRole, onLeave, overdueChanges, loadScore, loadLevel }`
+- **NOT** `{ staffProfileId, staffName, itemCount, loadLevel }` — that was a simplified browser-session stub that was discarded
+- In dashboard/workload UI, always use `entry.staff.name`, `entry.staff.id`, `entry.loadScore`
+
+### Cycles router data shape
+- `cycles.list` returns full Drizzle records including `cycleWorkItems: [{ workItem: { id, status } }]`
+- `totalItems = cycle.cycleWorkItems.length`, `doneItems = cycle.cycleWorkItems.filter(cwi => cwi.workItem?.status === "done").length`
+- Compute these client-side — the router does NOT add totalItems/doneItems fields
+
+### Automation rules — fireAutomationRules call pattern
+- Import: `import { fireAutomationRules } from "../lib/automation";`
+- Call AFTER successful DB mutation: `await fireAutomationRules("work", "created", item as Record<string, unknown>)`
+- Modules: `"work"`, `"incident"`, `"leave"`, `"temp_changes"`, `"procurement"`, `"rota"`
+- Events per module: work→(created/status_changed/assigned/overdue), incident→(created/status_changed/resolved), leave→(requested/approved/rejected), temp_changes→(created/overdue/removed), procurement→(submitted/approved/rejected), rota→(published/swap_approved)
+- Conditions evaluate against the payload's flat fields — use the actual DB column names as field names
+- `{{fieldName}}` placeholders in action title/body are replaced with payload values at fire-time
+
+### git commit — pre-commit hook runs `bat`
+- The pre-commit hook tries to run `bat` (a cat alternative) to show diffs — fails if not installed
+- **Fix:** `git commit -m "your message here"` using `-m` flag directly (NOT heredoc syntax with `cat <<'EOF'`)
+
 ### Security Best Practices
 - Always validate on the server (oRPC procedures) even when validating on the client.
 - Use `protectedProcedure` for every endpoint that touches user/org data.
@@ -266,6 +288,14 @@ correlationId: context.requestId,
 - Server env: validated via `@ndma-dcs-staff-portal/env/server`
 - Web env: validated via `@ndma-dcs-staff-portal/env/web` (only VITE_ prefixed vars)
 - NEVER import server env in web app code.
+
+---
+
+## Naming Conventions
+
+- **Roster, NOT Rota** — User-facing text always uses "Roster" (e.g., "On-Call Roster", "Roster Planner"). Code identifiers (`/rota` URL paths, `orpc.rota.*`, schema table names) remain as-is for backwards compatibility.
+- **DCS Ops Center** — Official product name (not "Staff Portal")
+- **NDMA** = National Data Management Authority; **DCS** = Data Centre Services
 
 ---
 
@@ -295,8 +325,9 @@ correlationId: context.requestId,
 | `rota.ts` | on_call_schedules, on_call_assignments, on_call_swaps, assignment_history + role/status enums |
 | `escalation.ts` | escalation_policies, escalation_steps, on_call_overrides |
 | `incidents.ts` | services, incidents, incident_affected_services, incident_responders, incident_timeline, post_incident_reviews |
-| `work.ts` | work_initiatives, work_items (+ initiativeId/parentId/milestoneDate/estimatedHours/followUpDate), work_item_comments, work_item_weekly_updates, work_item_dependencies + type/status/priority enums |
+| `work.ts` | work_initiatives, work_items (+ initiativeId/parentId/milestoneDate/estimatedHours/followUpDate), work_item_comments, work_item_weekly_updates, work_item_dependencies, work_item_templates + type/status/priority enums |
 | `cycles.ts` | cycles, cycle_work_items + cycleStatus/cyclePeriod enums |
+| `automation.ts` | automation_rules, automation_rule_logs + automation_trigger_module enum |
 | `leave.ts` | leave_types, leave_balances, leave_requests + leave_request_status enum |
 | `procurement.ts` | purchase_requisitions, pr_line_items, pr_approvals + pr_status / pr_priority enums |
 | `temp-changes.ts` | temporary_changes + temp_change_status enum |
@@ -316,7 +347,7 @@ correlationId: context.requestId,
 | `notifications.ts` | `notifications.list`, `markRead`, `markAllRead`, `dismiss` |
 | `rota.ts` | getCurrent, getUpcoming, list, create, assign, removeAssignment, publish, getEligibleStaff, getAssignmentCounts, getEffectiveOnCall, swap.{request,review,list}, history |
 | `escalation.ts` | policies.{list,get,create,update,delete}, steps.{add,update,delete}, overrides.{list,create,update,delete} |
-| `work.ts` | list, get, create, update, assign, addComment, addWeeklyUpdate, getOverdue, getWeeklyReport, stats, initiatives.{list,get,create,update}, dependencies.{listForItem,add,remove} |
+| `work.ts` | list, get, create, update, assign, addComment, addWeeklyUpdate, getOverdue, getWeeklyReport, stats, initiatives.{list,get,create,update}, dependencies.{listForItem,add,remove}, templates.{list,create,generate} |
 | `cycles.ts` | list, get, create, update, addWorkItem, removeWorkItem, stats |
 | `workload.ts` | get (per-engineer load aggregation: openWork + overdueWork + onCall + leave + overdueChanges → loadScore/loadLevel) |
 | `incidents.ts` | list, get, create, update, addTimelineEntry, addResponder, removeResponder, linkService, unlinkService, createPIR, getActive, stats |
@@ -331,10 +362,12 @@ correlationId: context.requestId,
 | `compliance.ts` | training.{list,create,update,delete}, ppe.{list,create,update,delete}, policyAck.{list,acknowledge}, getExpiringItems |
 | `dashboard.ts` | main, opsReadiness, recentActivity |
 | `import.ts` | execute, getHistory |
+| `automation.ts` | list, get, create, update, toggle, delete, getLogs, stats (RBAC: settings resource) |
 
 **Shared API utilities:**
 - `packages/api/src/lib/audit.ts` — `logAudit(params)` — call from EVERY mutation procedure
 - `packages/api/src/lib/notify.ts` — `createNotification(params)` — call when notifying a user
+- `packages/api/src/lib/automation.ts` — `fireAutomationRules(module, event, payload)` — call after mutations to trigger rules
 - `packages/api/src/lib/sync/types.ts` — `SyncConnector` / `ExternalAccount` / `SyncResult` interfaces
 - `packages/api/src/lib/sync/index.ts` — `runSyncJob(syncJobId)` — processor called after triggerSync
 - `packages/api/src/lib/sync/connectors/ipam.ts` — phpIPAM REST connector
