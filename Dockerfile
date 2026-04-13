@@ -128,7 +128,7 @@ COPY --from=docs-builder /app/apps/docs/.next/static ./.next/static
 EXPOSE 4000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-  CMD wget -qO- http://localhost:4000 > /dev/null 2>&1 || exit 1
+  CMD curl -sf http://localhost:4000 > /dev/null || exit 1
 
 # In a Bun monorepo, Next.js standalone mirrors the workspace path:
 # .next/standalone/apps/docs/server.js (not /server.js at root)
