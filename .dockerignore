@@ -3,9 +3,14 @@ node_modules
 .env
 .env.*
 !.env.example
-*.md
 docs/
 .github/
 .vscode/
 .turbo/
-apps/docs/
+# Exclude docs build artifacts but NOT the source (docs-runner stage needs it)
+apps/docs/.next/
+apps/docs/node_modules/
+apps/docs/tsconfig.tsbuildinfo
+# Exclude web build output (rebuilt in web-builder stage)
+apps/web/dist/
+apps/web/node_modules/
