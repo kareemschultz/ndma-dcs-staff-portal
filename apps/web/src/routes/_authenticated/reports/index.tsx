@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, AlertTriangle, Clock, Printer } from "lucide-react";
+import { BarChart3, AlertTriangle, Clock, Printer, Shield } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -739,6 +739,260 @@ function StaffByStatusSection() {
   );
 }
 
+// ── 6. Account Management Compliance ──────────────────────────────────────
+
+const PLATFORM_LABELS: Record<string, string> = {
+  vpn: "VPN",
+  fortigate: "Fortigate",
+  uportal: "uPortal",
+  biometric: "Biometrics",
+  ad: "Active Directory",
+  ipam: "IPAM",
+  phpipam: "phpIPAM",
+  radius: "RADIUS",
+  zabbix: "Zabbix",
+  esight: "eSight",
+  ivs_neteco: "IVS NetEco",
+  nce_fan_atp: "NCE FAN/ATP",
+  neteco: "NetEco",
+  lte_grafana: "LTE Grafana",
+  gen_grafana: "Gen Grafana",
+  plum: "PLUM",
+  kibana: "Kibana",
+  other: "Other",
+};
+
+const PLATFORM_COLORS: Record<string, string> = {
+  biometric: PURPLE,
+  ad: BLUE,
+  vpn: TEAL,
+  fortigate: AMBER,
+  uportal: INDIGO,
+  radius: ROSE,
+  zabbix: ORANGE,
+  esight: GREEN,
+  kibana: PINK,
+};
+
+function AccountManagementSection() {
+  const { data: allAccounts, isLoading: accountsLoading } = useQuery(
+    orpc.access.accounts.list.queryOptions({ input: { limit: 1000, offset: 0 } })
+  );
+  const { data: orphanedAccounts, isLoading: orphanedLoading } = useQuery(
+    orpc.access.accounts.getOrphaned.queryOptions()
+  );
+  const { data: staleAccounts, isLoading: staleLoading } = useQuery(
+    orpc.access.accounts.getStale.queryOptions()
+  );
+  const { data: expiringAccounts, isLoading: expiringLoading } = useQuery(
+    orpc.access.accounts.getExpiring.queryOptions({ input: { withinDays: 30 } })
+  );
+  const { data: pendingReviews, isLoading: reviewsLoading } = useQuery(
+    orpc.access.reviews.getPending.queryOptions()
+  );
+  const { data: overdueReviews } = useQuery(
+    orpc.access.reviews.getOverdue.queryOptions()
+  );
+  const { data: reconIssues, isLoading: reconLoading } = useQuery(
+    orpc.access.reconciliation.list.queryOptions({ input: { resolved: false } })
+  );
+
+  const isLoading =
+    accountsLoading || orphanedLoading || staleLoading || expiringLoading ||
+    reviewsLoading || reconLoading;
+
+  // Group accounts by platform
+  const platformCounts: Record<string, number> = {};
+  for (const acct of allAccounts ?? []) {
+    platformCounts[acct.platform] = (platformCounts[acct.platform] ?? 0) + 1;
+  }
+
+  const platformChartData = Object.entries(platformCounts)
+    .map(([platform, count]) => ({
+      name: PLATFORM_LABELS[platform] ?? platform,
+      count,
+      fill: PLATFORM_COLORS[platform] ?? "#64748b",
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 12);
+
+  const totalAccounts = allAccounts?.length ?? 0;
+  const biometricCount = platformCounts["biometric"] ?? 0;
+  const orphanedCount = orphanedAccounts?.length ?? 0;
+  const staleCount = staleAccounts?.length ?? 0;
+  const expiringCount = expiringAccounts?.length ?? 0;
+  const pendingReviewCount = pendingReviews?.length ?? 0;
+  const overdueReviewCount = overdueReviews?.length ?? 0;
+  const openIssuesCount = reconIssues?.length ?? 0;
+
+  const quarter = Math.ceil((new Date().getMonth() + 1) / 3);
+  const year = new Date().getFullYear();
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Shield className="size-4 text-indigo-500" />
+              Account Management Compliance
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Quarterly Cyber Security Division review — platform account health
+            </p>
+          </div>
+          <span className="text-xs text-muted-foreground shrink-0 rounded-lg bg-muted px-2.5 py-1 font-medium">
+            Q{quarter} {year}
+          </span>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* KPI row */}
+        {isLoading ? (
+          <div className="flex flex-wrap gap-3">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-[72px] w-28 rounded-xl" />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-3">
+            <KpiPill label="Total Accounts" value={totalAccounts} color="bg-muted text-foreground" />
+            <KpiPill
+              label="Biometric"
+              value={biometricCount}
+              color="bg-purple-500/10 text-purple-700 dark:text-purple-300"
+            />
+            <KpiPill
+              label="Orphaned"
+              value={orphanedCount}
+              color={orphanedCount > 0 ? "bg-red-500/10 text-red-700 dark:text-red-300" : "bg-muted text-muted-foreground"}
+            />
+            <KpiPill
+              label="Stale"
+              value={staleCount}
+              color={staleCount > 0 ? "bg-amber-500/10 text-amber-700 dark:text-amber-300" : "bg-muted text-muted-foreground"}
+            />
+            <KpiPill
+              label="Expiring (30d)"
+              value={expiringCount}
+              color={expiringCount > 0 ? "bg-orange-500/10 text-orange-700 dark:text-orange-300" : "bg-muted text-muted-foreground"}
+            />
+            <KpiPill
+              label="Pending Reviews"
+              value={pendingReviewCount}
+              color={pendingReviewCount > 0 ? "bg-blue-500/10 text-blue-700 dark:text-blue-300" : "bg-muted text-muted-foreground"}
+            />
+            <KpiPill
+              label="Overdue Reviews"
+              value={overdueReviewCount}
+              color={overdueReviewCount > 0 ? "bg-red-500/10 text-red-700 dark:text-red-300" : "bg-muted text-muted-foreground"}
+            />
+            <KpiPill
+              label="Open Issues"
+              value={openIssuesCount}
+              color={openIssuesCount > 0 ? "bg-rose-500/10 text-rose-700 dark:text-rose-300" : "bg-muted text-muted-foreground"}
+            />
+          </div>
+        )}
+
+        {/* Platform distribution chart */}
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+            Accounts by Platform
+          </div>
+          {isLoading ? (
+            <ChartSkeleton height={220} />
+          ) : platformChartData.length === 0 ? (
+            <NoData height={220} />
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart
+                data={platformChartData}
+                layout="vertical"
+                margin={{ top: 4, right: 16, left: 96, bottom: 0 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  horizontal={false}
+                  className="stroke-border"
+                />
+                <XAxis
+                  type="number"
+                  allowDecimals={false}
+                  tick={{ fontSize: 11 }}
+                  className="fill-muted-foreground"
+                />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  width={92}
+                  tick={{ fontSize: 11 }}
+                  className="fill-muted-foreground"
+                />
+                <Tooltip
+                  contentStyle={{
+                    fontSize: 12,
+                    borderRadius: 6,
+                    border: "1px solid hsl(var(--border))",
+                    background: "hsl(var(--card))",
+                    color: "hsl(var(--foreground))",
+                  }}
+                  cursor={{ fill: "hsl(var(--muted))", opacity: 0.5 }}
+                />
+                <Bar dataKey="count" name="Accounts" radius={[0, 4, 4, 0]}>
+                  {platformChartData.map((entry) => (
+                    <Cell key={entry.name} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Open reconciliation issues */}
+        {!isLoading && openIssuesCount > 0 && (
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              Open Reconciliation Issues
+            </div>
+            <div className="divide-y rounded-xl border">
+              {reconIssues?.slice(0, 6).map((issue) => (
+                <div
+                  key={issue.id}
+                  className="flex items-center justify-between px-3 py-2.5 gap-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">
+                      {issue.platformAccount?.staffProfile?.user?.name ??
+                        (issue.platformAccount as unknown as { accountIdentifier?: string })?.accountIdentifier ??
+                        issue.staffProfile?.user?.name ??
+                        "Unknown"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {(issue.integration as unknown as { name?: string })?.name ?? "—"}
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 shrink-0">
+                    {labelCase(issue.issueType ?? "")}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Clean bill — no issues */}
+        {!isLoading && orphanedCount === 0 && staleCount === 0 && overdueReviewCount === 0 && openIssuesCount === 0 && (
+          <div className="flex items-center gap-2 rounded-xl bg-green-500/10 px-4 py-3 text-green-700 dark:text-green-300">
+            <Shield className="size-4 shrink-0" />
+            <span className="text-sm font-medium">No critical issues — account posture is healthy.</span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 // ── Main reports page ──────────────────────────────────────────────────────
 
 function ReportsPage() {
@@ -786,6 +1040,9 @@ function ReportsPage() {
             <IncidentSummarySection />
             <StaffByStatusSection />
           </div>
+
+          {/* Row 4: Account Management Compliance (full width) */}
+          <AccountManagementSection />
         </div>
       </Main>
     </>
