@@ -17,7 +17,7 @@ COPY packages/config/package.json packages/config/
 # turbo.json required for workspace graph
 COPY turbo.json ./
 
-# Install all workspace dependencies
+# Install all workspace dependencies (dev + prod — needed for build steps)
 RUN bun install --frozen-lockfile
 
 # ── Stage 2: Build web app (static assets) ───────────────────────────────────
@@ -34,30 +34,37 @@ FROM deps AS server-builder
 
 COPY . .
 
-# Bun can run the server directly (no compile step needed for ESM/TS with Bun)
-# We just need a production bundle if desired; for simplicity, we run via bun directly.
-# This stage exists for any future transpilation steps.
+# Bun runs TypeScript directly — no compile step needed for the server.
 
 # ── Stage 4: Production runtime ──────────────────────────────────────────────
-# Distroless-style minimal image: oven/bun:distroless is not available yet,
-# so we use bun:slim and harden it below.
+# Distroless-style minimal image using bun:slim and hardened below.
 FROM oven/bun:1.3-slim AS runner
 
 WORKDIR /app
 
+# Copy package manifests for a clean production-only install
+COPY --from=server-builder /app/package.json ./package.json
+COPY --from=server-builder /app/bun.lock ./bun.lock
+COPY --from=server-builder /app/turbo.json ./turbo.json
+COPY --from=server-builder /app/apps/server/package.json ./apps/server/package.json
+COPY --from=server-builder /app/packages/api/package.json ./packages/api/package.json
+COPY --from=server-builder /app/packages/auth/package.json ./packages/auth/package.json
+COPY --from=server-builder /app/packages/db/package.json ./packages/db/package.json
+COPY --from=server-builder /app/packages/env/package.json ./packages/env/package.json
+COPY --from=server-builder /app/packages/config/package.json ./packages/config/package.json
+
+# Install only production dependencies — strips dev tooling from final image
+RUN bun install --frozen-lockfile --production
+
+# 1. Server source (Bun runs TypeScript directly — no transpile step)
+COPY --chown=bun:bun --from=server-builder /app/packages ./packages
+COPY --chown=bun:bun --from=server-builder /app/apps/server ./apps/server
+
+# 2. Web static build — served by Hono's serveStatic middleware
+COPY --chown=bun:bun --from=web-builder /app/apps/web/dist ./apps/web/dist
+
 # Security: drop to non-root user (bun image includes 'bun' user)
 USER bun
-
-# Only copy what the server needs at runtime
-# 1. Server source (runs via bun directly — no transpile step needed)
-COPY --chown=bun:bun --from=server-builder /app/packages /app/packages
-COPY --chown=bun:bun --from=server-builder /app/apps/server /app/apps/server
-COPY --chown=bun:bun --from=server-builder /app/node_modules /app/node_modules
-COPY --chown=bun:bun --from=server-builder /app/package.json /app/package.json
-COPY --chown=bun:bun --from=server-builder /app/turbo.json /app/turbo.json
-
-# 2. Web static build — served by the Hono server's static middleware
-COPY --chown=bun:bun --from=web-builder /app/apps/web/dist /app/apps/web/dist
 
 # Server listens on 3000; expose it
 EXPOSE 3000
@@ -66,7 +73,7 @@ EXPOSE 3000
 ENV NODE_ENV=production \
     PORT=3000
 
-# Health check — /health is mounted on the Hono server
+# Health check — GET /health returns { status: "ok" }
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD bun -e "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
