@@ -3,6 +3,7 @@
 // Uses TanStack Router Link + useLocation instead of Next.js
 import { type ReactNode } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
+import { authClient } from "@/lib/auth-client";
 import { ChevronRight } from "lucide-react";
 import {
   Collapsible,
@@ -36,14 +37,37 @@ import {
   type NavGroup as NavGroupProps,
 } from "./types";
 
+// Role → resources the role can access. Mirrors the RBAC table in packages/auth/src/index.ts.
+// This is a UX filter only — the server enforces real RBAC via requireRole().
+const ROLE_RESOURCES: Record<string, string[] | ["*"]> = {
+  admin:      ["*"],
+  hrAdminOps: ["staff", "work", "leave", "rota", "compliance", "contract", "appraisal", "report", "audit", "settings", "procurement", "notification", "access"],
+  manager:    ["staff", "work", "leave", "rota", "compliance", "contract", "appraisal", "report", "audit", "procurement", "notification", "access"],
+  staff:      ["staff", "work", "leave", "rota", "compliance", "contract", "procurement", "notification", "access"],
+  readOnly:   ["staff", "work", "leave", "rota", "compliance", "contract", "appraisal", "report", "audit", "procurement", "notification", "access"],
+};
+
+function canAccess(role: string | null | undefined, resource?: string): boolean {
+  if (!resource) return true; // no restriction on this item
+  const allowed = ROLE_RESOURCES[role ?? ""];
+  if (!allowed) return true; // unknown role → show everything (server will reject if needed)
+  if (allowed[0] === "*") return true;
+  return (allowed as string[]).includes(resource);
+}
+
 export function NavGroup({ title, items }: NavGroupProps) {
   const { state, isMobile } = useSidebar();
   const href = useLocation({ select: (location) => location.href });
+  const { data: session } = authClient.useSession();
+  const role = (session?.user as Record<string, unknown>)?.role as string | null;
+
+  const visibleItems = items.filter((item) => canAccess(role, item.requiredResource));
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{title}</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => {
+        {visibleItems.map((item) => {
           const key = `${item.title}-${item.url ?? item.title}`;
 
           if (!item.items)

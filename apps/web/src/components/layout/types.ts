@@ -17,6 +17,8 @@ type BaseNavItem = {
   title: string;
   badge?: string;
   icon?: React.ElementType;
+  /** RBAC resource required to see this item. Matches resources in packages/auth/src/index.ts. */
+  requiredResource?: string;
 };
 
 type NavLink = BaseNavItem & {

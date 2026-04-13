@@ -142,6 +142,7 @@ export const sidebarData: Omit<SidebarData, "user"> = {
           title: "Appraisals",
           url: "/appraisals",
           icon: ClipboardCheck,
+          requiredResource: "appraisal",
         },
         {
           title: "Training",
@@ -167,21 +168,25 @@ export const sidebarData: Omit<SidebarData, "user"> = {
           title: "Analytics",
           url: "/analytics",
           icon: BarChart3,
+          requiredResource: "report",
         },
         {
           title: "Reports",
           url: "/reports",
           icon: ScrollText,
+          requiredResource: "report",
         },
         {
           title: "Audit Log",
           url: "/audit",
           icon: Activity,
+          requiredResource: "audit",
         },
         {
           title: "Import Data",
           url: "/import",
           icon: Upload,
+          requiredResource: "settings",
         },
         {
           title: "Notifications",
@@ -191,6 +196,7 @@ export const sidebarData: Omit<SidebarData, "user"> = {
         {
           title: "Settings",
           icon: Settings,
+          requiredResource: "settings",
           items: [
             {
               title: "General",
