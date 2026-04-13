@@ -14,7 +14,7 @@
  *   - Accounts returned but with isActive=false → ensure local status="disabled"
  */
 
-import { eq, and } from "drizzle-orm";
+import { eq, and, lt } from "drizzle-orm";
 import {
   db,
   platformAccounts,
@@ -25,6 +25,18 @@ import {
 
 import { ipamConnector } from "./connectors/ipam";
 import { ldapConnector } from "./connectors/ldap";
+
+// ── Timeout helper ─────────────────────────────────────────────────────────
+
+const SYNC_TIMEOUT_MS = 60_000; // 60 second cap per sync run
+
+async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`Sync timed out after ${ms}ms`)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer!));
+}
 
 // ── Connector registry ─────────────────────────────────────────────────────
 
@@ -49,6 +61,21 @@ export interface RunSyncJobResult {
 }
 
 export async function runSyncJob(syncJobId: string): Promise<RunSyncJobResult> {
+  // Recover any stuck jobs (running > 5 minutes) before processing new ones
+  await db
+    .update(syncJobs)
+    .set({
+      status: "failed",
+      errors: [{ externalId: "N/A", message: "Job timed out (stuck in running state)" }],
+      completedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(syncJobs.status, "running"),
+        lt(syncJobs.startedAt, new Date(Date.now() - 5 * 60_000)),
+      ),
+    );
+
   // Load sync job + integration
   const job = await db.query.syncJobs.findFirst({
     where: eq(syncJobs.id, syncJobId),
@@ -90,11 +117,14 @@ export async function runSyncJob(syncJobId: string): Promise<RunSyncJobResult> {
       throw new Error("Integration has no apiBaseUrl configured");
     }
 
-    // ── 2. Fetch external accounts ───────────────────────────────────────
-    const syncResult = await connector.fetchAccounts({
-      apiBaseUrl: integration.apiBaseUrl,
-      config: (integration.config ?? {}) as Record<string, unknown>,
-    });
+    // ── 2. Fetch external accounts (with 60s timeout) ───────────────────
+    const syncResult = await withTimeout(
+      connector.fetchAccounts({
+        apiBaseUrl: integration.apiBaseUrl,
+        config: (integration.config ?? {}) as Record<string, unknown>,
+      }),
+      SYNC_TIMEOUT_MS,
+    );
 
     if (!syncResult.success) {
       throw new Error(syncResult.error ?? "Connector returned failure");
