@@ -14,6 +14,7 @@ import { relations } from "drizzle-orm";
 import { user } from "./auth";
 import { departments } from "./departments";
 import { staffProfiles } from "./staff";
+import { workItems } from "./work";
 
 // ── Service Registry ───────────────────────────────────────────────────────
 
@@ -31,6 +32,8 @@ export const services = pgTable(
     ownerStaffId: text("owner_staff_id").references(() => staffProfiles.id, {
       onDelete: "set null",
     }),
+    runbookUrl: text("runbook_url"),
+    docsUrl: text("docs_url"),
     isActive: boolean("is_active").default(true).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -81,6 +84,10 @@ export const incidents = pgTable(
     closedAt: timestamp("closed_at"),
     impactSummary: text("impact_summary"),
     rootCause: text("root_cause"),
+    linkedWorkItemId: text("linked_work_item_id").references(
+      () => workItems.id,
+      { onDelete: "set null" },
+    ),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()

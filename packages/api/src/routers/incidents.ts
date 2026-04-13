@@ -33,6 +33,7 @@ const UpdateIncidentInput = z.object({
   commanderId: z.string().optional(),
   impactSummary: z.string().optional(),
   rootCause: z.string().optional(),
+  linkedWorkItemId: z.string().optional(),
   status: z
     .enum([
       "detected",

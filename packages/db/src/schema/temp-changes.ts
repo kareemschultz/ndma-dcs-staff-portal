@@ -11,6 +11,7 @@ import { relations } from "drizzle-orm";
 import { user } from "./auth";
 import { services } from "./incidents";
 import { staffProfiles } from "./staff";
+import { workItems } from "./work";
 
 export const tempChangeStatusEnum = pgEnum("temp_change_status", [
   "planned",
@@ -44,6 +45,11 @@ export const temporaryChanges = pgTable(
     followUpNotes: text("follow_up_notes"),
     // Scheduled date for a follow-up check (distinct from removal date)
     followUpDate: date("follow_up_date"),
+    // Optional cross-link to a work item tracking this change
+    linkedWorkItemId: text("linked_work_item_id").references(
+      () => workItems.id,
+      { onDelete: "set null" },
+    ),
     approvedById: text("approved_by_id").references(() => user.id, {
       onDelete: "set null",
     }),

@@ -23,11 +23,13 @@ import { Route as AuthenticatedNotificationsIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedLeaveIndexRouteImport } from './routes/_authenticated/leave/index'
 import { Route as AuthenticatedIncidentsIndexRouteImport } from './routes/_authenticated/incidents/index'
 import { Route as AuthenticatedImportIndexRouteImport } from './routes/_authenticated/import/index'
+import { Route as AuthenticatedCyclesIndexRouteImport } from './routes/_authenticated/cycles/index'
 import { Route as AuthenticatedContractsIndexRouteImport } from './routes/_authenticated/contracts/index'
 import { Route as AuthenticatedChangesIndexRouteImport } from './routes/_authenticated/changes/index'
 import { Route as AuthenticatedAuditIndexRouteImport } from './routes/_authenticated/audit/index'
 import { Route as AuthenticatedAppraisalsIndexRouteImport } from './routes/_authenticated/appraisals/index'
 import { Route as AuthenticatedAccessIndexRouteImport } from './routes/_authenticated/access/index'
+import { Route as AuthenticatedWorkWorkloadRouteImport } from './routes/_authenticated/work/workload'
 import { Route as AuthenticatedWorkNewRouteImport } from './routes/_authenticated/work/new'
 import { Route as AuthenticatedWorkWorkItemIdRouteImport } from './routes/_authenticated/work/$workItemId'
 import { Route as AuthenticatedStaffStaffIdRouteImport } from './routes/_authenticated/staff/$staffId'
@@ -127,6 +129,12 @@ const AuthenticatedImportIndexRoute =
     path: '/import/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCyclesIndexRoute =
+  AuthenticatedCyclesIndexRouteImport.update({
+    id: '/cycles/',
+    path: '/cycles/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedContractsIndexRoute =
   AuthenticatedContractsIndexRouteImport.update({
     id: '/contracts/',
@@ -154,6 +162,12 @@ const AuthenticatedAccessIndexRoute =
   AuthenticatedAccessIndexRouteImport.update({
     id: '/access/',
     path: '/access/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWorkWorkloadRoute =
+  AuthenticatedWorkWorkloadRouteImport.update({
+    id: '/work/workload',
+    path: '/work/workload',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedWorkNewRoute = AuthenticatedWorkNewRouteImport.update({
@@ -310,11 +324,13 @@ export interface FileRoutesByFullPath {
   '/staff/$staffId': typeof AuthenticatedStaffStaffIdRoute
   '/work/$workItemId': typeof AuthenticatedWorkWorkItemIdRoute
   '/work/new': typeof AuthenticatedWorkNewRoute
+  '/work/workload': typeof AuthenticatedWorkWorkloadRoute
   '/access/': typeof AuthenticatedAccessIndexRoute
   '/appraisals/': typeof AuthenticatedAppraisalsIndexRoute
   '/audit/': typeof AuthenticatedAuditIndexRoute
   '/changes/': typeof AuthenticatedChangesIndexRoute
   '/contracts/': typeof AuthenticatedContractsIndexRoute
+  '/cycles/': typeof AuthenticatedCyclesIndexRoute
   '/import/': typeof AuthenticatedImportIndexRoute
   '/incidents/': typeof AuthenticatedIncidentsIndexRoute
   '/leave/': typeof AuthenticatedLeaveIndexRoute
@@ -352,11 +368,13 @@ export interface FileRoutesByTo {
   '/staff/$staffId': typeof AuthenticatedStaffStaffIdRoute
   '/work/$workItemId': typeof AuthenticatedWorkWorkItemIdRoute
   '/work/new': typeof AuthenticatedWorkNewRoute
+  '/work/workload': typeof AuthenticatedWorkWorkloadRoute
   '/access': typeof AuthenticatedAccessIndexRoute
   '/appraisals': typeof AuthenticatedAppraisalsIndexRoute
   '/audit': typeof AuthenticatedAuditIndexRoute
   '/changes': typeof AuthenticatedChangesIndexRoute
   '/contracts': typeof AuthenticatedContractsIndexRoute
+  '/cycles': typeof AuthenticatedCyclesIndexRoute
   '/import': typeof AuthenticatedImportIndexRoute
   '/incidents': typeof AuthenticatedIncidentsIndexRoute
   '/leave': typeof AuthenticatedLeaveIndexRoute
@@ -396,11 +414,13 @@ export interface FileRoutesById {
   '/_authenticated/staff/$staffId': typeof AuthenticatedStaffStaffIdRoute
   '/_authenticated/work/$workItemId': typeof AuthenticatedWorkWorkItemIdRoute
   '/_authenticated/work/new': typeof AuthenticatedWorkNewRoute
+  '/_authenticated/work/workload': typeof AuthenticatedWorkWorkloadRoute
   '/_authenticated/access/': typeof AuthenticatedAccessIndexRoute
   '/_authenticated/appraisals/': typeof AuthenticatedAppraisalsIndexRoute
   '/_authenticated/audit/': typeof AuthenticatedAuditIndexRoute
   '/_authenticated/changes/': typeof AuthenticatedChangesIndexRoute
   '/_authenticated/contracts/': typeof AuthenticatedContractsIndexRoute
+  '/_authenticated/cycles/': typeof AuthenticatedCyclesIndexRoute
   '/_authenticated/import/': typeof AuthenticatedImportIndexRoute
   '/_authenticated/incidents/': typeof AuthenticatedIncidentsIndexRoute
   '/_authenticated/leave/': typeof AuthenticatedLeaveIndexRoute
@@ -440,11 +460,13 @@ export interface FileRouteTypes {
     | '/staff/$staffId'
     | '/work/$workItemId'
     | '/work/new'
+    | '/work/workload'
     | '/access/'
     | '/appraisals/'
     | '/audit/'
     | '/changes/'
     | '/contracts/'
+    | '/cycles/'
     | '/import/'
     | '/incidents/'
     | '/leave/'
@@ -482,11 +504,13 @@ export interface FileRouteTypes {
     | '/staff/$staffId'
     | '/work/$workItemId'
     | '/work/new'
+    | '/work/workload'
     | '/access'
     | '/appraisals'
     | '/audit'
     | '/changes'
     | '/contracts'
+    | '/cycles'
     | '/import'
     | '/incidents'
     | '/leave'
@@ -525,11 +549,13 @@ export interface FileRouteTypes {
     | '/_authenticated/staff/$staffId'
     | '/_authenticated/work/$workItemId'
     | '/_authenticated/work/new'
+    | '/_authenticated/work/workload'
     | '/_authenticated/access/'
     | '/_authenticated/appraisals/'
     | '/_authenticated/audit/'
     | '/_authenticated/changes/'
     | '/_authenticated/contracts/'
+    | '/_authenticated/cycles/'
     | '/_authenticated/import/'
     | '/_authenticated/incidents/'
     | '/_authenticated/leave/'
@@ -648,6 +674,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedImportIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/cycles/': {
+      id: '/_authenticated/cycles/'
+      path: '/cycles'
+      fullPath: '/cycles/'
+      preLoaderRoute: typeof AuthenticatedCyclesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/contracts/': {
       id: '/_authenticated/contracts/'
       path: '/contracts'
@@ -681,6 +714,13 @@ declare module '@tanstack/react-router' {
       path: '/access'
       fullPath: '/access/'
       preLoaderRoute: typeof AuthenticatedAccessIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/work/workload': {
+      id: '/_authenticated/work/workload'
+      path: '/work/workload'
+      fullPath: '/work/workload'
+      preLoaderRoute: typeof AuthenticatedWorkWorkloadRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/work/new': {
@@ -864,11 +904,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedStaffStaffIdRoute: typeof AuthenticatedStaffStaffIdRoute
   AuthenticatedWorkWorkItemIdRoute: typeof AuthenticatedWorkWorkItemIdRoute
   AuthenticatedWorkNewRoute: typeof AuthenticatedWorkNewRoute
+  AuthenticatedWorkWorkloadRoute: typeof AuthenticatedWorkWorkloadRoute
   AuthenticatedAccessIndexRoute: typeof AuthenticatedAccessIndexRoute
   AuthenticatedAppraisalsIndexRoute: typeof AuthenticatedAppraisalsIndexRoute
   AuthenticatedAuditIndexRoute: typeof AuthenticatedAuditIndexRoute
   AuthenticatedChangesIndexRoute: typeof AuthenticatedChangesIndexRoute
   AuthenticatedContractsIndexRoute: typeof AuthenticatedContractsIndexRoute
+  AuthenticatedCyclesIndexRoute: typeof AuthenticatedCyclesIndexRoute
   AuthenticatedImportIndexRoute: typeof AuthenticatedImportIndexRoute
   AuthenticatedIncidentsIndexRoute: typeof AuthenticatedIncidentsIndexRoute
   AuthenticatedLeaveIndexRoute: typeof AuthenticatedLeaveIndexRoute
@@ -906,11 +948,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedStaffStaffIdRoute: AuthenticatedStaffStaffIdRoute,
   AuthenticatedWorkWorkItemIdRoute: AuthenticatedWorkWorkItemIdRoute,
   AuthenticatedWorkNewRoute: AuthenticatedWorkNewRoute,
+  AuthenticatedWorkWorkloadRoute: AuthenticatedWorkWorkloadRoute,
   AuthenticatedAccessIndexRoute: AuthenticatedAccessIndexRoute,
   AuthenticatedAppraisalsIndexRoute: AuthenticatedAppraisalsIndexRoute,
   AuthenticatedAuditIndexRoute: AuthenticatedAuditIndexRoute,
   AuthenticatedChangesIndexRoute: AuthenticatedChangesIndexRoute,
   AuthenticatedContractsIndexRoute: AuthenticatedContractsIndexRoute,
+  AuthenticatedCyclesIndexRoute: AuthenticatedCyclesIndexRoute,
   AuthenticatedImportIndexRoute: AuthenticatedImportIndexRoute,
   AuthenticatedIncidentsIndexRoute: AuthenticatedIncidentsIndexRoute,
   AuthenticatedLeaveIndexRoute: AuthenticatedLeaveIndexRoute,
