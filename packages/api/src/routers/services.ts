@@ -41,6 +41,8 @@ export const servicesRouter = {
         description: z.string().optional(),
         departmentId: z.string().optional(),
         ownerStaffId: z.string().optional(),
+        runbookUrl: z.string().url().optional(),
+        docsUrl: z.string().url().optional(),
       }),
     )
     .handler(async ({ input, context }) => {
@@ -51,8 +53,11 @@ export const servicesRouter = {
           description: input.description ?? null,
           departmentId: input.departmentId ?? null,
           ownerStaffId: input.ownerStaffId ?? null,
+          runbookUrl: input.runbookUrl ?? null,
+          docsUrl: input.docsUrl ?? null,
         })
         .returning();
+      if (!service) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       await logAudit({
         actorId: context.session.user.id,
@@ -77,6 +82,8 @@ export const servicesRouter = {
         description: z.string().optional(),
         departmentId: z.string().optional(),
         ownerStaffId: z.string().optional(),
+        runbookUrl: z.string().url().optional(),
+        docsUrl: z.string().url().optional(),
         isActive: z.boolean().optional(),
       }),
     )
