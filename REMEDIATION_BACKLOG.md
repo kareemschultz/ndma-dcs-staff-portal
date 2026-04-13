@@ -1,80 +1,37 @@
-# Prioritized Remediation Backlog
+# Remediation Backlog
 
-## Phase 1 — Critical (Blocker)
+## Phase 1 (Critical)
 
-### B-001 Enforce RBAC at API boundary
-- **Priority:** P0
-- **Severity:** Critical
-- **Scope:** `packages/api/src/index.ts`, all routers
-- **Work:** Add permission middleware; map each procedure to `{resource, action}`; deny by default.
-- **Acceptance Criteria:**
-  - All protected procedures include explicit permission contract.
-  - Unit/integration tests verify role matrix and 403 behavior.
+| ID | Priority | Item | Owner | Dependencies | Acceptance Criteria |
+|---|---|---|---|---|---|
+| P1-1 | P0 | Fix oRPC auth middleware context propagation | Backend | None | Protected + role procedures receive full context fields and regression tests pass |
+| P1-2 | P0 | Align settings RBAC actions (`create/delete` mismatch) | Backend/Auth | P1-1 | No `requireRole` call references undefined action |
+| P1-3 | P0 | Gate audit endpoints with `audit:read` role check | Backend | P1-1 | Non-audit roles get 403; audit/admin roles can read |
+| P1-4 | P0 | Unblock install/build/test reproducibility | Platform/SRE | None | Fresh clone runs install + check-types + build + tests successfully |
 
-### B-002 Enforce mutation audit coverage
-- **Priority:** P0
-- **Severity:** Critical
-- **Scope:** all mutation procedures
-- **Work:** Add mutation helper or lint rule ensuring `logAudit` invoked.
-- **Acceptance Criteria:**
-  - 100% mutation handlers audited.
-  - CI fails if new mutation lacks audit instrumentation.
+## Phase 2 (High)
 
-### B-003 Fix runtime serving architecture
-- **Priority:** P0
-- **Severity:** Critical
-- **Scope:** `apps/server/src/index.ts`, Docker/runtime config
-- **Work:** Serve SPA static assets or split web/API services intentionally.
-- **Acceptance Criteria:**
-  - `/` serves frontend.
-  - `/rpc/*` and auth endpoints remain functional.
-  - Health endpoint explicitly implemented and used by checks.
+| ID | Priority | Item | Owner | Dependencies | Acceptance Criteria |
+|---|---|---|---|---|---|
+| P2-1 | P1 | Introduce domain-specific RBAC resources for incidents/services/temp-changes/cycles | Auth/Backend | P1-1 | All related routers use domain guards, policy docs updated |
+| P2-2 | P1 | Enforce universal mutation audit logging via wrapper | Backend | P1-1 | CI check fails if mutation lacks audit event |
+| P2-3 | P1 | Add DB constraints for rota uniqueness and temp link integrity | DB | P1-1 | Migration applies cleanly; duplicate/orphan inserts rejected |
+| P2-4 | P1 | Implement `/ready` dependency checks (DB + critical services) | Backend/SRE | P1-4 | Orchestrator can distinguish live vs ready |
 
-## Phase 2 — High
+## Phase 3 (Medium)
 
-### B-004 Restore reproducible dependency installation
-- **Priority:** P1
-- **Scope:** npm registry/mirror config, lockfile policy
-- **Acceptance Criteria:** `bun install --frozen-lockfile` succeeds in CI and local.
+| ID | Priority | Item | Owner | Dependencies | Acceptance Criteria |
+|---|---|---|---|---|---|
+| P3-1 | P2 | Resolve env/script/documentation drift (`CORS_ORIGIN`, DB compose commands, setup docs) | DX | P1-4 | README and scripts match executable reality |
+| P3-2 | P2 | Replace notification bell TODO with real unread query | Frontend | P1-1 | Header shows accurate unread count |
+| P3-3 | P2 | Harden sync scheduler for multi-replica deployments | Backend/SRE | P2-3 | No duplicate scheduled runs across replicas |
+| P3-4 | P2 | Expand CI quality matrix (lint, tests, docker smoke) | Platform | P1-4 | PR blocked unless all gates pass |
 
-### B-005 Strengthen CI gates
-- **Priority:** P1
-- **Scope:** `.github/workflows/ci.yml`
-- **Work:** add lint, tests, security audit, Docker build smoke, migration check.
-- **Acceptance Criteria:** Required checks block merge on failures.
+## Phase 4 (Polish)
 
-### B-006 Implement leave/rota policy engine
-- **Priority:** P1
-- **Scope:** `leave.ts`, `rota.ts`, associated schema
-- **Work:** overlap/key-role/fairness rules + manager exception audit trail.
-- **Acceptance Criteria:** violations blocked and explainable.
+| ID | Priority | Item | Owner | Dependencies | Acceptance Criteria |
+|---|---|---|---|---|---|
+| P4-1 | P3 | Align branding/package naming and docs consistency | Product/DX | P3-1 | Terminology consistent across README/docs/packages |
+| P4-2 | P3 | Reduce runtime image footprint and add SBOM + scan | SRE/Sec | P1-4 | CI publishes scan report and minimized images |
+| P4-3 | P3 | Replace static roles settings matrix with source-of-truth rendering | Frontend/Auth | P2-1 | UI reflects backend role statements dynamically |
 
-### B-007 Add docs app or remove drift
-- **Priority:** P1
-- **Scope:** README/docs architecture, app structure
-- **Acceptance Criteria:** documented architecture matches repository reality.
-
-## Phase 3 — Medium
-
-### B-008 Add observability baseline
-- **Priority:** P2
-- **Work:** structured logs, request IDs, tracing hooks, metrics endpoint.
-
-### B-009 Harden connector secret handling
-- **Priority:** P2
-- **Work:** encrypted secret storage, rotation, least-privilege credentials, error redaction.
-
-### B-010 Performance hardening for analytics endpoints
-- **Priority:** P2
-- **Work:** SQL-side aggregation/materialized views/caching for stats-heavy routes.
-
-## Phase 4 — Polish
-
-### B-011 Branding consistency sweep
-- unify `DCS Ops Center` naming across UI/meta/package docs.
-
-### B-012 UX polish
-- standard empty/loading/error states across modules.
-
-### B-013 Documentation completeness
-- operational runbooks, incident SOPs, access review SOP, backup/restore docs.

@@ -1,98 +1,101 @@
-# Claude Code Implementation Tasks
+# Claude Code – Agent-Ready Fix Tasks
 
-## Task 1: API Authorization Enforcement Framework
-- **Objective:** Enforce RBAC permissions server-side for all protected procedures.
-- **Files likely involved:**
+## Task 1 — Repair auth middleware context chain
+- **Objective:** Ensure oRPC auth middleware preserves full context while enforcing session existence.
+- **Likely files:**
   - `packages/api/src/index.ts`
+  - `packages/api/src/context.ts`
+  - `packages/api/src/routers/*` (tests)
+- **Desired outcome:** `requireAuth` and `requireRole` operate with full context (`session`, `userRole`, `ipAddress`, `userAgent`, `requestId`).
+- **Acceptance criteria:**
+  1. Role-protected route tests pass for each role.
+  2. Audit metadata fields are present in mutation logs.
+  3. No unsafe context casts needed for `userRole`.
+
+## Task 2 — Normalize RBAC action vocabulary
+- **Objective:** Remove undefined action references (especially `settings:create/delete`).
+- **Likely files:**
   - `packages/auth/src/index.ts`
-  - `packages/api/src/routers/*.ts`
-- **Desired outcome:** Each procedure declares required permission and is denied by default when missing.
+  - `packages/api/src/routers/automation.ts`
+  - `packages/api/src/routers/overlays.ts`
+- **Desired outcome:** Every `requireRole(resource, action)` pair maps to declared actions.
 - **Acceptance criteria:**
-  - Permission middleware implemented and reused.
-  - No procedure relies on UI-only role checks.
-  - Automated tests validate all role/action paths.
+  1. Static validation script enumerates all route guards and confirms action existence.
+  2. Admin and designated roles can execute intended settings mutations.
 
-## Task 2: Mutation Audit Guarantee
-- **Objective:** Ensure all mutation procedures emit append-only audit log records.
-- **Files likely involved:**
+## Task 3 — Lock down audit API
+- **Objective:** Restrict audit endpoints to authorized roles only.
+- **Likely files:**
+  - `packages/api/src/routers/audit.ts`
+  - `packages/auth/src/index.ts` (if role matrix updates needed)
+- **Desired outcome:** `audit.list` and `audit.getByResource` require `audit:read`.
+- **Acceptance criteria:**
+  1. Staff/read-only unauthorized flows return FORBIDDEN according to policy.
+  2. Audit/admin roles retain access.
+
+## Task 4 — Enforce mutation audit logging contract
+- **Objective:** Guarantee every mutation emits `logAudit`.
+- **Likely files:**
+  - `packages/api/src/routers/*.ts`
   - `packages/api/src/lib/audit.ts`
-  - `packages/api/src/routers/*.ts`
-  - CI scripts/check script in repo root
-- **Desired outcome:** impossible to add mutation without audit instrumentation.
+  - test utilities/new lint rule script
+- **Desired outcome:** Missing audit call becomes a CI failure.
 - **Acceptance criteria:**
-  - Existing missing audit calls fixed.
-  - Static check or test enumerates and validates mutation handlers.
+  1. Coverage report shows 100% mutation endpoints audited.
+  2. Representative routes (incidents, notifications, access, leave) produce audit rows.
 
-## Task 3: Runtime Serving and Health Model Correction
-- **Objective:** Align server behavior with deployment claims.
-- **Files likely involved:**
+## Task 5 — Strengthen DB constraints for operational correctness
+- **Objective:** Add relational/uniqueness constraints required by business rules.
+- **Likely files:**
+  - `packages/db/src/schema/rota.ts`
+  - `packages/db/src/schema/temp-changes.ts`
+  - migrations folder
+- **Desired outcome:** DB enforces one-role-per-schedule and valid temp-change links.
+- **Acceptance criteria:**
+  1. Duplicate assignment attempts fail at DB layer.
+  2. Orphan link inserts fail.
+  3. Existing data migration/backfill handles legacy rows.
+
+## Task 6 — Add readiness endpoint and deployment health policy
+- **Objective:** Differentiate liveness and readiness.
+- **Likely files:**
   - `apps/server/src/index.ts`
-  - `Dockerfile`
   - `docker-compose.prod.yml`
-- **Desired outcome:** single container (or explicit split) reliably serves API + web and health endpoint.
+  - deployment docs
+- **Desired outcome:** `/health` = process alive; `/ready` = dependencies healthy.
 - **Acceptance criteria:**
-  - `/health` explicit.
-  - `/` serves frontend in production mode.
-  - compose healthcheck validated.
+  1. `/ready` fails on DB outage.
+  2. Compose/K8s health checks target appropriate endpoint.
 
-## Task 4: CI Pipeline Hardening
-- **Objective:** add production-grade quality gates.
-- **Files likely involved:** `.github/workflows/ci.yml`, package scripts
-- **Desired outcome:** lint/test/typecheck/build/security/migration checks mandatory.
+## Task 7 — CI quality gate expansion
+- **Objective:** Ensure PRs cannot merge without lint/tests/build/docker smoke.
+- **Likely files:**
+  - `.github/workflows/ci.yml`
+  - workspace scripts in root/package apps
+- **Desired outcome:** Deterministic quality matrix.
 - **Acceptance criteria:**
-  - CI fails on lint/test/security regressions.
-  - Artifact logs clearly identify failing gate.
+  1. CI runs lint + typecheck + tests + app build + docker build smoke on PRs.
+  2. Failing gate blocks merge.
 
-## Task 5: Leave Governance Rules Engine
-- **Objective:** implement overlap and key-role leave constraints with exception workflow.
-- **Files likely involved:**
-  - `packages/api/src/routers/leave.ts`
-  - `packages/db/src/schema/leave.ts`
-  - related web leave request forms/routes
-- **Desired outcome:** unsafe leave approvals blocked or explicitly exception-approved.
+## Task 8 — Fix DX/docs drift and runtime commands
+- **Objective:** Align README/.env/scripts/compose expectations.
+- **Likely files:**
+  - `README.md`
+  - `.env.example`
+  - `packages/db/package.json`
+  - docs in `docs/architecture`
+- **Desired outcome:** New developer can follow docs exactly with success.
 - **Acceptance criteria:**
-  - team overlap caps configurable.
-  - key-role conflict checks implemented.
-  - decisions audited.
+  1. Documented ports/CORS/script names match real config.
+  2. Dev DB command works without hidden file assumptions.
 
-## Task 6: Rota Fairness and Conflict Enforcement
-- **Objective:** prevent unsafe rota publication and improve fairness analytics.
-- **Files likely involved:** `packages/api/src/routers/rota.ts`, `packages/db/src/schema/rota.ts`, rota web routes
-- **Desired outcome:** publish validator catches conflicts/duplicates/coverage quality issues.
+## Task 9 — Frontend trust and UX correctness updates
+- **Objective:** Remove known placeholders in operationally important areas.
+- **Likely files:**
+  - `apps/web/src/components/notification-bell.tsx`
+  - `apps/web/src/routes/_authenticated/settings/roles.tsx`
+- **Desired outcome:** Notification count is live; permissions matrix reflects backend truth.
 - **Acceptance criteria:**
-  - leave-aware validation integrated.
-  - fairness counters used for assignment suggestions/guardrails.
-  - publish returns machine-readable conflict payload.
+  1. Header badge reflects unread notifications.
+  2. Role settings page renders from backend role model/API.
 
-## Task 7: Observability Baseline
-- **Objective:** add minimum production telemetry.
-- **Files likely involved:** `apps/server/src/index.ts`, logging utilities, infra docs
-- **Desired outcome:** structured logs + request IDs + metrics/tracing hooks.
-- **Acceptance criteria:**
-  - request correlation ID in logs and audit entries.
-  - standardized error logging format.
-  - basic operational dashboard possible.
-
-## Task 8: Docs/Architecture Drift Resolution
-- **Objective:** reconcile claimed docs app and real repository structure.
-- **Files likely involved:** `README.md`, `docs/architecture/*`, optional new `apps/docs/*`
-- **Desired outcome:** documentation accurately reflects what exists.
-- **Acceptance criteria:**
-  - either docs app restored and runnable, or references removed with rationale.
-  - onboarding instructions pass dry-run.
-
-## Task 9: Security Hardening Pass
-- **Objective:** add HTTP security headers and secret handling safeguards.
-- **Files likely involved:** `apps/server/src/index.ts`, sync connectors, env docs
-- **Desired outcome:** CSP, safe defaults, secret redaction practices.
-- **Acceptance criteria:**
-  - CSP and key security headers present.
-  - connector errors do not leak sensitive config.
-
-## Task 10: Performance Improvements for Heavy Stats Endpoints
-- **Objective:** reduce expensive full-table analytics in request path.
-- **Files likely involved:** `packages/api/src/routers/dashboard.ts`, `incidents.ts`, DB indexes/views
-- **Desired outcome:** bounded query costs under realistic production load.
-- **Acceptance criteria:**
-  - SQL-side aggregation and/or cached summaries used.
-  - load test target latency met.

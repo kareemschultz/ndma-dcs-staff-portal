@@ -1,33 +1,61 @@
-# Production Readiness Checklist
+# Production Readiness Checklist — DCS Ops Center
 
-## Platform Integrity
-- [ ] Dependency install reproducible (`bun install --frozen-lockfile`).
-- [ ] Full typecheck/build/test pipeline passes.
-- [ ] Database migrations validated in CI.
+## Status Legend
+- ✅ Ready
+- 🟡 Partially Ready
+- ❌ Not Ready
 
-## Security
-- [ ] Server-side RBAC authorization enforced on all protected procedures.
-- [ ] 100% mutation audit logging coverage.
-- [ ] Security headers configured (CSP, X-Content-Type-Options, etc.).
-- [ ] Secret management policy for integration credentials implemented.
+## Platform
+- 🟡 Monorepo architecture and modular boundaries are clear
+- ❌ Build/test reproducibility confirmed in audited environment
+- 🟡 Runtime dependency management and lockfile discipline
 
-## Reliability
-- [ ] Explicit `/health` and readiness semantics implemented.
-- [ ] Docker image/runtime validated end-to-end.
-- [ ] Rollback strategy documented.
+## Security & Auth
+- 🟡 Better Auth configured with local fallback admin capability
+- ❌ RBAC route guards fully consistent with role-action matrix
+- ❌ Audit API access restricted to privileged roles only
+- ❌ Rate-limiting/brute-force controls verified
+
+## RBAC & Governance
+- ❌ Domain-level least-privilege permissions for incidents/temp-changes/services/cycles
+- ❌ End-to-end automated permission regression tests
+- 🟡 UI role awareness (present but partly static/non-authoritative)
+
+## Auditability
+- 🟡 Global audit log table exists
+- ❌ Every mutation emits `logAudit`
+- ❌ Audit metadata propagation guaranteed through middleware chain
+
+## API & Backend
+- 🟡 Input validation coverage (strong baseline with Zod)
+- ❌ Error handling and readiness semantics production-hardened
+- 🟡 OpenAPI/RPC surfacing present
+
+## Database
+- 🟡 Broad schema coverage for DCS domains
+- ❌ DB-level constraints for rota uniqueness and some cross-links
+- 🟡 Migration strategy (present, needs verification in CI/runtime)
+
+## Docker & Deployment
+- 🟡 Multi-stage Docker + non-root runtime
+- ❌ Readiness endpoint integrated in orchestrator health policy
+- 🟡 Runtime image minimization and scan hardening
 
 ## Observability
-- [ ] Structured logs with request correlation IDs.
-- [ ] Metrics endpoint and key SLO indicators.
-- [ ] Alerting/runbook coverage for critical failures.
+- 🟡 Request ID extraction present
+- ❌ Structured logs/tracing/metrics coverage
+- ❌ Alerting SLOs and operational dashboards verified
 
-## Product/Business Fit
-- [ ] Leave overlap/key-role constraints implemented.
-- [ ] Rota fairness + leave conflict engine enforced.
-- [ ] Escalation acknowledgement/response lifecycle modeled.
-- [ ] Spreadsheet-driven workflows fully mapped and tested.
+## CI/CD & DX
+- 🟡 Typecheck/build in CI
+- ❌ Lint/test/e2e/docker-smoke mandatory on PRs
+- ❌ Onboarding commands fully aligned with repository reality
 
-## Documentation & DX
-- [ ] Architecture docs match implemented repository.
-- [ ] Docs app availability decision finalized (implemented or references removed).
-- [ ] Onboarding steps validated from clean environment.
+## Product Workflow Fit
+- 🟡 Strong module breadth across operational domains
+- ❌ Critical workflow invariants enforced at DB/service layer
+- 🟡 Spreadsheet-to-platform mapping mostly present, with rule gaps
+
+## Final Readiness Verdict
+**Current status: ❌ Not Ready for strict production cutover until critical and high-priority backlog items are remediated.**
+

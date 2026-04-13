@@ -2,267 +2,294 @@
 
 ## 1. Executive Summary
 
-### Overall assessment
-The repository has a strong domain model breadth and clear module decomposition, but it is **not production-ready** as implemented. The largest blockers are security authorization gaps (authN without authZ), runtime/deployment drift (declared docs app missing, server/static assumptions), and inability to execute quality gates in this environment due dependency install failures.
+**Overall assessment:** The repository has strong domain breadth and a realistic module breakdown, but it is **not production-ready** due to auth/RBAC correctness risks, CI/runtime drift, and unverified build/test paths in this environment.
 
-### Production readiness
-**Current status: Partially implemented architecture, not ready for production rollout.**
+**Production readiness:** **Partially ready (high risk)**.
 
-### Top 10 findings
-1. **Critical:** RBAC is declared in Better Auth but not enforced in API procedures (server-side authZ gap).
-2. **Critical:** Mutation audit logging is inconsistent (several mutating endpoints do not call `logAudit`).
-3. **Critical:** Deployment/runtime mismatch: Docker and README claim combined web+API serving, but server code only returns `"OK"` at `/` and does not serve built web assets.
-4. **High:** Docs app is declared in architecture/README but `apps/docs` is absent.
-5. **High:** CI lacks lint/test/security gates; only typecheck/build jobs are configured.
-6. **High:** Dependency installation failed with extensive 403 registry errors; build/runtime quality cannot be fully validated.
-7. **High:** Leave/rota business rules are shallow (no overlap policy enforcement, weak fairness/constraint logic).
-8. **Medium:** On-call/escalation lacks acknowledgement/response SLO workflow despite Better Stack-inspired goals.
-9. **Medium:** Branding/product-name drift across UI and package names (`Staff Portal` vs `DCS Ops Center`).
-10. **Medium:** Observability is minimal (console error only, no structured logging/tracing/metrics).
+**Top 10 findings (priority order):**
+1. **RBAC middleware context mutation likely breaks permission checks and audit metadata propagation** (`protectedProcedure` rewrites context).  
+2. **Settings RBAC actions are inconsistent** (`settings:create/delete` used in routers but not defined in role statements).  
+3. **Audit log access is over-broad** (any authenticated user can query global audit logs).  
+4. **Install/build/test are currently not reproducible in this environment** (`bun install` fails with registry 403; quality gates cannot run locally).  
+5. **Critical route permissions are coarse and domain-misaligned** (`incidents`, `temp-changes`, `services`, `cycles` gated by `work:*` permissions).  
+6. **Mandatory mutation audit-logging rule is not uniformly enforced** (several mutating endpoints do not call `logAudit`).  
+7. **Data integrity gaps in schema** (intentional “bare FK” fields in temp-change/link models; missing constraints for rota uniqueness/fairness safeguards).  
+8. **Health check is liveness-only, not readiness** (does not validate DB connectivity/dependency health).  
+9. **CI quality gates are incomplete** (no lint job, no test job, partial build coverage only).  
+10. **Docs and implementation drift** (README claims vs effective scripts/config behavior differ in several places).
 
 ---
 
 ## 2. What Is Already Strong
 
-- Clear monorepo domain separation (`apps/*`, `packages/*`) with modular routers/schemas.
-- Broad data-model coverage across operations domains (work/incidents/rota/leave/access/compliance/etc.).
-- Consistent use of Zod inputs + Drizzle typed access in most API handlers.
-- Presence of dedicated audit and notification utility layers (`packages/api/src/lib/audit.ts`, `notify.ts`).
-- Useful domain scaffolding for access sync architecture (connector interface + job processor).
+- Clear monorepo modularity (`apps/*`, `packages/*`) with domain-specific routers and schemas.
+- Consistent use of typed input validation across API procedures (`zod` + oRPC patterns).
+- Broad domain coverage aligned to DCS operational scope (work, incidents, rota, leave, access governance, compliance, procurement, temporary changes, automation).
+- Security hardening effort present in server headers (CSP, frame policy, referrer policy, etc.).
+- Structured audit helper (`logAudit`) and session/context extraction include IP/user-agent/request-id fields.
+- Docker multi-stage build exists and non-root runtime user is used.
 
 ---
 
 ## 3. Critical Findings
 
-### C1 — RBAC is not enforced in API procedures
+### C1 — RBAC middleware/context propagation defect
 - **Severity:** Critical
-- **Evidence:** `protectedProcedure` only checks session existence; no role/permission checks in handlers.
-- **Affected modules:** `packages/api/src/index.ts`, most files under `packages/api/src/routers/*.ts`
-- **Risk:** Any authenticated user can call sensitive mutations if they can reach RPC endpoints.
-- **Recommended fix:** Implement server-side permission middleware using Better Auth admin plugin permission checks (`userHasPermission`) mapped per route/action.
+- **Evidence:** `requireAuth` calls `next({ context: { session: context.session } })`, which drops `userRole`, `ipAddress`, `userAgent`, and `requestId` injected by `createContext`. `requireRole` then reads `context.userRole` via unsafe cast. This indicates middleware contract misuse and high likelihood of forbidden/incorrect authorization and missing audit metadata at runtime.
+- **Affected files/modules:**
+  - `packages/api/src/index.ts`
+  - `packages/api/src/context.ts`
+  - All routers using `requireRole` and metadata fields in `logAudit`
+- **Risk:** Authorization failures, inconsistent access control, audit trails missing role/IP/request correlation.
+- **Recommended fix:** Preserve full context when auth middleware runs. Use middleware context extension pattern from current oRPC docs (merge, don’t clobber). Add integration tests for role-protected routes and audit metadata persistence.
 - **Acceptance criteria:**
-  - Every mutation and sensitive read has explicit permission guard.
-  - Automated permission matrix tests for all roles.
-  - Unauthorized role returns consistent 403.
+  - Protected and role-protected procedures receive `session`, `userRole`, `ipAddress`, `userAgent`, `requestId`.
+  - Role checks pass/fail deterministically for each role matrix case.
+  - Audit rows include populated actor role + correlation fields for role-protected mutations.
 
-### C2 — Audit logging policy not consistently applied to mutations
+### C2 — RBAC action matrix mismatch for settings mutations
 - **Severity:** Critical
-- **Evidence:** Multiple mutating handlers (e.g., notification status updates, incident responder/service link updates) do not call `logAudit`.
-- **Affected modules:** `packages/api/src/routers/notifications.ts`, portions of `incidents.ts`, likely other mutation handlers.
-- **Risk:** Forensic and compliance gaps; no immutable trace for privileged or business-critical changes.
-- **Recommended fix:** Add mandatory audit wrapper utility/middleware that enforces audit emission for all mutation paths.
+- **Evidence:** Routers require `settings:create` and `settings:delete`, but `settings` statement in auth only defines `read` and `update`.
+- **Affected files/modules:**
+  - `packages/auth/src/index.ts`
+  - `packages/api/src/routers/automation.ts`
+  - `packages/api/src/routers/overlays.ts`
+- **Risk:** Settings-related creation/deletion endpoints are effectively unreachable (or fail unexpectedly) for all roles, including admin depending on statement enforcement.
+- **Recommended fix:** Align RBAC statement/action vocabulary and all `requireRole()` usages. Either add `create/delete` to settings statements (and assign per-role) or refactor endpoints to existing actions.
 - **Acceptance criteria:**
-  - Mutation inventory script reports 100% coverage.
-  - CI check fails if mutation lacks audit call.
+  - No router references undefined action/resource combinations.
+  - Automated permission test suite validates every route guard pair.
 
-### C3 — Runtime/deployment behavior mismatches declared architecture
+### C3 — Audit log exposure to all authenticated users
 - **Severity:** Critical
-- **Evidence:** Server root returns plain text `OK`; no static asset serving for web build despite Docker copying `apps/web/dist`.
-- **Affected modules:** `apps/server/src/index.ts`, `Dockerfile`, `docker-compose.prod.yml`, README architecture claims.
-- **Risk:** Production container may boot without serving frontend; operational outage on web access.
-- **Recommended fix:** Implement static-file fallback for SPA build or separate web container/reverse proxy config.
+- **Evidence:** `auditRouter.list` and `auditRouter.getByResource` use only `protectedProcedure`, not `requireRole("audit","read")`.
+- **Affected files/modules:**
+  - `packages/api/src/routers/audit.ts`
+- **Risk:** Any staff-level user can access system-wide audit evidence containing potentially sensitive operational metadata.
+- **Recommended fix:** Enforce `requireRole("audit","read")` plus server-side row/data minimization policy.
 - **Acceptance criteria:**
-  - `docker compose -f docker-compose.prod.yml up` serves `/` SPA and `/rpc` API.
-  - Healthcheck + smoke tests validated in CI.
+  - Unauthorized roles receive FORBIDDEN on audit endpoints.
+  - Authorized roles retrieve redacted/appropriate fields only.
+
+### C4 — Build/test reproducibility blocked in current environment
+- **Severity:** Critical (delivery/operability)
+- **Evidence:** `bun install` fails with repeated npm registry `403` errors; then `turbo`/`playwright` binaries unavailable so `check-types`, `build`, and `test:e2e` fail.
+- **Affected files/modules:** Entire CI/dev workflow validation path.
+- **Risk:** Cannot verify that current HEAD compiles or passes tests in this environment; production confidence reduced.
+- **Recommended fix:** Verify registry/auth/network settings and pin toolchain in developer onboarding docs. Add a minimal smoke-test workflow that runs in hermetic CI and stores artifacts.
+- **Acceptance criteria:**
+  - Fresh clone + install + typecheck/build/test works in documented environment.
+  - CI reproduces same commands from README with no hidden prerequisites.
 
 ---
 
 ## 4. High-Priority Findings
 
-### H1 — Declared docs app missing
+### H1 — Domain permission model is too coarse for incidents/temp changes/services/cycles
 - **Severity:** High
-- **Evidence:** README/docs reference `apps/docs`, but folder/package absent.
-- **Risk:** Documentation supply-chain drift; onboarding and compliance docs unavailable.
-- **Fix:** Add actual `apps/docs` Fumadocs app or remove claims and adjust architecture docs.
-- **Acceptance criteria:** docs app exists, boots, and is linked.
+- **Evidence:** Multiple routers gate domain actions with `requireRole("work", ...)` rather than domain-specific resources.
+- **Risk:** Over-entitlement and policy ambiguity (e.g., work editors implicitly gain incident/temp-change privileges).
+- **Recommended fix:** Expand RBAC resources and migrate route guards to domain-scoped resources/actions.
+- **Acceptance criteria:** Dedicated resource namespace exists for incident/temp-change/service/cycle domains and all related routes use it.
 
-### H2 — CI quality gates insufficient
+### H2 — Mutation audit coverage is incomplete despite project rule
 - **Severity:** High
-- **Evidence:** `.github/workflows/ci.yml` only runs install + typecheck/build, no lint/test/security scan.
-- **Risk:** Regressions and vulnerabilities merge undetected.
-- **Fix:** Add lint, tests, migration checks, dependency audit, container build scan.
-- **Acceptance criteria:** PR required checks include lint+test+build+security.
+- **Evidence:** Several mutations (e.g., notifications state changes, some incident mutation handlers like add responder/timeline/service link operations) do not call `logAudit`.
+- **Risk:** Forensic and compliance gaps; inability to reconstruct all state transitions.
+- **Recommended fix:** Enforce `logAudit` in every mutation through shared wrapper/middleware and test assertions.
+- **Acceptance criteria:** Static check or test fails if mutation procedure lacks audit emission.
 
-### H3 — Environment/runtime validation could not be completed
+### H3 — Data integrity constraints missing for critical rota/access/temporary-change workflows
 - **Severity:** High
-- **Evidence:** `bun install --frozen-lockfile` fails with many 403 errors; downstream tasks unavailable.
-- **Risk:** Unknown runtime quality; hidden build/runtime defects.
-- **Fix:** Resolve package registry access/mirror policy; pin reproducible install path.
-- **Acceptance criteria:** clean install and full pipeline success in CI and local.
+- **Evidence:**
+  - `on_call_assignments` lacks unique constraint for `(scheduleId, role)` and `(scheduleId, staffProfileId)`.
+  - `temporary_changes`/`temp_change_links` include “bare FK” fields with no DB-level references.
+- **Risk:** Duplicate role assignments, orphaned links, and integrity drift.
+- **Recommended fix:** Add relational constraints and backfill migration scripts with repair routines.
+- **Acceptance criteria:** Database rejects duplicate/conflicting assignments and invalid references.
 
-### H4 — Leave governance rules incomplete
+### H4 — Health endpoint is liveness-only
 - **Severity:** High
-- **Evidence:** leave approval logic updates balances but does not enforce overlap caps/team constraints/key-role conflict rules.
-- **Risk:** Operational staffing risk; rota instability.
-- **Fix:** Add policy engine for overlap thresholds, key-person constraints, manager exception workflow.
-- **Acceptance criteria:** rule violations blocked with actionable errors; policy tests pass.
+- **Evidence:** `/health` returns static JSON without DB/critical dependency checks.
+- **Risk:** Orchestrator can route traffic to unhealthy instances with broken DB connectivity.
+- **Recommended fix:** Add `/ready` dependency checks and retain `/health` for liveness.
+- **Acceptance criteria:** Readiness fails when DB unavailable; health remains process-level.
 
-### H5 — On-call schedule conflict logic incomplete
+### H5 — CI gates incomplete for production governance
 - **Severity:** High
-- **Evidence:** role-fill validation exists, but robust leave-aware conflict detection/duplicate assignment prevention/fairness constraints are partial.
-- **Risk:** unsafe coverage planning.
-- **Fix:** Pre-publish validator (leave conflicts, duplicate people across roles, fairness caps).
-- **Acceptance criteria:** publish fails with structured conflict report until resolved.
+- **Evidence:** CI runs type-check and web build only; no lint/test/e2e/docker runtime verification for PRs.
+- **Risk:** Regressions and quality drift reach mainline.
+- **Recommended fix:** Add lint, unit/integration tests, API build, and docker smoke run in CI.
+- **Acceptance criteria:** PR merge blocked on full quality matrix.
 
 ---
 
 ## 5. Medium-Priority Findings
 
-1. **M1 — Branding drift** (`DCS Ops Center` vs `NDMA DCS Staff Portal`) across titles/login/meta.
-2. **M2 — Observability gap**: no metrics, tracing, request IDs, structured JSON logs.
-3. **M3 — Security headers/CSP missing** in Hono server configuration.
-4. **M4 — API docs path drift**: docs mention `/api/openapi.json`, server mounts OpenAPI under `/api-reference/*`.
-5. **M5 — Placeholder UX remains** (AD sign-in disabled with “coming soon”; notification TODOs).
-6. **M6 — Import/sync connector hardening incomplete** (secret handling, retries, idempotency/telemetry depth).
-7. **M7 — No automated test suite present** (no `test` script at workspace root).
+1. **Env/config drift:** `.env.example` uses `CORS_ORIGIN=http://localhost:5173` while web runs on 3001.
+2. **DB command drift:** `packages/db` scripts use default `docker compose up -d` but repository exposes `docker-compose.prod.yml` and no root dev compose file.
+3. **Role settings UI is static and diverges from backend RBAC reality** (`settings/roles.tsx` hardcoded matrix).
+4. **Notification bell uses TODO stub count 0** despite notifications API availability.
+5. **Background sync scheduler has no distributed locking**; multiple replicas can double-trigger jobs.
+6. **Potential N+1/perf risks** in rich `with:` relation loading for list endpoints without selective fields or pagination in all nested relations.
+7. **No explicit rate limiting / brute-force controls** visible on auth endpoints.
+8. **No explicit structured logging/trace correlation beyond ad-hoc request-id extraction.**
 
 ---
 
 ## 6. Low-Priority / Polish Findings
 
-- Standardize status enums/messages across modules.
-- Add pagination consistency (limit/offset defaults and max caps vary).
-- Improve empty/error/loading UX consistency across routes.
-- Normalize naming and package scope to final product identity.
+- Branding/package naming drift (`ndma-dcs-staff-portal` vs “DCS Ops Center”) increases cognitive load.
+- README is aspirational and over-claims production-readiness under current unresolved criticals.
+- Some docs comments in Dockerfile conflict with actual Next.js configuration semantics.
 
 ---
 
 ## 7. Security Review
 
 ### Auth
-- Better Auth is configured with local email/password enabled (good for fallback).
-- Session-based auth enforced via `protectedProcedure`.
-- **Gap:** authZ absent in API.
+- Better Auth is configured with local email+password fallback enabled (good for break-glass requirements).
+- Cookie attributes use `sameSite: "lax"` and `secure` gated by production env (reasonable dev/prod split).
+- AD/LDAP sign-in path appears UI-placeholder only; no active server-side LDAP auth flow confirmed.
 
 ### RBAC
-- RBAC statement/roles defined in auth package.
-- **Gap:** no API-side checks tying route actions to RBAC policy.
+- Central role statement exists, but action mismatch and coarse resource mapping materially weaken enforcement.
+- Audit endpoints lack RBAC guard.
 
-### Secrets / env
-- Env schema validation exists.
-- `.env.example` includes placeholders only (good).
-- Integration credentials likely stored in DB config JSON for connectors; needs encryption-at-rest strategy and secret-management policy.
-
-### Audit
-- Audit helper exists and many routes use it.
-- **Gap:** inconsistent mutation coverage.
+### Secrets / Env
+- Env validation present.
+- Operational drift between documented and expected env values introduces deployment risk.
 
 ### Request handling
-- CORS configured with explicit origin and credentials.
-- No explicit CSP/secure headers middleware detected.
+- Security headers + CORS present.
+- No evidence of rate-limiting/WAF controls in app layer.
+
+### Auditability
+- Strong intent with `logAudit` helper and context metadata.
+- Incomplete mutation coverage and context propagation concern reduce trustworthiness.
 
 ---
 
 ## 8. Docker / Deployment Review
 
-- Dockerfile uses multi-stage and non-root `bun` user (good baseline).
-- Runtime image copies large workspace content and `node_modules` from build stage; no pruning strategy observed.
-- Healthcheck endpoint `/health` assumed in comments, but server routes show `/` returning `OK`; no explicit `/health` route in inspected code.
-- Could not run Docker validation in this environment (`docker` binary unavailable).
+- Multi-stage Dockerfile exists with non-root runtime (good).
+- Runtime image copies whole workspace `node_modules` (includes dev deps; larger attack surface).
+- Health check is process-only; no readiness gate.
+- Compose deployment is serviceable, but DB and app operational scripts/docs drift.
+- Need SBOM/image scanning, pinned digest strategy, and startup migration strategy hardening.
 
 ---
 
 ## 9. Performance Review
 
-- Several stats endpoints load full datasets and aggregate in application code (e.g., `incidents.stats`), risking scalability issues.
-- Dashboard makes many independent aggregate queries; acceptable at small scale, may require materialized views/caching.
-- Potential N+1 risks reduced by Drizzle `with` usage in many paths, but heavy relation fetches on list views may still be expensive.
-- No explicit caching or background pre-computation strategy detected for heavy analytics.
+- Dashboard/analytics endpoints aggregate many metrics; without profiling, query cost is uncertain.
+- Some list routes fetch deep relation graphs; risk of heavy payloads.
+- No explicit caching layer for expensive aggregate endpoints.
+- Scheduler polling every 5 minutes on each instance without leader election can duplicate work.
 
 ---
 
 ## 10. UI/UX Review
 
-- Route coverage is broad across operational modules.
-- Sidebar includes docs/import/settings areas; however architecture/docs route coupling has drift due missing docs app.
-- Placeholder AD sign-in and TODO notification indicator remain in core UX.
-- No verified permission-aware navigation enforcement tied to server RBAC.
+- Route surface is extensive and appears broadly mapped to operational modules.
+- Important UX gaps: notifications badge not wired, AD login button disabled placeholder, role settings table static/non-authoritative.
+- Permission-aware UX exists in sidebar patterns, but backend guard consistency issues reduce trust.
 
 ---
 
 ## 11. Spreadsheet-to-Platform Gap Analysis
 
 ### Work management
-- Present: types, weekly updates, source fields, overdue tracking.
-- Missing/weak: recurring work model, external follow-up lifecycle, richer linkage (incidents/services/temp changes cross-links and analytics depth).
+- Weekly updates and work tracking exist; recurring templates exist.
+- Gaps: stronger source-system reference normalization and cross-module dependency enforcement.
 
 ### On-call rota
-- Present: schedules, assignments, swaps, overrides, escalation policy tables.
-- Missing/weak: explicit primary/secondary coverage, ack/response tracking, fairness engine with enforceable constraints, robust leave conflict integration.
+- Schedules, swaps, escalation, warnings, history exist.
+- Gaps: DB-level uniqueness for role coverage, explicit backup/secondary coverage semantics, stronger fairness analytics persistence.
 
-### Leave / availability
-- Present: leave balances and requests.
-- Missing/weak: overlap constraints, key-role restrictions, contract-year rule rigor, manager exception policy trails.
+### Leave/availability
+- Leave balances and requests modeled.
+- Gaps: explicit key-role overlap policy enforcement and tighter rota coupling constraints at DB/service layer.
 
 ### Access governance
-- Present: account/auth source/sync mode/external contacts/reconciliation scaffolding.
-- Missing/weak: hardened connector credential governance, mature automated reconciliation lifecycle and SLA/ownership workflow.
+- Strong schema support for platforms/auth sources/sync/reconciliation.
+- Gaps: verify connector maturity and secret handling hardening in runtime ops.
 
 ### Temporary tracker
-- Present: first-class schema/router/UI routes.
-- Missing/weak: reminder/notification automation depth and operational cleanup workflows.
+- First-class model exists with risk/category/network fields.
+- Gaps: enforce foreign key integrity for declared link fields and ensure lifecycle reminders/escalations are auditable.
 
 ---
 
 ## 12. Production Readiness Checklist
 
-| Area | Status |
-|---|---|
-| Architecture modularization | partially ready |
-| AuthN | partially ready |
-| AuthZ / RBAC enforcement | not ready |
-| Audit completeness | partially ready |
-| Build reproducibility | not ready |
-| Automated tests | not ready |
-| CI quality gates | partially ready |
-| Docker runtime validation | not ready |
-| Observability | not ready |
-| Security headers hardening | not ready |
-| Business rule completeness | partially ready |
-| Documentation fidelity | partially ready |
+- Architecture modularity: **Ready**
+- Auth baseline: **Partially ready**
+- RBAC correctness: **Not ready**
+- Mutation audit completeness: **Not ready**
+- API validation patterns: **Partially ready**
+- DB integrity constraints: **Partially ready**
+- Build/test reproducibility: **Not ready in audited environment**
+- Docker hardening: **Partially ready**
+- CI quality gates: **Partially ready**
+- Observability/readiness: **Not ready**
+- Documentation consistency: **Partially ready**
 
 ---
 
 ## 13. Prioritized Remediation Plan
 
-### Phase 1 Critical
-1. Implement server-side RBAC permission middleware and apply across routers.
-2. Enforce 100% mutation audit coverage with CI guard.
-3. Resolve runtime serving model (API + web static) and validate Docker health paths.
+### Phase 1 — Critical
+1. Fix middleware context/RBAC propagation and add permission regression tests.
+2. Align settings action matrix (statement + route guards).
+3. Protect audit endpoints with explicit audit role check.
+4. Restore reproducible install/check/build in local+CI.
 
-### Phase 2 High Priority
-1. Fix dependency installation/registry policy and pipeline reproducibility.
-2. Add CI lint/test/security gates and baseline tests.
-3. Implement leave/rota policy engine for constraints and fairness.
+### Phase 2 — High Priority
+1. Refactor RBAC to domain-level resources for incidents/temp changes/services/cycles.
+2. Enforce universal mutation audit logging.
+3. Add DB constraints for rota uniqueness and temp-change referential integrity.
+4. Add readiness endpoint with dependency checks.
 
-### Phase 3 Medium
-1. Add observability stack (structured logs, metrics, traces, request IDs).
-2. Align docs claims with actual `apps/docs` implementation.
-3. Close API/docs path drift and branding inconsistencies.
+### Phase 3 — Medium
+1. Resolve env/script drift in docs and DB tooling commands.
+2. Wire notification bell to real unread count.
+3. Add distributed lock/leader election for scheduler.
+4. Add lint/test/e2e jobs to CI.
 
-### Phase 4 Polish
-1. UX consistency improvements (states/errors/empty).
-2. Performance optimizations for analytics endpoints.
-3. Refactor naming consistency and developer docs quality.
+### Phase 4 — Polish
+1. Align naming/branding consistency.
+2. Reduce Docker runtime footprint and add image scan/SBOM steps.
+3. Improve docs precision where comments and implementation diverge.
 
 ---
 
 ## 14. Agent-Ready Fix Tasks
 
-(See dedicated `CLAUDE_FIX_TASKS.md` for implementation-ready task cards.)
+See `CLAUDE_FIX_TASKS.md` for implementation-ready task cards.
 
 ---
 
 ## 15. Open Questions / Unverifiable Areas
 
-1. Could not verify successful install/typecheck/build due registry 403 failures.
-2. Could not validate Docker build/runtime because Docker CLI unavailable in this environment.
-3. Could not execute end-to-end auth/protected-route behavior without runnable stack.
-4. No uploaded spreadsheet artifacts were available for direct row-by-row validation; business-fit analysis based on requirements provided in prompt.
+1. Full runtime correctness could not be validated due dependency install failure (npm registry 403 in this environment).
+2. Could not execute integration/e2e flows (Playwright/turbo unavailable post-install failure).
+3. Could not verify Docker build/runtime execution end-to-end under current network/package constraints.
+4. Could not verify LDAP/AD server-side integration beyond observed UI placeholder.
 
 ---
 
-## Documentation-first references consulted
-- Better Auth admin/access control docs.
-- oRPC OpenAPI handler/reference docs.
-- Hono, Drizzle, TanStack Router/Query, Tailwind v4, Bun, Turborepo, Fumadocs official docs (repo also tracks these in `docs/architecture/implementation-sources.md`).
+## Official Documentation Baseline Used
+
+- Better Auth options/plugins: https://better-auth.com/docs/reference/options
+- oRPC procedure/middleware docs: https://orpc.dev (middleware + procedure builder references)
+- Hono docs (CORS/static): https://hono.dev
+- Drizzle ORM docs: https://orm.drizzle.team
+- TanStack Router docs: https://tanstack.com/router/latest/docs
+- TanStack Query docs: https://tanstack.com/query/latest/docs
+- Tailwind CSS v4 docs: https://tailwindcss.com/docs
+- Bun docs: https://bun.sh/docs
+- Turborepo docs: https://turbo.build/repo/docs
+- Fumadocs docs: https://fumadocs.dev/docs
+- Docker best practices: https://docs.docker.com/build/building/best-practices/
+
