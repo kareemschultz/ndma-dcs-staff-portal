@@ -40,7 +40,11 @@
     "db:start": "turbo -F @ndma-dcs-staff-portal/db db:start",
     "db:watch": "turbo -F @ndma-dcs-staff-portal/db db:watch",
     "db:stop": "turbo -F @ndma-dcs-staff-portal/db db:stop",
-    "db:down": "turbo -F @ndma-dcs-staff-portal/db db:down"
+    "db:down": "turbo -F @ndma-dcs-staff-portal/db db:down",
+    "lint": "biome lint --write .",
+    "lint:check": "biome lint .",
+    "format": "biome format --write .",
+    "check": "biome check --write ."
   },
   "dependencies": {
     "@ndma-dcs-staff-portal/env": "workspace:*",
@@ -48,6 +52,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.11",
     "@ndma-dcs-staff-portal/config": "workspace:*",
     "@types/bun": "catalog:",
     "turbo": "^2.8.12",
