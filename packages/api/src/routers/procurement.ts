@@ -140,6 +140,8 @@ export const procurementRouter = {
         afterValue: { ...pr, lineItemCount: input.lineItems.length } as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return pr;
@@ -186,6 +188,8 @@ export const procurementRouter = {
         afterValue: updated as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return updated;
@@ -218,6 +222,8 @@ export const procurementRouter = {
         afterValue: { status: "submitted" },
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return updated;
@@ -272,6 +278,8 @@ export const procurementRouter = {
         afterValue: { status: "approved" },
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return updated;
@@ -312,6 +320,8 @@ export const procurementRouter = {
         afterValue: { status: "rejected" },
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return updated;
@@ -344,6 +354,8 @@ export const procurementRouter = {
         afterValue: { status: "ordered", ...updates } as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return updated;
@@ -373,6 +385,8 @@ export const procurementRouter = {
         afterValue: { status: "received", actualDeliveryDate: today } as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return updated;

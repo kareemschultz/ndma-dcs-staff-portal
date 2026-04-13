@@ -65,6 +65,8 @@ export const servicesRouter = {
         afterValue: service as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return service;
@@ -105,6 +107,8 @@ export const servicesRouter = {
         afterValue: updated as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return updated;

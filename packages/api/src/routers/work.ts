@@ -173,6 +173,8 @@ export const workRouter = {
         afterValue: item as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       // Notify assignee if set
@@ -231,6 +233,8 @@ export const workRouter = {
         afterValue: updated as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return updated;
@@ -263,6 +267,8 @@ export const workRouter = {
         afterValue: { assignedToId: input.staffProfileId },
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       // Notify the new assignee

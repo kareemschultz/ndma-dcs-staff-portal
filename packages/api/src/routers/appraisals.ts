@@ -90,6 +90,8 @@ export const appraisalsRouter = {
         afterValue: appraisal as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return appraisal;
@@ -142,6 +144,8 @@ export const appraisalsRouter = {
         afterValue: updated as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return updated;

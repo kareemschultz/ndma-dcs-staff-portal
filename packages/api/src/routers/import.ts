@@ -336,6 +336,8 @@ export const importRouter = {
         afterValue: { importType, totalRows: rows.length, successCount, errorCount, status } as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return updatedJob;

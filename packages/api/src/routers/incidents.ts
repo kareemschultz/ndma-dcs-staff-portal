@@ -176,6 +176,8 @@ export const incidentsRouter = {
         afterValue: incident as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return incident;
@@ -226,6 +228,8 @@ export const incidentsRouter = {
         afterValue: updated as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return updated;
@@ -361,6 +365,8 @@ export const incidentsRouter = {
         afterValue: pir as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return pir;

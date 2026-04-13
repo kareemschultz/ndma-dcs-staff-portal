@@ -5,8 +5,13 @@ import {
   leaveTypes,
   leaveBalances,
   leaveRequests,
+  staffProfiles,
 } from "@ndma-dcs-staff-portal/db";
 import { and, eq, gte, lte, sql } from "drizzle-orm";
+
+// Maximum number of staff from the same department allowed on leave simultaneously.
+// Increase this per-department when a department config table exists.
+const MAX_DEPT_LEAVE_OVERLAP = 2;
 
 import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
@@ -43,6 +48,8 @@ export const leaveRouter = {
           afterValue: type as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
         return type;
       }),
@@ -74,6 +81,8 @@ export const leaveRouter = {
           afterValue: updated as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
         return updated;
       }),
@@ -131,6 +140,8 @@ export const leaveRouter = {
           afterValue: balance as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return balance;
@@ -239,6 +250,8 @@ export const leaveRouter = {
           afterValue: request as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return request;
@@ -254,6 +267,29 @@ export const leaveRouter = {
         if (!before) throw new ORPCError("NOT_FOUND");
         if (before.status !== "pending")
           throw new ORPCError("CONFLICT", { message: "Request is not pending" });
+
+        // Team overlap cap — prevent too many from same department on leave simultaneously
+        if (before.staffProfile.departmentId) {
+          const [overlapResult] = await db
+            .select({ count: sql<number>`count(*)::int` })
+            .from(leaveRequests)
+            .innerJoin(staffProfiles, eq(leaveRequests.staffProfileId, staffProfiles.id))
+            .where(
+              and(
+                eq(staffProfiles.departmentId, before.staffProfile.departmentId),
+                eq(leaveRequests.status, "approved"),
+                lte(leaveRequests.startDate, before.endDate),
+                gte(leaveRequests.endDate, before.startDate),
+                sql`${leaveRequests.staffProfileId} != ${before.staffProfileId}`,
+              ),
+            );
+          const overlapCount = overlapResult?.count ?? 0;
+          if (overlapCount >= MAX_DEPT_LEAVE_OVERLAP) {
+            throw new ORPCError("CONFLICT", {
+              message: `Cannot approve: ${overlapCount} colleague(s) from the same department are already on approved leave during this period (department cap: ${MAX_DEPT_LEAVE_OVERLAP})`,
+            });
+          }
+        }
 
         const [updated] = await db
           .update(leaveRequests)
@@ -297,6 +333,8 @@ export const leaveRouter = {
           afterValue: { status: "approved" },
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;
@@ -344,6 +382,8 @@ export const leaveRouter = {
           afterValue: { status: "rejected", rejectionReason: input.rejectionReason },
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;
@@ -389,6 +429,8 @@ export const leaveRouter = {
           afterValue: { status: "cancelled" },
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;

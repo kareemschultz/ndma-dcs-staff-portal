@@ -102,6 +102,8 @@ export const tempChangesRouter = {
         afterValue: change as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return change;
@@ -148,6 +150,8 @@ export const tempChangesRouter = {
         afterValue: updated as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return updated;
@@ -177,6 +181,8 @@ export const tempChangesRouter = {
         afterValue: { status: "removed", actualRemovalDate: today },
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return updated;

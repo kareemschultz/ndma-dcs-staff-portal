@@ -70,6 +70,8 @@ export const complianceRouter = {
           afterValue: record as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return record;
@@ -113,6 +115,8 @@ export const complianceRouter = {
           afterValue: updated as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;
@@ -131,6 +135,8 @@ export const complianceRouter = {
           resourceId: input.id,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
         return { success: true };
       }),
@@ -182,6 +188,8 @@ export const complianceRouter = {
           afterValue: record as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return record;
@@ -222,6 +230,8 @@ export const complianceRouter = {
           afterValue: updated as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;
@@ -240,6 +250,8 @@ export const complianceRouter = {
           resourceId: input.id,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
         return { success: true };
       }),
@@ -283,6 +295,8 @@ export const complianceRouter = {
           afterValue: record as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return record;

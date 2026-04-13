@@ -121,6 +121,8 @@ export const escalationRouter = {
           afterValue: policy as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return policy;
@@ -153,6 +155,8 @@ export const escalationRouter = {
           afterValue: updated as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;
@@ -178,6 +182,8 @@ export const escalationRouter = {
           beforeValue: existing as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return { success: true };
@@ -208,6 +214,8 @@ export const escalationRouter = {
           afterValue: step as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return step;
@@ -240,6 +248,8 @@ export const escalationRouter = {
           afterValue: updated as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;
@@ -265,6 +275,8 @@ export const escalationRouter = {
           beforeValue: existing as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return { success: true };
@@ -308,6 +320,8 @@ export const escalationRouter = {
           afterValue: override as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return override;
@@ -340,6 +354,8 @@ export const escalationRouter = {
           afterValue: updated as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;
@@ -365,6 +381,8 @@ export const escalationRouter = {
           beforeValue: existing as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return { success: true };

@@ -10,8 +10,9 @@ import {
   staffProfiles,
   departments,
   leaveRequests,
+  contracts,
 } from "@ndma-dcs-staff-portal/db";
-import { eq, desc, asc, and, gte, lte } from "drizzle-orm";
+import { eq, desc, asc, and, gte, lte, or, isNull } from "drizzle-orm";
 import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
@@ -188,6 +189,8 @@ export const rotaRouter = {
         afterValue: schedule as Record<string, unknown>,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return schedule;
@@ -274,6 +277,8 @@ export const rotaRouter = {
         afterValue: { scheduleId: input.scheduleId, staffProfileId: input.staffProfileId, role: input.role },
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return assignment;
@@ -316,18 +321,26 @@ export const rotaRouter = {
         beforeValue: { scheduleId: existing.scheduleId, staffProfileId: existing.staffProfileId, role: existing.role },
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return { success: true };
     }),
 
-  // Publish a schedule — validates all 4 roles are filled first
+  // Publish a schedule — validates all 4 roles are filled and runs constraint sweep
   publish: requireRole("rota", "update")
     .input(PublishScheduleInput)
     .handler(async ({ input, context }) => {
       const schedule = await db.query.onCallSchedules.findFirst({
         where: eq(onCallSchedules.id, input.scheduleId),
-        with: { assignments: true },
+        with: {
+          assignments: {
+            with: {
+              staffProfile: { with: { user: true } },
+            },
+          },
+        },
       });
       if (!schedule) throw new ORPCError("NOT_FOUND");
       if (schedule.status !== "draft") {
@@ -345,6 +358,75 @@ export const rotaRouter = {
       if (missingRoles.length > 0) {
         throw new ORPCError("UNPROCESSABLE_CONTENT", {
           message: `Missing roles: ${missingRoles.join(", ")}`,
+        });
+      }
+
+      // ── Pre-publish constraint sweep ──────────────────────────────────────
+      // For each assignment: check approved leave and active contract status.
+      // Write results to conflictFlags; block publish on any "blocker" severity.
+      type ConflictFlag = { type: string; message: string; severity: "warning" | "blocker" };
+      const allBlockers: string[] = [];
+
+      for (const a of schedule.assignments) {
+        const flags: ConflictFlag[] = [];
+        const staffName = a.staffProfile.user?.name ?? a.staffProfileId;
+
+        // Check 1: approved leave overlapping the schedule week
+        const leaveConflict = await db.query.leaveRequests.findFirst({
+          where: and(
+            eq(leaveRequests.staffProfileId, a.staffProfileId),
+            eq(leaveRequests.status, "approved"),
+            lte(leaveRequests.startDate, schedule.weekEnd),
+            gte(leaveRequests.endDate, schedule.weekStart),
+          ),
+        });
+        if (leaveConflict) {
+          flags.push({
+            type: "approved_leave",
+            message: `On approved leave ${leaveConflict.startDate}–${leaveConflict.endDate}`,
+            severity: "blocker",
+          });
+        }
+
+        // Check 2: must have an active/non-expired contract
+        const activeContract = await db.query.contracts.findFirst({
+          where: and(
+            eq(contracts.staffProfileId, a.staffProfileId),
+            or(
+              isNull(contracts.endDate),
+              gte(contracts.endDate, schedule.weekStart),
+            ),
+          ),
+        });
+        if (!activeContract) {
+          flags.push({
+            type: "contract_expired",
+            message: "No active contract covering this week",
+            severity: "blocker",
+          });
+        }
+
+        // Persist conflict flags on the assignment
+        await db
+          .update(onCallAssignments)
+          .set({ conflictFlags: flags })
+          .where(eq(onCallAssignments.id, a.id));
+
+        const blockers = flags.filter((f) => f.severity === "blocker");
+        if (blockers.length > 0) {
+          allBlockers.push(
+            `${a.role} (${staffName}): ${blockers.map((b) => b.message).join("; ")}`,
+          );
+        }
+      }
+
+      if (allBlockers.length > 0) {
+        await db
+          .update(onCallSchedules)
+          .set({ hasConflicts: true })
+          .where(eq(onCallSchedules.id, input.scheduleId));
+        throw new ORPCError("UNPROCESSABLE_CONTENT", {
+          message: `Cannot publish — blocking conflicts found: ${allBlockers.join(" | ")}`,
         });
       }
 
@@ -375,6 +457,8 @@ export const rotaRouter = {
         afterValue: { status: "published", publishedAt: published.publishedAt },
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
       });
 
       return published;
@@ -482,6 +566,8 @@ export const rotaRouter = {
           afterValue: { assignmentId: input.assignmentId, targetStaffProfileId: input.targetStaffProfileId },
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return swap;
@@ -538,6 +624,8 @@ export const rotaRouter = {
           afterValue: { status: updated.status, reviewNotes: input.notes },
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;

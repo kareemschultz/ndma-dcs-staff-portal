@@ -297,6 +297,8 @@ export const accessRouter = {
           afterValue: account as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return account;
@@ -348,6 +350,8 @@ export const accessRouter = {
           afterValue: updated as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;
@@ -385,6 +389,8 @@ export const accessRouter = {
           afterValue: updated as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;
@@ -422,6 +428,8 @@ export const accessRouter = {
           >,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;
@@ -499,6 +507,8 @@ export const accessRouter = {
           afterValue: contact as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return contact;
@@ -542,6 +552,8 @@ export const accessRouter = {
           afterValue: updated as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;
@@ -621,6 +633,8 @@ export const accessRouter = {
           afterValue: group as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return group;
@@ -661,6 +675,8 @@ export const accessRouter = {
           afterValue: updated as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;
@@ -686,6 +702,8 @@ export const accessRouter = {
           beforeValue: group as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return { success: true };
@@ -749,6 +767,8 @@ export const accessRouter = {
           afterValue: { groupId: input.groupId, platformAccountId: input.platformAccountId },
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return membership;
@@ -786,6 +806,8 @@ export const accessRouter = {
           afterValue: { groupId: input.groupId, platformAccountId: input.platformAccountId, removedAt: new Date() },
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;
@@ -893,6 +915,8 @@ export const accessRouter = {
           afterValue: review as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return review;
@@ -944,6 +968,8 @@ export const accessRouter = {
           afterValue: updated as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;
@@ -1021,6 +1047,8 @@ export const accessRouter = {
           afterValue: integration as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return integration;
@@ -1061,6 +1089,8 @@ export const accessRouter = {
           afterValue: updated as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return updated;
@@ -1099,6 +1129,8 @@ export const accessRouter = {
           afterValue: { integrationId: input.integrationId, triggeredBy: "manual" },
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         // Run the sync job in the background — don't await so the HTTP response
@@ -1216,6 +1248,8 @@ export const accessRouter = {
           },
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return resolved;
@@ -1268,6 +1302,8 @@ export const accessRouter = {
           afterValue: owner as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return owner;
@@ -1293,6 +1329,8 @@ export const accessRouter = {
           beforeValue: input as Record<string, unknown>,
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+          actorRole: context.userRole ?? undefined,
+          correlationId: context.requestId,
         });
 
         return { success: true };
