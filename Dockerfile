@@ -30,7 +30,7 @@ COPY . .
 # VITE_SERVER_URL must be empty in production so the browser uses relative
 # URLs (/rpc, /api/auth) against the current origin. The .env file contains
 # the dev default (localhost:3000) which we override here via env var.
-RUN VITE_SERVER_URL= VITE_DOCS_URL=https://docs.dcs.karetechsolutions.com bun run --cwd apps/web build
+RUN VITE_SERVER_URL= VITE_DOCS_URL=https://dcs.karetechsolutions.com/docs bun run --cwd apps/web build
 
 # ── Stage 3: Build server ─────────────────────────────────────────────────────
 FROM deps AS server-builder
@@ -131,7 +131,7 @@ COPY --from=docs-builder /app/apps/docs/.next/static ./.next/static
 EXPOSE 4000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:4000',r=>process.exit(r.statusCode<400?0:1)).on('error',()=>process.exit(1))"
+  CMD node -e "require('http').get('http://localhost:4000/docs',r=>process.exit(r.statusCode<400?0:1)).on('error',()=>process.exit(1))"
 
 # In a Bun monorepo, Next.js standalone mirrors the workspace path:
 # .next/standalone/apps/docs/server.js (not /server.js at root)

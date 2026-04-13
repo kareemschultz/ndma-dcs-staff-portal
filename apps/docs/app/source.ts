@@ -10,6 +10,8 @@ const resolvedFiles = (
 )();
 
 export const source = loader({
-  baseUrl: "/docs",
+  // baseUrl is "/" because basePath="/docs" is handled by Next.js config.
+  // Page tree links become /work, /incidents, etc.; browser sees /docs/work, /docs/incidents.
+  baseUrl: "/",
   source: { ...mdxSource, files: resolvedFiles },
 });
