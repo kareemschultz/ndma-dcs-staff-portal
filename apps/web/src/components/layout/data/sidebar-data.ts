@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   BarChart3,
   Bell,
-  BookOpen,
   Building2,
   CalendarClock,
   CalendarOff,
@@ -27,12 +26,9 @@ import {
 } from "lucide-react";
 import { type SidebarData } from "../types";
 
-export const sidebarData: SidebarData = {
-  user: {
-    name: "Admin User",
-    email: "admin@ndma.gov.gh",
-    avatar: "",
-  },
+// Note: `user` is intentionally omitted — real user data comes from the auth
+// session via app-sidebar.tsx (authClient.useSession), not static config.
+export const sidebarData: Omit<SidebarData, "user"> = {
   teams: [
     {
       name: "DCS Ops Center",
@@ -70,10 +66,10 @@ export const sidebarData: SidebarData = {
           icon: AlertTriangle,
         },
         {
-          title: "On-Call Rota",
+          title: "On-Call Roster",
           icon: CalendarClock,
           items: [
-            { title: "Current Rota", url: "/rota" },
+            { title: "Current Roster", url: "/rota" },
             { title: "Planner", url: "/rota/planner" },
             { title: "Swap Requests", url: "/rota/swaps" },
             { title: "History", url: "/rota/history" },
@@ -176,11 +172,6 @@ export const sidebarData: SidebarData = {
           title: "Notifications",
           url: "/notifications",
           icon: Bell,
-        },
-        {
-          title: "Documentation",
-          url: "/docs",
-          icon: BookOpen,
         },
         {
           title: "Settings",
