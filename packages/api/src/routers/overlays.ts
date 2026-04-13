@@ -11,7 +11,7 @@ import {
   overlayAssignments,
   overlayTasks,
 } from "@ndma-dcs-staff-portal/db";
-import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, asc, eq, gte, lte, sql } from "drizzle-orm";
 import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
