@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Users, Search } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Users, Search, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { Input } from "@ndma-dcs-staff-portal/ui/components/input";
 import { Skeleton } from "@ndma-dcs-staff-portal/ui/components/skeleton";
+import { Button } from "@ndma-dcs-staff-portal/ui/components/button";
+import { Label } from "@ndma-dcs-staff-portal/ui/components/label";
 import {
   Table,
   TableBody,
@@ -12,10 +15,25 @@ import {
   TableHeader,
   TableRow,
 } from "@ndma-dcs-staff-portal/ui/components/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@ndma-dcs-staff-portal/ui/components/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@ndma-dcs-staff-portal/ui/components/select";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { orpc } from "@/utils/orpc";
+import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/_authenticated/staff/")({
   component: StaffPage,
@@ -36,10 +54,142 @@ const STATUS_COLORS: Record<string, string> = {
   terminated: "bg-muted text-muted-foreground line-through",
 };
 
+function NewStaffDialog({ onClose }: { onClose: () => void }) {
+  const queryClient = useQueryClient();
+  const { data: departments } = useQuery(orpc.staff.getDepartments.queryOptions());
+  const createProfile = useMutation(orpc.staff.create.mutationOptions());
+
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    employeeId: "",
+    departmentId: "",
+    jobTitle: "",
+    employmentType: "full_time" as "full_time" | "part_time" | "contract" | "temporary",
+    startDate: new Date().toISOString().slice(0, 10),
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.name || !form.email || !form.password || !form.employeeId || !form.departmentId || !form.jobTitle) {
+      toast.error("All fields are required.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      // 1. Create the auth user via Better Auth admin
+      const { data, error } = await authClient.admin.createUser({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: "user",
+      });
+      if (error || !data?.user?.id) {
+        toast.error(error?.message ?? "Failed to create user account.");
+        return;
+      }
+      const userId = data.user.id;
+
+      // 2. Create the staff profile linked to the user
+      await createProfile.mutateAsync({
+        userId,
+        employeeId: form.employeeId,
+        departmentId: form.departmentId,
+        jobTitle: form.jobTitle,
+        employmentType: form.employmentType,
+        startDate: form.startDate,
+      });
+
+      toast.success(`Staff member ${form.name} created. They can sign in with their email and password.`);
+      await queryClient.invalidateQueries({ queryKey: orpc.staff.list.key() });
+      onClose();
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to create staff member.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <DialogContent className="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle>New Staff Member</DialogTitle>
+      </DialogHeader>
+      <form onSubmit={handleSubmit} className="space-y-4 py-2">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="ns-name">Full Name</Label>
+            <Input id="ns-name" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Kareem Schultz" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="ns-empid">Employee ID</Label>
+            <Input id="ns-empid" value={form.employeeId} onChange={(e) => setForm((f) => ({ ...f, employeeId: e.target.value }))} placeholder="DCS-001" />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="ns-email">Email</Label>
+          <Input id="ns-email" type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="name@ndma.gov.gh" />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="ns-password">Temporary Password</Label>
+          <Input id="ns-password" type="password" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} placeholder="Min 8 characters" />
+          <p className="text-xs text-muted-foreground">Staff will use this to sign in. Ask them to change it on first login.</p>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="ns-title">Job Title</Label>
+          <Input id="ns-title" value={form.jobTitle} onChange={(e) => setForm((f) => ({ ...f, jobTitle: e.target.value }))} placeholder="Senior Network Engineer" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label>Department</Label>
+            <Select value={form.departmentId} onValueChange={(v) => setForm((f) => ({ ...f, departmentId: v ?? f.departmentId }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select…" />
+              </SelectTrigger>
+              <SelectContent>
+                {departments?.map((d) => (
+                  <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Employment Type</Label>
+            <Select value={form.employmentType} onValueChange={(v) => setForm((f) => ({ ...f, employmentType: v as any }))}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="full_time">Full Time</SelectItem>
+                <SelectItem value="part_time">Part Time</SelectItem>
+                <SelectItem value="contract">Contract</SelectItem>
+                <SelectItem value="temporary">Temporary</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="ns-start">Start Date</Label>
+          <Input id="ns-start" type="date" value={form.startDate} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} />
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+          <Button type="submit" disabled={submitting}>
+            {submitting ? "Creating…" : "Create Staff Member"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  );
+}
+
 function StaffPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [deptId, setDeptId] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
 
   const { data, isLoading } = useQuery(
     orpc.staff.list.queryOptions({ input: { limit: 200, offset: 0 } })
@@ -68,6 +218,9 @@ function StaffPage() {
           <span className="text-sm font-medium">Staff Directory</span>
         </div>
         <div className="ms-auto flex items-center gap-2">
+          <Button size="sm" onClick={() => setShowCreate(true)}>
+            <Plus className="size-4 mr-1.5" /> New Staff
+          </Button>
           <ThemeSwitch />
         </div>
       </Header>
@@ -189,6 +342,9 @@ function StaffPage() {
           </Table>
         </div>
       </Main>
+      <Dialog open={showCreate} onOpenChange={(o) => !o && setShowCreate(false)}>
+        <NewStaffDialog onClose={() => setShowCreate(false)} />
+      </Dialog>
     </>
   );
 }

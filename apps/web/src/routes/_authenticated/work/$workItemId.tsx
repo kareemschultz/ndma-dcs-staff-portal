@@ -15,9 +15,25 @@ import {
   Plus,
   X,
   LayoutGrid,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@ndma-dcs-staff-portal/ui/components/button";
 import { Textarea } from "@ndma-dcs-staff-portal/ui/components/textarea";
+import { Input } from "@ndma-dcs-staff-portal/ui/components/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@ndma-dcs-staff-portal/ui/components/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@ndma-dcs-staff-portal/ui/components/select";
 import { Label } from "@ndma-dcs-staff-portal/ui/components/label";
 import { Skeleton } from "@ndma-dcs-staff-portal/ui/components/skeleton";
 import { Separator } from "@ndma-dcs-staff-portal/ui/components/separator";
@@ -308,10 +324,129 @@ function AssignmentPanel({ workItemId }: { workItemId: string }) {
   );
 }
 
+function EditWorkItemDialog({
+  item,
+  onClose,
+}: {
+  item: { id: string; title: string; description?: string | null; type: string; priority: string; dueDate?: string | null };
+  onClose: () => void;
+}) {
+  const [form, setForm] = useState({
+    title: item.title,
+    description: item.description ?? "",
+    type: item.type,
+    priority: item.priority,
+    dueDate: item.dueDate ?? "",
+  });
+
+  const mutation = useMutation(
+    orpc.work.update.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: orpc.work.get.key({ input: { id: item.id } }) });
+        queryClient.invalidateQueries({ queryKey: orpc.work.list.key() });
+        toast.success("Work item updated");
+        onClose();
+      },
+      onError: (err) => toast.error(err.message),
+    })
+  );
+
+  return (
+    <DialogContent className="sm:max-w-lg">
+      <DialogHeader>
+        <DialogTitle>Edit Work Item</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-4 py-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="wi-title">Title</Label>
+          <Input
+            id="wi-title"
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label>Type</Label>
+            <Select
+              value={form.type}
+              onValueChange={(v) => setForm((f) => ({ ...f, type: v ?? f.type }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="routine">Routine</SelectItem>
+                <SelectItem value="project">Project</SelectItem>
+                <SelectItem value="external_request">External Request</SelectItem>
+                <SelectItem value="ad_hoc">Ad Hoc</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Priority</Label>
+            <Select
+              value={form.priority}
+              onValueChange={(v) => setForm((f) => ({ ...f, priority: v ?? f.priority }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="critical">Critical</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="wi-due">Due Date</Label>
+          <Input
+            id="wi-due"
+            type="date"
+            value={form.dueDate}
+            onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="wi-desc">Description</Label>
+          <Textarea
+            id="wi-desc"
+            rows={4}
+            value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+          />
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose}>Cancel</Button>
+        <Button
+          disabled={mutation.isPending || !form.title.trim()}
+          onClick={() =>
+            mutation.mutate({
+              id: item.id,
+              title: form.title,
+              description: form.description || undefined,
+              type: form.type as WorkType,
+              priority: form.priority as WorkPriority,
+              dueDate: form.dueDate || undefined,
+            })
+          }
+        >
+          {mutation.isPending ? "Saving…" : "Save Changes"}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
 function WorkItemDetailPage() {
   const { workItemId } = Route.useParams();
   const navigate = useNavigate();
 
+  const [showEdit, setShowEdit] = useState(false);
   const [commentBody, setCommentBody] = useState("");
   const [updateSummary, setUpdateSummary] = useState("");
   const [updateBlockers, setUpdateBlockers] = useState("");
@@ -418,6 +553,14 @@ function WorkItemDetailPage() {
               <TypeBadge type={item.type as WorkType} />
               <StatusBadge status={item.status as WorkStatus} />
               <PriorityBadge priority={item.priority as WorkPriority} />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-auto h-7 gap-1.5 text-muted-foreground"
+                onClick={() => setShowEdit(true)}
+              >
+                <Pencil className="size-3.5" /> Edit
+              </Button>
               {/* Team allocation summary badges */}
               {teamAllocations.map((a) => (
                 <Badge key={a.id} variant="secondary" className="text-xs gap-1">
@@ -666,6 +809,10 @@ function WorkItemDetailPage() {
           </div>
         </div>
       </Main>
+
+      <Dialog open={showEdit} onOpenChange={(o) => !o && setShowEdit(false)}>
+        <EditWorkItemDialog item={item as any} onClose={() => setShowEdit(false)} />
+      </Dialog>
     </>
   );
 }
