@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
-import { ArrowLeftRight, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeftRight, CheckCircle, Plus, XCircle } from "lucide-react";
 import { Button } from "@ndma-dcs-staff-portal/ui/components/button";
 import { Skeleton } from "@ndma-dcs-staff-portal/ui/components/skeleton";
 import {
@@ -14,6 +14,15 @@ import {
   TableHeader,
   TableRow,
 } from "@ndma-dcs-staff-portal/ui/components/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@ndma-dcs-staff-portal/ui/components/dialog";
+import { Label } from "@ndma-dcs-staff-portal/ui/components/label";
+import { Textarea } from "@ndma-dcs-staff-portal/ui/components/textarea";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -196,9 +205,168 @@ function SwapTable({
   );
 }
 
+// ── Request Swap Dialog ────────────────────────────────────────────────────
+
+function RequestSwapDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
+  const [scheduleId, setScheduleId] = useState("");
+  const [assignmentId, setAssignmentId] = useState("");
+  const [targetStaffProfileId, setTargetStaffProfileId] = useState("");
+  const [reason, setReason] = useState("");
+
+  // Published schedules only (has assignments to swap)
+  const { data: schedules } = useQuery(orpc.rota.list.queryOptions());
+  const publishedSchedules =
+    schedules?.filter((s) => s.status === "published") ?? [];
+
+  const selectedSchedule = publishedSchedules.find((s) => s.id === scheduleId);
+  const assignments = selectedSchedule?.assignments ?? [];
+
+  const { data: staffList } = useQuery(
+    orpc.staff.list.queryOptions({ input: { limit: 200, offset: 0 } })
+  );
+
+  const mutation = useMutation(
+    orpc.rota.swap.request.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: orpc.rota.swap.list.key() });
+        toast.success("Swap request submitted");
+        setScheduleId("");
+        setAssignmentId("");
+        setTargetStaffProfileId("");
+        setReason("");
+        onOpenChange(false);
+      },
+      onError: (err) => toast.error(err.message),
+    })
+  );
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!assignmentId || !targetStaffProfileId) {
+      toast.error("Select an assignment and a target staff member.");
+      return;
+    }
+    mutation.mutate({
+      assignmentId,
+      targetStaffProfileId,
+      reason: reason || undefined,
+    });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Request On-Call Swap</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4 py-2">
+          {/* Pick schedule */}
+          <div className="space-y-1.5">
+            <Label>Week (Published Schedule)</Label>
+            <select
+              value={scheduleId}
+              onChange={(e) => {
+                setScheduleId(e.target.value);
+                setAssignmentId("");
+              }}
+              className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">Select week…</option>
+              {publishedSchedules.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {format(parseISO(s.weekStart), "dd MMM")} –{" "}
+                  {format(parseISO(s.weekEnd), "dd MMM yyyy")}
+                </option>
+              ))}
+            </select>
+            {publishedSchedules.length === 0 && (
+              <p className="text-xs text-muted-foreground">
+                No published schedules available for swapping.
+              </p>
+            )}
+          </div>
+
+          {/* Pick assignment */}
+          {scheduleId && (
+            <div className="space-y-1.5">
+              <Label>Assignment to Swap</Label>
+              <select
+                value={assignmentId}
+                onChange={(e) => setAssignmentId(e.target.value)}
+                className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">Select assignment…</option>
+                {assignments.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {ROLE_LABELS[a.role] ?? a.role} —{" "}
+                    {(a as { staffProfile?: { user?: { name?: string } } }).staffProfile?.user?.name ?? "Unassigned"}
+                  </option>
+                ))}
+              </select>
+              {assignments.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  No assignments in this schedule.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Pick target staff */}
+          <div className="space-y-1.5">
+            <Label>Swap With</Label>
+            <select
+              value={targetStaffProfileId}
+              onChange={(e) => setTargetStaffProfileId(e.target.value)}
+              className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">Select staff member…</option>
+              {staffList?.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.user?.name ?? s.id}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Reason */}
+          <div className="space-y-1.5">
+            <Label htmlFor="swap-reason">Reason (optional)</Label>
+            <Textarea
+              id="swap-reason"
+              placeholder="e.g. Annual leave, medical appointment…"
+              rows={2}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={!assignmentId || !targetStaffProfileId || mutation.isPending}
+            >
+              {mutation.isPending ? "Submitting…" : "Submit Swap Request"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function SwapsPage() {
   const [activeTab, setActiveTab] = useState<"pending" | "all">("pending");
   const [inFlightIds, setInFlightIds] = useState<Set<string>>(new Set());
+  const [showRequest, setShowRequest] = useState(false);
 
   const { data: pendingSwaps, isLoading: pendingLoading } = useQuery(
     orpc.rota.swap.list.queryOptions({ input: { status: "pending" as const } })
@@ -248,12 +416,18 @@ function SwapsPage() {
 
   return (
     <>
+      <RequestSwapDialog open={showRequest} onOpenChange={setShowRequest} />
+
       <Header fixed>
         <div className="flex items-center gap-2">
           <ArrowLeftRight className="size-4 text-muted-foreground" />
           <span className="text-sm font-medium">Swap Requests</span>
         </div>
         <div className="ms-auto flex items-center gap-2">
+          <Button size="sm" onClick={() => setShowRequest(true)}>
+            <Plus className="size-3.5 mr-1.5" />
+            Request Swap
+          </Button>
           <ThemeSwitch />
         </div>
       </Header>
