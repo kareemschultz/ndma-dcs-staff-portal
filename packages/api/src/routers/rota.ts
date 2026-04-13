@@ -9,6 +9,7 @@ import {
   assignmentHistory,
   staffProfiles,
   departments,
+  leaveRequests,
 } from "@ndma-dcs-staff-portal/db";
 import { eq, desc, asc, and, gte, lte } from "drizzle-orm";
 import { protectedProcedure, requireRole } from "../index";
@@ -203,6 +204,36 @@ export const rotaRouter = {
       if (schedule.status !== "draft") {
         throw new ORPCError("FORBIDDEN", {
           message: "Cannot modify a published or archived schedule",
+        });
+      }
+
+      // Prevent double-booking: same staff member in multiple roles this week
+      const existingForStaff = await db.query.onCallAssignments.findFirst({
+        where: and(
+          eq(onCallAssignments.scheduleId, input.scheduleId),
+          eq(onCallAssignments.staffProfileId, input.staffProfileId),
+        ),
+      });
+
+      if (existingForStaff && existingForStaff.role !== input.role) {
+        throw new ORPCError("CONFLICT", {
+          message: `Staff member already assigned as ${existingForStaff.role} in this schedule`,
+        });
+      }
+
+      // Block assignment if staff has approved leave overlapping this schedule week
+      const leaveConflict = await db.query.leaveRequests.findFirst({
+        where: and(
+          eq(leaveRequests.staffProfileId, input.staffProfileId),
+          eq(leaveRequests.status, "approved"),
+          lte(leaveRequests.startDate, schedule.weekEnd),
+          gte(leaveRequests.endDate, schedule.weekStart),
+        ),
+      });
+
+      if (leaveConflict) {
+        throw new ORPCError("CONFLICT", {
+          message: `Staff member has approved leave overlapping this schedule (${leaveConflict.startDate} to ${leaveConflict.endDate})`,
         });
       }
 

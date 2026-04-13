@@ -206,14 +206,17 @@ export const workRouter = {
       });
       if (!before) throw new ORPCError("NOT_FOUND");
 
-      const completedAt =
-        updates.status === "done" && before.status !== "done"
-          ? new Date()
-          : undefined;
+      // Auto-manage completedAt based on status transitions
+      const completedAtPatch: { completedAt?: Date | null } = {};
+      if (updates.status === "done" && before.status !== "done") {
+        completedAtPatch.completedAt = new Date();
+      } else if (updates.status && updates.status !== "done" && before.status === "done") {
+        completedAtPatch.completedAt = null; // Clear when reopening a completed item
+      }
 
       const [updated] = await db
         .update(workItems)
-        .set({ ...updates, ...(completedAt ? { completedAt } : {}) })
+        .set({ ...updates, ...completedAtPatch })
         .where(eq(workItems.id, id))
         .returning();
 

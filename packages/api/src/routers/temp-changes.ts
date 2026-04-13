@@ -184,6 +184,19 @@ export const tempChangesRouter = {
 
   getOverdue: protectedProcedure.handler(async () => {
     const today = new Date().toISOString().slice(0, 10);
+
+    // Auto-flag items that are past their removeByDate but not yet marked overdue
+    await db
+      .update(temporaryChanges)
+      .set({ status: "overdue" })
+      .where(
+        and(
+          sql`${temporaryChanges.status} IN ('active', 'implemented', 'planned')`,
+          sql`${temporaryChanges.removeByDate} IS NOT NULL`,
+          lt(temporaryChanges.removeByDate, today),
+        ),
+      );
+
     return db.query.temporaryChanges.findMany({
       where: and(
         sql`${temporaryChanges.removeByDate} IS NOT NULL`,

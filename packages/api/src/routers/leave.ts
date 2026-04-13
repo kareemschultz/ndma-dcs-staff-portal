@@ -185,6 +185,44 @@ export const leaveRouter = {
         }),
       )
       .handler(async ({ input, context }) => {
+        // Check sufficient leave balance
+        const balance = await db.query.leaveBalances.findFirst({
+          where: and(
+            eq(leaveBalances.staffProfileId, input.staffProfileId),
+            eq(leaveBalances.leaveTypeId, input.leaveTypeId),
+          ),
+          orderBy: (t, { desc }) => [desc(t.contractYearStart)],
+        });
+
+        if (balance) {
+          const available =
+            balance.entitlement +
+            balance.carriedOver +
+            balance.adjustment -
+            balance.used;
+          if (input.totalDays > available) {
+            throw new ORPCError("BAD_REQUEST", {
+              message: `Insufficient leave balance: ${available} days available, ${input.totalDays} requested`,
+            });
+          }
+        }
+
+        // Check for overlapping approved/pending requests
+        const overlapping = await db.query.leaveRequests.findFirst({
+          where: and(
+            eq(leaveRequests.staffProfileId, input.staffProfileId),
+            sql`${leaveRequests.status} IN ('pending', 'approved')`,
+            lte(leaveRequests.startDate, input.endDate),
+            gte(leaveRequests.endDate, input.startDate),
+          ),
+        });
+
+        if (overlapping) {
+          throw new ORPCError("CONFLICT", {
+            message: `Overlapping leave request exists (${overlapping.startDate} to ${overlapping.endDate})`,
+          });
+        }
+
         const [request] = await db
           .insert(leaveRequests)
           .values({ ...input, reason: input.reason ?? null })
