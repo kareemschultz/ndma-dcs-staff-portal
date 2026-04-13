@@ -2,11 +2,11 @@
 
 <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/shield-check.svg" alt="DCS Staff Portal" width="80" height="80" />
 
-# DCS Staff Portal
+# DCS Ops Center
 
-### Staff, Operations, On-Call & Compliance Management System
+### Work · Incidents · On-Call · Leave · Procurement · Compliance · Audit
 
-*Replacing spreadsheets and WhatsApp coordination with a production-grade enterprise platform.*
+*Replacing spreadsheets and WhatsApp coordination with a production-grade enterprise operations platform.*
 
 <br/>
 
@@ -35,13 +35,13 @@
 
 ---
 
-## What is DCS Staff Portal?
+## What is DCS Ops Center?
 
-The DCS Staff Portal is a **production-ready enterprise internal web application** that combines:
+**DCS Ops Center** is a **production-ready enterprise operations platform** that combines:
 
-> 👉 **PagerDuty** (on-call scheduling) + **HRMS** (HR management) + **Admin Dashboard** + **API Platform**
+> 👉 **Work Management** + **Incident Command** + **PagerDuty-style On-Call** + **HRMS** + **Procurement** + **Compliance** + **Audit**
 
-Built for the National Disaster Management Agency (NDMA) Department of Civil Service, it replaces manual spreadsheets, WhatsApp coordination, and paper-based HR tracking with a centralized, auditable, and role-aware system.
+Built for the National Disaster Management Agency (NDMA) Department of Civil Service, it replaces manual spreadsheets, WhatsApp coordination, and paper-based tracking with a centralized, auditable, and role-aware system covering every DCS workflow.
 
 ---
 
@@ -51,57 +51,59 @@ Built for the National Disaster Management Agency (NDMA) Department of Civil Ser
 <tr>
 <td width="50%">
 
-**👥 Staff Management**
-- Staff directory (card + table views)
-- Rich profile tabs: Leave, On-Call, Compliance, Contracts, Appraisals
-- Department hierarchy
-- Import/export via CSV
+**📋 Work Management**
+- Work register replacing spreadsheet-based tracking
+- Routine, project, external request, and ad-hoc types
+- Weekly progress updates per item
+- Overdue alerts + stats dashboard
 
-**📅 Leave Management**
-- Multi-step leave request wizard
-- Manager approval workflows
-- Team leave calendar
-- Balance tracking per type
+**🚨 Incident Management**
+- Declare and track operational incidents (Sev1–Sev4)
+- Timeline of events, status changes, escalation notes
+- Incident responder assignment with roles
+- Post-Incident Review (PIR) with action items
+- MTTR analytics
 
 **🕒 On-Call Rota**
-- Weekly schedule + monthly calendar views
-- Auto-rotation engine with constraint satisfaction
+- Weekly schedule planner with 4 roles (Lead, ASN, CORE, ENT)
 - Conflict detection (leave, training, double-booking)
-- Shift swap system with approval
-- Escalation chain management
+- Shift swap system with manager approval
+- Escalation policy editor with timed steps
+- Override management for ad-hoc changes
 
 **🛒 Purchase Requisitions**
-- PR creation wizard with line items
-- Multi-level approval workflows (Manager → Dept Head → Finance)
-- Supplier directory management
-- Budget tracking + spend analytics
-- PDF export of approved PRs
+- PR creation with itemized line items
+- Draft → Submit → Approve → Order → Receive pipeline
+- Multi-level approval history
+- Pending approvals queue for managers
 
 </td>
 <td width="50%">
 
-**🛡️ Compliance Tracking**
+**👥 Staff & People**
+- Staff directory with full profile view
+- Contract lifecycle tracking with renewal reminders
+- Appraisal scheduling and ratings
+- Leave requests, balances, and team calendar
+
+**🛡️ Compliance & Security**
 - Training records with expiry alerting
 - PPE issue/return tracking
-- Policy acknowledgment management
-- Assignment blocking for non-compliant staff
+- Policy acknowledgment log
+- Platform account registry (VPN, Fortigate, uPortal, biometric, AD)
+- Access review workflow for cybersecurity compliance
 
-**📑 Contracts & Appraisals**
-- Contract lifecycle (1-year cycles)
-- Renewal alerts (90/60/30 days)
-- Appraisal scheduling (6-month cycles)
-- Performance rating with history
+**🔧 Temp Technical Changes**
+- Track all temporary infrastructure changes
+- Remove-by date alerting for overdue changes
+- Service linkage + rollback plan documentation
 
-**📊 Analytics Dashboard**
-- KPI cards with live data
-- Charts: staff distribution, leave trends, on-call load, spend
-- Activity feed
-
-**🔐 Security & Audit**
-- Role-based access control (5 roles)
-- LDAP / Active Directory integration
-- Full audit log with JSON diff viewer
-- IP + user agent tracking
+**🔐 Audit & Governance**
+- Global append-only audit log for every mutation
+- IP address + user agent forensics
+- JSON before/after diff for every state change
+- Role-based access control (5 roles, 13 resources)
+- LDAP / Active Directory integration (planned)
 
 </td>
 </tr>

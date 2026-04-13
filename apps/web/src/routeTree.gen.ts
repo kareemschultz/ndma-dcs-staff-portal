@@ -12,22 +12,39 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedWorkIndexRouteImport } from './routes/_authenticated/work/index'
 import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff/index'
+import { Route as AuthenticatedServicesIndexRouteImport } from './routes/_authenticated/services/index'
 import { Route as AuthenticatedRotaIndexRouteImport } from './routes/_authenticated/rota/index'
 import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated/reports/index'
 import { Route as AuthenticatedProcurementIndexRouteImport } from './routes/_authenticated/procurement/index'
+import { Route as AuthenticatedOpsReadinessIndexRouteImport } from './routes/_authenticated/ops-readiness/index'
 import { Route as AuthenticatedNotificationsIndexRouteImport } from './routes/_authenticated/notifications/index'
 import { Route as AuthenticatedLeaveIndexRouteImport } from './routes/_authenticated/leave/index'
+import { Route as AuthenticatedIncidentsIndexRouteImport } from './routes/_authenticated/incidents/index'
+import { Route as AuthenticatedImportIndexRouteImport } from './routes/_authenticated/import/index'
 import { Route as AuthenticatedContractsIndexRouteImport } from './routes/_authenticated/contracts/index'
+import { Route as AuthenticatedChangesIndexRouteImport } from './routes/_authenticated/changes/index'
 import { Route as AuthenticatedAuditIndexRouteImport } from './routes/_authenticated/audit/index'
 import { Route as AuthenticatedAppraisalsIndexRouteImport } from './routes/_authenticated/appraisals/index'
+import { Route as AuthenticatedAccessIndexRouteImport } from './routes/_authenticated/access/index'
+import { Route as AuthenticatedWorkNewRouteImport } from './routes/_authenticated/work/new'
+import { Route as AuthenticatedWorkWorkItemIdRouteImport } from './routes/_authenticated/work/$workItemId'
+import { Route as AuthenticatedStaffStaffIdRouteImport } from './routes/_authenticated/staff/$staffId'
 import { Route as AuthenticatedSettingsRolesRouteImport } from './routes/_authenticated/settings/roles'
 import { Route as AuthenticatedSettingsLeaveTypesRouteImport } from './routes/_authenticated/settings/leave-types'
 import { Route as AuthenticatedSettingsGeneralRouteImport } from './routes/_authenticated/settings/general'
+import { Route as AuthenticatedSettingsEscalationRouteImport } from './routes/_authenticated/settings/escalation'
 import { Route as AuthenticatedSettingsDepartmentsRouteImport } from './routes/_authenticated/settings/departments'
+import { Route as AuthenticatedProcurementNewRouteImport } from './routes/_authenticated/procurement/new'
+import { Route as AuthenticatedLeaveNewRouteImport } from './routes/_authenticated/leave/new'
+import { Route as AuthenticatedIncidentsNewRouteImport } from './routes/_authenticated/incidents/new'
+import { Route as AuthenticatedIncidentsIncidentIdRouteImport } from './routes/_authenticated/incidents/$incidentId'
 import { Route as AuthenticatedComplianceTrainingRouteImport } from './routes/_authenticated/compliance/training'
 import { Route as AuthenticatedCompliancePpeRouteImport } from './routes/_authenticated/compliance/ppe'
 import { Route as AuthenticatedComplianceItemsRouteImport } from './routes/_authenticated/compliance/items'
+import { Route as AuthenticatedChangesNewRouteImport } from './routes/_authenticated/changes/new'
+import { Route as AuthenticatedChangesChangeIdRouteImport } from './routes/_authenticated/changes/$changeId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -43,11 +60,22 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedWorkIndexRoute = AuthenticatedWorkIndexRouteImport.update({
+  id: '/work/',
+  path: '/work/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedStaffIndexRoute = AuthenticatedStaffIndexRouteImport.update({
   id: '/staff/',
   path: '/staff/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedServicesIndexRoute =
+  AuthenticatedServicesIndexRouteImport.update({
+    id: '/services/',
+    path: '/services/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedRotaIndexRoute = AuthenticatedRotaIndexRouteImport.update({
   id: '/rota/',
   path: '/rota/',
@@ -65,6 +93,12 @@ const AuthenticatedProcurementIndexRoute =
     path: '/procurement/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOpsReadinessIndexRoute =
+  AuthenticatedOpsReadinessIndexRouteImport.update({
+    id: '/ops-readiness/',
+    path: '/ops-readiness/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedNotificationsIndexRoute =
   AuthenticatedNotificationsIndexRouteImport.update({
     id: '/notifications/',
@@ -76,10 +110,28 @@ const AuthenticatedLeaveIndexRoute = AuthenticatedLeaveIndexRouteImport.update({
   path: '/leave/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedIncidentsIndexRoute =
+  AuthenticatedIncidentsIndexRouteImport.update({
+    id: '/incidents/',
+    path: '/incidents/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedImportIndexRoute =
+  AuthenticatedImportIndexRouteImport.update({
+    id: '/import/',
+    path: '/import/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedContractsIndexRoute =
   AuthenticatedContractsIndexRouteImport.update({
     id: '/contracts/',
     path: '/contracts/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedChangesIndexRoute =
+  AuthenticatedChangesIndexRouteImport.update({
+    id: '/changes/',
+    path: '/changes/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAuditIndexRoute = AuthenticatedAuditIndexRouteImport.update({
@@ -91,6 +143,29 @@ const AuthenticatedAppraisalsIndexRoute =
   AuthenticatedAppraisalsIndexRouteImport.update({
     id: '/appraisals/',
     path: '/appraisals/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAccessIndexRoute =
+  AuthenticatedAccessIndexRouteImport.update({
+    id: '/access/',
+    path: '/access/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWorkNewRoute = AuthenticatedWorkNewRouteImport.update({
+  id: '/work/new',
+  path: '/work/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWorkWorkItemIdRoute =
+  AuthenticatedWorkWorkItemIdRouteImport.update({
+    id: '/work/$workItemId',
+    path: '/work/$workItemId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedStaffStaffIdRoute =
+  AuthenticatedStaffStaffIdRouteImport.update({
+    id: '/staff/$staffId',
+    path: '/staff/$staffId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsRolesRoute =
@@ -111,10 +186,39 @@ const AuthenticatedSettingsGeneralRoute =
     path: '/settings/general',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSettingsEscalationRoute =
+  AuthenticatedSettingsEscalationRouteImport.update({
+    id: '/settings/escalation',
+    path: '/settings/escalation',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsDepartmentsRoute =
   AuthenticatedSettingsDepartmentsRouteImport.update({
     id: '/settings/departments',
     path: '/settings/departments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProcurementNewRoute =
+  AuthenticatedProcurementNewRouteImport.update({
+    id: '/procurement/new',
+    path: '/procurement/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedLeaveNewRoute = AuthenticatedLeaveNewRouteImport.update({
+  id: '/leave/new',
+  path: '/leave/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedIncidentsNewRoute =
+  AuthenticatedIncidentsNewRouteImport.update({
+    id: '/incidents/new',
+    path: '/incidents/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedIncidentsIncidentIdRoute =
+  AuthenticatedIncidentsIncidentIdRouteImport.update({
+    id: '/incidents/$incidentId',
+    path: '/incidents/$incidentId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedComplianceTrainingRoute =
@@ -135,131 +239,244 @@ const AuthenticatedComplianceItemsRoute =
     path: '/compliance/items',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedChangesNewRoute = AuthenticatedChangesNewRouteImport.update({
+  id: '/changes/new',
+  path: '/changes/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedChangesChangeIdRoute =
+  AuthenticatedChangesChangeIdRouteImport.update({
+    id: '/changes/$changeId',
+    path: '/changes/$changeId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
+  '/changes/$changeId': typeof AuthenticatedChangesChangeIdRoute
+  '/changes/new': typeof AuthenticatedChangesNewRoute
   '/compliance/items': typeof AuthenticatedComplianceItemsRoute
   '/compliance/ppe': typeof AuthenticatedCompliancePpeRoute
   '/compliance/training': typeof AuthenticatedComplianceTrainingRoute
+  '/incidents/$incidentId': typeof AuthenticatedIncidentsIncidentIdRoute
+  '/incidents/new': typeof AuthenticatedIncidentsNewRoute
+  '/leave/new': typeof AuthenticatedLeaveNewRoute
+  '/procurement/new': typeof AuthenticatedProcurementNewRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
+  '/settings/escalation': typeof AuthenticatedSettingsEscalationRoute
   '/settings/general': typeof AuthenticatedSettingsGeneralRoute
   '/settings/leave-types': typeof AuthenticatedSettingsLeaveTypesRoute
   '/settings/roles': typeof AuthenticatedSettingsRolesRoute
+  '/staff/$staffId': typeof AuthenticatedStaffStaffIdRoute
+  '/work/$workItemId': typeof AuthenticatedWorkWorkItemIdRoute
+  '/work/new': typeof AuthenticatedWorkNewRoute
+  '/access/': typeof AuthenticatedAccessIndexRoute
   '/appraisals/': typeof AuthenticatedAppraisalsIndexRoute
   '/audit/': typeof AuthenticatedAuditIndexRoute
+  '/changes/': typeof AuthenticatedChangesIndexRoute
   '/contracts/': typeof AuthenticatedContractsIndexRoute
+  '/import/': typeof AuthenticatedImportIndexRoute
+  '/incidents/': typeof AuthenticatedIncidentsIndexRoute
   '/leave/': typeof AuthenticatedLeaveIndexRoute
   '/notifications/': typeof AuthenticatedNotificationsIndexRoute
+  '/ops-readiness/': typeof AuthenticatedOpsReadinessIndexRoute
   '/procurement/': typeof AuthenticatedProcurementIndexRoute
   '/reports/': typeof AuthenticatedReportsIndexRoute
   '/rota/': typeof AuthenticatedRotaIndexRoute
+  '/services/': typeof AuthenticatedServicesIndexRoute
   '/staff/': typeof AuthenticatedStaffIndexRoute
+  '/work/': typeof AuthenticatedWorkIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/': typeof AuthenticatedIndexRoute
+  '/changes/$changeId': typeof AuthenticatedChangesChangeIdRoute
+  '/changes/new': typeof AuthenticatedChangesNewRoute
   '/compliance/items': typeof AuthenticatedComplianceItemsRoute
   '/compliance/ppe': typeof AuthenticatedCompliancePpeRoute
   '/compliance/training': typeof AuthenticatedComplianceTrainingRoute
+  '/incidents/$incidentId': typeof AuthenticatedIncidentsIncidentIdRoute
+  '/incidents/new': typeof AuthenticatedIncidentsNewRoute
+  '/leave/new': typeof AuthenticatedLeaveNewRoute
+  '/procurement/new': typeof AuthenticatedProcurementNewRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
+  '/settings/escalation': typeof AuthenticatedSettingsEscalationRoute
   '/settings/general': typeof AuthenticatedSettingsGeneralRoute
   '/settings/leave-types': typeof AuthenticatedSettingsLeaveTypesRoute
   '/settings/roles': typeof AuthenticatedSettingsRolesRoute
+  '/staff/$staffId': typeof AuthenticatedStaffStaffIdRoute
+  '/work/$workItemId': typeof AuthenticatedWorkWorkItemIdRoute
+  '/work/new': typeof AuthenticatedWorkNewRoute
+  '/access': typeof AuthenticatedAccessIndexRoute
   '/appraisals': typeof AuthenticatedAppraisalsIndexRoute
   '/audit': typeof AuthenticatedAuditIndexRoute
+  '/changes': typeof AuthenticatedChangesIndexRoute
   '/contracts': typeof AuthenticatedContractsIndexRoute
+  '/import': typeof AuthenticatedImportIndexRoute
+  '/incidents': typeof AuthenticatedIncidentsIndexRoute
   '/leave': typeof AuthenticatedLeaveIndexRoute
   '/notifications': typeof AuthenticatedNotificationsIndexRoute
+  '/ops-readiness': typeof AuthenticatedOpsReadinessIndexRoute
   '/procurement': typeof AuthenticatedProcurementIndexRoute
   '/reports': typeof AuthenticatedReportsIndexRoute
   '/rota': typeof AuthenticatedRotaIndexRoute
+  '/services': typeof AuthenticatedServicesIndexRoute
   '/staff': typeof AuthenticatedStaffIndexRoute
+  '/work': typeof AuthenticatedWorkIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/changes/$changeId': typeof AuthenticatedChangesChangeIdRoute
+  '/_authenticated/changes/new': typeof AuthenticatedChangesNewRoute
   '/_authenticated/compliance/items': typeof AuthenticatedComplianceItemsRoute
   '/_authenticated/compliance/ppe': typeof AuthenticatedCompliancePpeRoute
   '/_authenticated/compliance/training': typeof AuthenticatedComplianceTrainingRoute
+  '/_authenticated/incidents/$incidentId': typeof AuthenticatedIncidentsIncidentIdRoute
+  '/_authenticated/incidents/new': typeof AuthenticatedIncidentsNewRoute
+  '/_authenticated/leave/new': typeof AuthenticatedLeaveNewRoute
+  '/_authenticated/procurement/new': typeof AuthenticatedProcurementNewRoute
   '/_authenticated/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
+  '/_authenticated/settings/escalation': typeof AuthenticatedSettingsEscalationRoute
   '/_authenticated/settings/general': typeof AuthenticatedSettingsGeneralRoute
   '/_authenticated/settings/leave-types': typeof AuthenticatedSettingsLeaveTypesRoute
   '/_authenticated/settings/roles': typeof AuthenticatedSettingsRolesRoute
+  '/_authenticated/staff/$staffId': typeof AuthenticatedStaffStaffIdRoute
+  '/_authenticated/work/$workItemId': typeof AuthenticatedWorkWorkItemIdRoute
+  '/_authenticated/work/new': typeof AuthenticatedWorkNewRoute
+  '/_authenticated/access/': typeof AuthenticatedAccessIndexRoute
   '/_authenticated/appraisals/': typeof AuthenticatedAppraisalsIndexRoute
   '/_authenticated/audit/': typeof AuthenticatedAuditIndexRoute
+  '/_authenticated/changes/': typeof AuthenticatedChangesIndexRoute
   '/_authenticated/contracts/': typeof AuthenticatedContractsIndexRoute
+  '/_authenticated/import/': typeof AuthenticatedImportIndexRoute
+  '/_authenticated/incidents/': typeof AuthenticatedIncidentsIndexRoute
   '/_authenticated/leave/': typeof AuthenticatedLeaveIndexRoute
   '/_authenticated/notifications/': typeof AuthenticatedNotificationsIndexRoute
+  '/_authenticated/ops-readiness/': typeof AuthenticatedOpsReadinessIndexRoute
   '/_authenticated/procurement/': typeof AuthenticatedProcurementIndexRoute
   '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
   '/_authenticated/rota/': typeof AuthenticatedRotaIndexRoute
+  '/_authenticated/services/': typeof AuthenticatedServicesIndexRoute
   '/_authenticated/staff/': typeof AuthenticatedStaffIndexRoute
+  '/_authenticated/work/': typeof AuthenticatedWorkIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/login'
+    | '/changes/$changeId'
+    | '/changes/new'
     | '/compliance/items'
     | '/compliance/ppe'
     | '/compliance/training'
+    | '/incidents/$incidentId'
+    | '/incidents/new'
+    | '/leave/new'
+    | '/procurement/new'
     | '/settings/departments'
+    | '/settings/escalation'
     | '/settings/general'
     | '/settings/leave-types'
     | '/settings/roles'
+    | '/staff/$staffId'
+    | '/work/$workItemId'
+    | '/work/new'
+    | '/access/'
     | '/appraisals/'
     | '/audit/'
+    | '/changes/'
     | '/contracts/'
+    | '/import/'
+    | '/incidents/'
     | '/leave/'
     | '/notifications/'
+    | '/ops-readiness/'
     | '/procurement/'
     | '/reports/'
     | '/rota/'
+    | '/services/'
     | '/staff/'
+    | '/work/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/'
+    | '/changes/$changeId'
+    | '/changes/new'
     | '/compliance/items'
     | '/compliance/ppe'
     | '/compliance/training'
+    | '/incidents/$incidentId'
+    | '/incidents/new'
+    | '/leave/new'
+    | '/procurement/new'
     | '/settings/departments'
+    | '/settings/escalation'
     | '/settings/general'
     | '/settings/leave-types'
     | '/settings/roles'
+    | '/staff/$staffId'
+    | '/work/$workItemId'
+    | '/work/new'
+    | '/access'
     | '/appraisals'
     | '/audit'
+    | '/changes'
     | '/contracts'
+    | '/import'
+    | '/incidents'
     | '/leave'
     | '/notifications'
+    | '/ops-readiness'
     | '/procurement'
     | '/reports'
     | '/rota'
+    | '/services'
     | '/staff'
+    | '/work'
   id:
     | '__root__'
     | '/_authenticated'
     | '/login'
     | '/_authenticated/'
+    | '/_authenticated/changes/$changeId'
+    | '/_authenticated/changes/new'
     | '/_authenticated/compliance/items'
     | '/_authenticated/compliance/ppe'
     | '/_authenticated/compliance/training'
+    | '/_authenticated/incidents/$incidentId'
+    | '/_authenticated/incidents/new'
+    | '/_authenticated/leave/new'
+    | '/_authenticated/procurement/new'
     | '/_authenticated/settings/departments'
+    | '/_authenticated/settings/escalation'
     | '/_authenticated/settings/general'
     | '/_authenticated/settings/leave-types'
     | '/_authenticated/settings/roles'
+    | '/_authenticated/staff/$staffId'
+    | '/_authenticated/work/$workItemId'
+    | '/_authenticated/work/new'
+    | '/_authenticated/access/'
     | '/_authenticated/appraisals/'
     | '/_authenticated/audit/'
+    | '/_authenticated/changes/'
     | '/_authenticated/contracts/'
+    | '/_authenticated/import/'
+    | '/_authenticated/incidents/'
     | '/_authenticated/leave/'
     | '/_authenticated/notifications/'
+    | '/_authenticated/ops-readiness/'
     | '/_authenticated/procurement/'
     | '/_authenticated/reports/'
     | '/_authenticated/rota/'
+    | '/_authenticated/services/'
     | '/_authenticated/staff/'
+    | '/_authenticated/work/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -290,11 +507,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/work/': {
+      id: '/_authenticated/work/'
+      path: '/work'
+      fullPath: '/work/'
+      preLoaderRoute: typeof AuthenticatedWorkIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/staff/': {
       id: '/_authenticated/staff/'
       path: '/staff'
       fullPath: '/staff/'
       preLoaderRoute: typeof AuthenticatedStaffIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/services/': {
+      id: '/_authenticated/services/'
+      path: '/services'
+      fullPath: '/services/'
+      preLoaderRoute: typeof AuthenticatedServicesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/rota/': {
@@ -318,6 +549,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProcurementIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/ops-readiness/': {
+      id: '/_authenticated/ops-readiness/'
+      path: '/ops-readiness'
+      fullPath: '/ops-readiness/'
+      preLoaderRoute: typeof AuthenticatedOpsReadinessIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/notifications/': {
       id: '/_authenticated/notifications/'
       path: '/notifications'
@@ -332,11 +570,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeaveIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/incidents/': {
+      id: '/_authenticated/incidents/'
+      path: '/incidents'
+      fullPath: '/incidents/'
+      preLoaderRoute: typeof AuthenticatedIncidentsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/import/': {
+      id: '/_authenticated/import/'
+      path: '/import'
+      fullPath: '/import/'
+      preLoaderRoute: typeof AuthenticatedImportIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/contracts/': {
       id: '/_authenticated/contracts/'
       path: '/contracts'
       fullPath: '/contracts/'
       preLoaderRoute: typeof AuthenticatedContractsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/changes/': {
+      id: '/_authenticated/changes/'
+      path: '/changes'
+      fullPath: '/changes/'
+      preLoaderRoute: typeof AuthenticatedChangesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/audit/': {
@@ -351,6 +610,34 @@ declare module '@tanstack/react-router' {
       path: '/appraisals'
       fullPath: '/appraisals/'
       preLoaderRoute: typeof AuthenticatedAppraisalsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/access/': {
+      id: '/_authenticated/access/'
+      path: '/access'
+      fullPath: '/access/'
+      preLoaderRoute: typeof AuthenticatedAccessIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/work/new': {
+      id: '/_authenticated/work/new'
+      path: '/work/new'
+      fullPath: '/work/new'
+      preLoaderRoute: typeof AuthenticatedWorkNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/work/$workItemId': {
+      id: '/_authenticated/work/$workItemId'
+      path: '/work/$workItemId'
+      fullPath: '/work/$workItemId'
+      preLoaderRoute: typeof AuthenticatedWorkWorkItemIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/staff/$staffId': {
+      id: '/_authenticated/staff/$staffId'
+      path: '/staff/$staffId'
+      fullPath: '/staff/$staffId'
+      preLoaderRoute: typeof AuthenticatedStaffStaffIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings/roles': {
@@ -374,11 +661,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsGeneralRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings/escalation': {
+      id: '/_authenticated/settings/escalation'
+      path: '/settings/escalation'
+      fullPath: '/settings/escalation'
+      preLoaderRoute: typeof AuthenticatedSettingsEscalationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings/departments': {
       id: '/_authenticated/settings/departments'
       path: '/settings/departments'
       fullPath: '/settings/departments'
       preLoaderRoute: typeof AuthenticatedSettingsDepartmentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/procurement/new': {
+      id: '/_authenticated/procurement/new'
+      path: '/procurement/new'
+      fullPath: '/procurement/new'
+      preLoaderRoute: typeof AuthenticatedProcurementNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/leave/new': {
+      id: '/_authenticated/leave/new'
+      path: '/leave/new'
+      fullPath: '/leave/new'
+      preLoaderRoute: typeof AuthenticatedLeaveNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/incidents/new': {
+      id: '/_authenticated/incidents/new'
+      path: '/incidents/new'
+      fullPath: '/incidents/new'
+      preLoaderRoute: typeof AuthenticatedIncidentsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/incidents/$incidentId': {
+      id: '/_authenticated/incidents/$incidentId'
+      path: '/incidents/$incidentId'
+      fullPath: '/incidents/$incidentId'
+      preLoaderRoute: typeof AuthenticatedIncidentsIncidentIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/compliance/training': {
@@ -402,47 +724,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedComplianceItemsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/changes/new': {
+      id: '/_authenticated/changes/new'
+      path: '/changes/new'
+      fullPath: '/changes/new'
+      preLoaderRoute: typeof AuthenticatedChangesNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/changes/$changeId': {
+      id: '/_authenticated/changes/$changeId'
+      path: '/changes/$changeId'
+      fullPath: '/changes/$changeId'
+      preLoaderRoute: typeof AuthenticatedChangesChangeIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedChangesChangeIdRoute: typeof AuthenticatedChangesChangeIdRoute
+  AuthenticatedChangesNewRoute: typeof AuthenticatedChangesNewRoute
   AuthenticatedComplianceItemsRoute: typeof AuthenticatedComplianceItemsRoute
   AuthenticatedCompliancePpeRoute: typeof AuthenticatedCompliancePpeRoute
   AuthenticatedComplianceTrainingRoute: typeof AuthenticatedComplianceTrainingRoute
+  AuthenticatedIncidentsIncidentIdRoute: typeof AuthenticatedIncidentsIncidentIdRoute
+  AuthenticatedIncidentsNewRoute: typeof AuthenticatedIncidentsNewRoute
+  AuthenticatedLeaveNewRoute: typeof AuthenticatedLeaveNewRoute
+  AuthenticatedProcurementNewRoute: typeof AuthenticatedProcurementNewRoute
   AuthenticatedSettingsDepartmentsRoute: typeof AuthenticatedSettingsDepartmentsRoute
+  AuthenticatedSettingsEscalationRoute: typeof AuthenticatedSettingsEscalationRoute
   AuthenticatedSettingsGeneralRoute: typeof AuthenticatedSettingsGeneralRoute
   AuthenticatedSettingsLeaveTypesRoute: typeof AuthenticatedSettingsLeaveTypesRoute
   AuthenticatedSettingsRolesRoute: typeof AuthenticatedSettingsRolesRoute
+  AuthenticatedStaffStaffIdRoute: typeof AuthenticatedStaffStaffIdRoute
+  AuthenticatedWorkWorkItemIdRoute: typeof AuthenticatedWorkWorkItemIdRoute
+  AuthenticatedWorkNewRoute: typeof AuthenticatedWorkNewRoute
+  AuthenticatedAccessIndexRoute: typeof AuthenticatedAccessIndexRoute
   AuthenticatedAppraisalsIndexRoute: typeof AuthenticatedAppraisalsIndexRoute
   AuthenticatedAuditIndexRoute: typeof AuthenticatedAuditIndexRoute
+  AuthenticatedChangesIndexRoute: typeof AuthenticatedChangesIndexRoute
   AuthenticatedContractsIndexRoute: typeof AuthenticatedContractsIndexRoute
+  AuthenticatedImportIndexRoute: typeof AuthenticatedImportIndexRoute
+  AuthenticatedIncidentsIndexRoute: typeof AuthenticatedIncidentsIndexRoute
   AuthenticatedLeaveIndexRoute: typeof AuthenticatedLeaveIndexRoute
   AuthenticatedNotificationsIndexRoute: typeof AuthenticatedNotificationsIndexRoute
+  AuthenticatedOpsReadinessIndexRoute: typeof AuthenticatedOpsReadinessIndexRoute
   AuthenticatedProcurementIndexRoute: typeof AuthenticatedProcurementIndexRoute
   AuthenticatedReportsIndexRoute: typeof AuthenticatedReportsIndexRoute
   AuthenticatedRotaIndexRoute: typeof AuthenticatedRotaIndexRoute
+  AuthenticatedServicesIndexRoute: typeof AuthenticatedServicesIndexRoute
   AuthenticatedStaffIndexRoute: typeof AuthenticatedStaffIndexRoute
+  AuthenticatedWorkIndexRoute: typeof AuthenticatedWorkIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedChangesChangeIdRoute: AuthenticatedChangesChangeIdRoute,
+  AuthenticatedChangesNewRoute: AuthenticatedChangesNewRoute,
   AuthenticatedComplianceItemsRoute: AuthenticatedComplianceItemsRoute,
   AuthenticatedCompliancePpeRoute: AuthenticatedCompliancePpeRoute,
   AuthenticatedComplianceTrainingRoute: AuthenticatedComplianceTrainingRoute,
+  AuthenticatedIncidentsIncidentIdRoute: AuthenticatedIncidentsIncidentIdRoute,
+  AuthenticatedIncidentsNewRoute: AuthenticatedIncidentsNewRoute,
+  AuthenticatedLeaveNewRoute: AuthenticatedLeaveNewRoute,
+  AuthenticatedProcurementNewRoute: AuthenticatedProcurementNewRoute,
   AuthenticatedSettingsDepartmentsRoute: AuthenticatedSettingsDepartmentsRoute,
+  AuthenticatedSettingsEscalationRoute: AuthenticatedSettingsEscalationRoute,
   AuthenticatedSettingsGeneralRoute: AuthenticatedSettingsGeneralRoute,
   AuthenticatedSettingsLeaveTypesRoute: AuthenticatedSettingsLeaveTypesRoute,
   AuthenticatedSettingsRolesRoute: AuthenticatedSettingsRolesRoute,
+  AuthenticatedStaffStaffIdRoute: AuthenticatedStaffStaffIdRoute,
+  AuthenticatedWorkWorkItemIdRoute: AuthenticatedWorkWorkItemIdRoute,
+  AuthenticatedWorkNewRoute: AuthenticatedWorkNewRoute,
+  AuthenticatedAccessIndexRoute: AuthenticatedAccessIndexRoute,
   AuthenticatedAppraisalsIndexRoute: AuthenticatedAppraisalsIndexRoute,
   AuthenticatedAuditIndexRoute: AuthenticatedAuditIndexRoute,
+  AuthenticatedChangesIndexRoute: AuthenticatedChangesIndexRoute,
   AuthenticatedContractsIndexRoute: AuthenticatedContractsIndexRoute,
+  AuthenticatedImportIndexRoute: AuthenticatedImportIndexRoute,
+  AuthenticatedIncidentsIndexRoute: AuthenticatedIncidentsIndexRoute,
   AuthenticatedLeaveIndexRoute: AuthenticatedLeaveIndexRoute,
   AuthenticatedNotificationsIndexRoute: AuthenticatedNotificationsIndexRoute,
+  AuthenticatedOpsReadinessIndexRoute: AuthenticatedOpsReadinessIndexRoute,
   AuthenticatedProcurementIndexRoute: AuthenticatedProcurementIndexRoute,
   AuthenticatedReportsIndexRoute: AuthenticatedReportsIndexRoute,
   AuthenticatedRotaIndexRoute: AuthenticatedRotaIndexRoute,
+  AuthenticatedServicesIndexRoute: AuthenticatedServicesIndexRoute,
   AuthenticatedStaffIndexRoute: AuthenticatedStaffIndexRoute,
+  AuthenticatedWorkIndexRoute: AuthenticatedWorkIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

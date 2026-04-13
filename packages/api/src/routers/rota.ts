@@ -11,6 +11,7 @@ import {
 } from "@ndma-dcs-staff-portal/db";
 import { eq, desc, asc, and, gte, lte } from "drizzle-orm";
 import { protectedProcedure } from "../index";
+import { logAudit } from "../lib/audit";
 
 // ── Input Schemas ──────────────────────────────────────────────────────────
 const OnCallRoleSchema = z.enum([
@@ -174,6 +175,18 @@ export const rotaRouter = {
         performedById: context.session.user.id,
       });
 
+      await logAudit({
+        actorId: context.session.user.id,
+        actorName: context.session.user.name,
+        action: "rota.schedule.create",
+        module: "rota",
+        resourceType: "on_call_schedule",
+        resourceId: schedule.id,
+        afterValue: schedule as Record<string, unknown>,
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+      });
+
       return schedule;
     }),
 
@@ -217,6 +230,18 @@ export const rotaRouter = {
         performedById: context.session.user.id,
       });
 
+      await logAudit({
+        actorId: context.session.user.id,
+        actorName: context.session.user.name,
+        action: "rota.assignment.assign",
+        module: "rota",
+        resourceType: "on_call_assignment",
+        resourceId: assignment.id,
+        afterValue: { scheduleId: input.scheduleId, staffProfileId: input.staffProfileId, role: input.role },
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+      });
+
       return assignment;
     }),
 
@@ -245,6 +270,18 @@ export const rotaRouter = {
         role: existing.role,
         action: "removed",
         performedById: context.session.user.id,
+      });
+
+      await logAudit({
+        actorId: context.session.user.id,
+        actorName: context.session.user.name,
+        action: "rota.assignment.remove",
+        module: "rota",
+        resourceType: "on_call_assignment",
+        resourceId: input.assignmentId,
+        beforeValue: { scheduleId: existing.scheduleId, staffProfileId: existing.staffProfileId, role: existing.role },
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
       });
 
       return { success: true };
@@ -291,6 +328,18 @@ export const rotaRouter = {
         scheduleId: input.scheduleId,
         action: "published",
         performedById: context.session.user.id,
+      });
+
+      await logAudit({
+        actorId: context.session.user.id,
+        actorName: context.session.user.name,
+        action: "rota.schedule.publish",
+        module: "rota",
+        resourceType: "on_call_schedule",
+        resourceId: input.scheduleId,
+        afterValue: { status: "published", publishedAt: published.publishedAt },
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
       });
 
       return published;
@@ -387,6 +436,18 @@ export const rotaRouter = {
           })
           .returning();
 
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "rota.swap.request",
+          module: "rota",
+          resourceType: "on_call_swap",
+          resourceId: swap.id,
+          afterValue: { assignmentId: input.assignmentId, targetStaffProfileId: input.targetStaffProfileId },
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
         return swap;
       }),
 
@@ -429,6 +490,18 @@ export const rotaRouter = {
           })
           .where(eq(onCallSwaps.id, input.swapId))
           .returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: `rota.swap.${input.action}`,
+          module: "rota",
+          resourceType: "on_call_swap",
+          resourceId: input.swapId,
+          afterValue: { status: updated.status, reviewNotes: input.notes },
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
 
         return updated;
       }),

@@ -8,6 +8,7 @@ import { admin, createAccessControl } from "better-auth/plugins";
 // ─── RBAC: Custom resources and actions ──────────────────────────────────────
 const statement = {
   staff: ["create", "read", "update", "delete", "import", "export"] as const,
+  work: ["create", "read", "update", "delete", "assign"] as const,
   leave: ["create", "read", "update", "approve", "reject", "cancel"] as const,
   rota: ["create", "read", "update", "delete", "swap"] as const,
   compliance: ["create", "read", "update", "assign"] as const,
@@ -25,6 +26,8 @@ const statement = {
     "reject",
     "export",
   ] as const,
+  notification: ["read", "update"] as const,
+  access: ["create", "read", "update", "delete"] as const,
 } as const;
 
 export const ac = createAccessControl(statement);
@@ -32,6 +35,7 @@ export const ac = createAccessControl(statement);
 // Read Only — view everything, change nothing
 export const readOnlyRole = ac.newRole({
   staff: ["read"],
+  work: ["read"],
   leave: ["read"],
   rota: ["read"],
   compliance: ["read"],
@@ -41,22 +45,28 @@ export const readOnlyRole = ac.newRole({
   audit: ["read"],
   settings: ["read"],
   procurement: ["read"],
+  notification: ["read"],
+  access: ["read"],
 });
 
 // Staff — own profile, self-service leave, submit PRs, view rota
 export const staffRole = ac.newRole({
   staff: ["read"],
+  work: ["create", "read", "update"],
   leave: ["create", "read", "cancel"],
   rota: ["read", "swap"],
   compliance: ["read"],
   contract: ["read"],
   appraisal: ["read"],
   procurement: ["create", "read"],
+  notification: ["read", "update"],
+  access: ["read"],
 });
 
 // Manager — approve leave, manage rota, view reports, create appraisals
 export const managerRole = ac.newRole({
   staff: ["read", "update"],
+  work: ["create", "read", "update", "assign"],
   leave: ["create", "read", "approve", "reject", "cancel"],
   rota: ["create", "read", "update", "swap"],
   compliance: ["read", "assign"],
@@ -65,11 +75,14 @@ export const managerRole = ac.newRole({
   report: ["read"],
   audit: ["read"],
   procurement: ["create", "read", "approve", "reject"],
+  notification: ["read", "update"],
+  access: ["read"],
 });
 
 // HR/Admin Ops — full staff + compliance + procurement management
 export const hrAdminOpsRole = ac.newRole({
   staff: ["create", "read", "update", "delete", "import", "export"],
+  work: ["create", "read", "update", "delete", "assign"],
   leave: ["create", "read", "update", "approve", "reject", "cancel"],
   rota: ["create", "read", "update", "delete", "swap"],
   compliance: ["create", "read", "update", "assign"],
@@ -79,11 +92,14 @@ export const hrAdminOpsRole = ac.newRole({
   audit: ["read"],
   settings: ["read", "update"],
   procurement: ["create", "read", "update", "delete", "approve", "reject", "export"],
+  notification: ["read", "update"],
+  access: ["create", "read", "update", "delete"],
 });
 
 // Admin — everything (inherits from hrAdminOps + settings + audit export)
 export const adminRole = ac.newRole({
   staff: ["create", "read", "update", "delete", "import", "export"],
+  work: ["create", "read", "update", "delete", "assign"],
   leave: ["create", "read", "update", "approve", "reject", "cancel"],
   rota: ["create", "read", "update", "delete", "swap"],
   compliance: ["create", "read", "update", "assign"],
@@ -93,6 +109,8 @@ export const adminRole = ac.newRole({
   audit: ["read"],
   settings: ["read", "update"],
   procurement: ["create", "read", "update", "delete", "approve", "reject", "export"],
+  notification: ["read", "update"],
+  access: ["create", "read", "update", "delete"],
 });
 
 // ─── Auth factory ─────────────────────────────────────────────────────────────

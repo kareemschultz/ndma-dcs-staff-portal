@@ -1,7 +1,8 @@
-# CLAUDE.md — NDMA DCS Staff Portal
+# CLAUDE.md — DCS Ops Center
 
 ## Project Overview
-Enterprise internal web app: Staff management, On-call scheduling, Compliance tracking, Purchase Requisition system.
+Enterprise internal operations platform for NDMA Department of Civil Service.
+Modules: Work Management · Incident Management · On-Call Rota · Procurement · Leave · Staff/Compliance · Audit · Access Management.
 
 See `/docs/architecture/` for detailed reference docs.
 
@@ -112,6 +113,16 @@ The login page must show BOTH:
 - Both `RPCHandler` (/rpc/*) and `OpenAPIHandler` (/api-reference/*) are mounted in server.
 - `createContext()` in `packages/api/src/context.ts` injects auth session.
 
+### oRPC `queryOptions` — ALWAYS wrap input in `{ input: { ... } }` (CRITICAL)
+- **WRONG:** `orpc.staff.list.queryOptions({ limit: 100, offset: 0 })`
+- **CORRECT:** `orpc.staff.list.queryOptions({ input: { limit: 100, offset: 0 } })`
+- The flat-args pattern is BOTH a TypeScript error AND a silent runtime bug (input never sent to server).
+- Procedures with **no `.input()` call** use `queryOptions()` with no args — do NOT pass an empty object.
+  - Examples: `orpc.services.list.queryOptions()`, `orpc.rota.getCurrent.queryOptions()`, `orpc.dashboard.opsReadiness.queryOptions()`, `orpc.leave.types.list.queryOptions()`
+- `mutationOptions({ onSuccess, onError })` is unaffected — input goes in `mutation.mutate(input)`.
+- `queryClient.invalidateQueries({ queryKey: orpc.X.list.key() })` is correct (no args to `key()`).
+- Root cause: `@orpc/tanstack-query` `QueryKeyOptions<TInput>` type requires an `input:` key when `TInput` is not undefined.
+
 ### Better Auth
 - Auth config in `packages/auth/src/index.ts`, NOT in apps/server.
 - `sameSite: "none"` + `secure: true` on cookies — requires HTTPS in production.
@@ -159,3 +170,71 @@ The login page must show BOTH:
 - `/docs/architecture/` — internal developer reference docs
 - `/apps/docs/` — user-facing Fumadocs documentation site
 - Keep CLAUDE.md concise; detailed references go in `/docs/architecture/`
+
+---
+
+## Database Schema Files (packages/db/src/schema/)
+
+| File | Tables / Enums |
+|------|----------------|
+| `auth.ts` | user, session, account, verification (Better Auth — DO NOT MODIFY) |
+| `audit.ts` | audit_logs (append-only global audit trail) |
+| `notifications.ts` | notifications + channel/status enums |
+| `departments.ts` | departments |
+| `staff.ts` | staff_profiles + employment_type / staff_status enums |
+| `rota.ts` | on_call_schedules, on_call_assignments, on_call_swaps, assignment_history + role/status enums |
+| `escalation.ts` | escalation_policies, escalation_steps, on_call_overrides |
+| `incidents.ts` | services, incidents, incident_affected_services, incident_responders, incident_timeline, post_incident_reviews |
+| `work.ts` | work_items, work_item_comments, work_item_weekly_updates + type/status/priority enums |
+| `leave.ts` | leave_types, leave_balances, leave_requests + leave_request_status enum |
+| `procurement.ts` | purchase_requisitions, pr_line_items, pr_approvals + pr_status / pr_priority enums |
+| `temp-changes.ts` | temporary_changes + temp_change_status enum |
+| `access.ts` | platform_accounts, service_owners + platform_type / account_status enums |
+| `contracts.ts` | contracts + contract_status enum |
+| `appraisals.ts` | appraisals + appraisal_status enum |
+| `compliance.ts` | training_records, ppe_records, policy_acknowledgements + compliance_item_status enum |
+
+---
+
+## API Routers (packages/api/src/routers/)
+
+| File | Key Procedures |
+|------|----------------|
+| `audit.ts` | `audit.list`, `audit.getByResource` |
+| `notifications.ts` | `notifications.list`, `markRead`, `markAllRead`, `dismiss` |
+| `rota.ts` | getCurrent, getUpcoming, list, create, assign, removeAssignment, publish, getEligibleStaff, getAssignmentCounts, swap.{request,review,list}, history |
+| `work.ts` | list, get, create, update, assign, addComment, addWeeklyUpdate, getOverdue, getWeeklyReport, stats |
+| `incidents.ts` | list, get, create, update, addTimelineEntry, addResponder, removeResponder, linkService, unlinkService, createPIR, getActive, stats |
+| `services.ts` | list, get, create, update |
+| `leave.ts` | types.{list,create,update}, balances.{getByStaff,adjust}, requests.{list,create,approve,reject,cancel}, getTeamCalendar |
+| `procurement.ts` | list, get, create, update, submit, approve, reject, markOrdered, markReceived, getMyRequests, getPendingApprovals, stats |
+| `temp-changes.ts` | list, get, create, update, markRemoved, getOverdue, stats |
+| `access.ts` | accounts.{list,getByStaff,getByPlatform,getExpiring,create,update,markReviewed}, serviceOwners.{list,assign,remove,getByService} |
+| `staff.ts` | list, get, create, update, deactivate, getDepartments |
+| `contracts.ts` | list, get, create, update, getExpiringSoon |
+| `appraisals.ts` | list, get, create, update, getOverdue, getByStaff |
+| `compliance.ts` | training.{list,create,update,delete}, ppe.{list,create,update,delete}, policyAck.{list,acknowledge}, getExpiringItems |
+| `dashboard.ts` | main, opsReadiness, recentActivity |
+
+**Shared API utilities:**
+- `packages/api/src/lib/audit.ts` — `logAudit(params)` — call from EVERY mutation procedure
+- `packages/api/src/lib/notify.ts` — `createNotification(params)` — call when notifying a user
+
+**Context (packages/api/src/context.ts):** Provides `session`, `ipAddress`, `userAgent` to all procedures.
+
+---
+
+## RBAC Resources (packages/auth/src/index.ts)
+
+13 resources: `staff`, `work`, `leave`, `rota`, `compliance`, `contract`, `appraisal`, `report`, `audit`, `settings`, `procurement`, `notification`, `access`
+
+---
+
+## Audit Logging Rule
+
+**Every mutation procedure MUST call `logAudit()`** with:
+- `actorId` + `actorName` from `context.session.user`
+- `action` in dot-notation: `"module.resource.verb"` (e.g. `"work_item.create"`, `"rota.schedule.publish"`)
+- `module`, `resourceType`, `resourceId`
+- `beforeValue` + `afterValue` for updates (omit for creates/deletes)
+- `ipAddress` + `userAgent` from context

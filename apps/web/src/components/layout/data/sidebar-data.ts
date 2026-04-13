@@ -1,36 +1,43 @@
-// NDMA DCS Staff Portal — Sidebar Navigation
+// DCS Ops Center — Sidebar Navigation
 import {
+  Activity,
+  AlertTriangle,
   BarChart3,
   Bell,
+  BookOpen,
+  Building2,
   CalendarClock,
   CalendarOff,
   ClipboardCheck,
   FileText,
   GraduationCap,
   HardHat,
+  Key,
   LayoutDashboard,
+  ListTodo,
+  MonitorDot,
   ScrollText,
   Settings,
   Shield,
   ShoppingCart,
+  Shuffle,
+  Upload,
   Users,
-  Building2,
-  Activity,
-  BookOpen,
+  Zap,
 } from "lucide-react";
 import { type SidebarData } from "../types";
 
 export const sidebarData: SidebarData = {
   user: {
     name: "Admin User",
-    email: "admin@ndma.gov",
+    email: "admin@ndma.gov.gh",
     avatar: "",
   },
   teams: [
     {
-      name: "NDMA",
+      name: "DCS Ops Center",
       logo: Shield,
-      plan: "Data Centre Services",
+      plan: "NDMA Data Centre Services",
     },
   ],
   navGroups: [
@@ -42,10 +49,45 @@ export const sidebarData: SidebarData = {
           url: "/",
           icon: LayoutDashboard,
         },
+        {
+          title: "Ops Readiness",
+          url: "/ops-readiness",
+          icon: MonitorDot,
+        },
       ],
     },
     {
-      title: "Staff Management",
+      title: "Operations",
+      items: [
+        {
+          title: "Work Register",
+          url: "/work",
+          icon: ListTodo,
+        },
+        {
+          title: "Incidents",
+          url: "/incidents",
+          icon: AlertTriangle,
+        },
+        {
+          title: "On-Call Rota",
+          url: "/rota",
+          icon: CalendarClock,
+        },
+        {
+          title: "Temp Changes",
+          url: "/changes",
+          icon: Shuffle,
+        },
+        {
+          title: "Procurement",
+          url: "/procurement",
+          icon: ShoppingCart,
+        },
+      ],
+    },
+    {
+      title: "People",
       items: [
         {
           title: "Staff Directory",
@@ -53,14 +95,9 @@ export const sidebarData: SidebarData = {
           icon: Users,
         },
         {
-          title: "Leave Management",
+          title: "Leave",
           url: "/leave",
           icon: CalendarOff,
-        },
-        {
-          title: "On-Call Rota",
-          url: "/rota",
-          icon: CalendarClock,
         },
         {
           title: "Contracts",
@@ -75,12 +112,17 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
-      title: "Procurement",
+      title: "Services",
       items: [
         {
-          title: "Purchase Requisitions",
-          url: "/procurement",
-          icon: ShoppingCart,
+          title: "Service Registry",
+          url: "/services",
+          icon: Zap,
+        },
+        {
+          title: "Platform Accounts",
+          url: "/access",
+          icon: Key,
         },
       ],
     },
@@ -88,17 +130,17 @@ export const sidebarData: SidebarData = {
       title: "Compliance",
       items: [
         {
-          title: "Training Records",
+          title: "Training",
           url: "/compliance/training",
           icon: GraduationCap,
         },
         {
-          title: "PPE Management",
+          title: "PPE",
           url: "/compliance/ppe",
           icon: HardHat,
         },
         {
-          title: "Compliance Items",
+          title: "Policy Items",
           url: "/compliance/items",
           icon: Shield,
         },
@@ -116,6 +158,11 @@ export const sidebarData: SidebarData = {
           title: "Audit Log",
           url: "/audit",
           icon: ScrollText,
+        },
+        {
+          title: "Import Data",
+          url: "/import",
+          icon: Upload,
         },
         {
           title: "Notifications",
@@ -145,6 +192,11 @@ export const sidebarData: SidebarData = {
               title: "Leave Types",
               url: "/settings/leave-types",
               icon: CalendarOff,
+            },
+            {
+              title: "Escalation",
+              url: "/settings/escalation",
+              icon: AlertTriangle,
             },
             {
               title: "Roles & Permissions",
