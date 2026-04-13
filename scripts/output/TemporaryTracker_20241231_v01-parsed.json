@@ -1,0 +1,316 @@
+{
+  "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+  "sheets": [
+    {
+      "sheetName": "2024",
+      "totalRows": 21,
+      "visibleRows": 21,
+      "hiddenRows": 0,
+      "columns": [
+        "Change",
+        "Date Implemented",
+        "Date It Should Be Removed",
+        "Date To Follow Up",
+        "Engineer",
+        "Comment"
+      ],
+      "rows": [
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 2,
+          "hidden": false,
+          "values": {
+            "Change": "Loaned to NCN",
+            "Date Implemented": "19/11/2024",
+            "Date It Should Be Removed": "2025-09-13",
+            "Date To Follow Up": "2024-12-19",
+            "Engineer": "Gerard",
+            "Comment": "BED70AA66D2E- jerry to uplift"
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 3,
+          "hidden": false,
+          "values": {
+            "Change": "Shutdown 10.7.33.195 (GPS_Lusignan_Block2_GndFloor-CRS326-CE-3) due to overheating (no AC unit in the room)",
+            "Date Implemented": "2025-07-22",
+            "Date It Should Be Removed": "2025-11-30",
+            "Date To Follow Up": "2025-11-29",
+            "Engineer": "Devon",
+            "Comment": "GPS Lusignan to install AC unit (Daniels daid he dont think the AC unit was replaced - he will find out and return a call to noc)"
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 4,
+          "hidden": false,
+          "values": {
+            "Change": "One MX75, Mikrotik AP and Unifi AP for Laluni ICT HUB",
+            "Date Implemented": "2025-07-25",
+            "Date It Should Be Removed": "2025-11-30",
+            "Date To Follow Up": "2025-11-29",
+            "Engineer": "Devon",
+            "Comment": "Ralph said the devices will be retrieved between Dec 22-26"
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 5,
+          "hidden": false,
+          "values": {
+            "Change": "Remove Configs For GDF Ayangana From 10.6.1.120",
+            "Date Implemented": "2025-08-15",
+            "Date It Should Be Removed": "2026-01-31",
+            "Date To Follow Up": "2025-12-12",
+            "Engineer": "Richie",
+            "Comment": "Restore these configs\n10.6.1.43\ninterface xg0/0/36\nundo shut\n\nip route-static vpn-instance 160SHAREDINTERNET 172.18.159.128 255.255.255.128 10.16.11.6 description Transport TO Guyana Civil Aviation Authority Internet LAN\n\nOn 10.7.24.22\nRemove static route to 192.168.56.0/24\nRemove sfp2.3000\n\n10.7.32.114\nRemove vlan 3000 interfaces"
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 6,
+          "hidden": false,
+          "values": {
+            "Change": "Remove bandwidth from National Racquet Center",
+            "Date Implemented": "2025-10-10",
+            "Date It Should Be Removed": "2025-12-13",
+            "Date To Follow Up": "2025-12-13",
+            "Engineer": "Richie",
+            "Comment": "for Photography, Videography and Editing Training."
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 7,
+          "hidden": false,
+          "values": {
+            "Change": "Loaned three routers to GPL For Solarfarm Project",
+            "Date Implemented": "2025-11-14",
+            "Date It Should Be Removed": "2026-01-31",
+            "Date To Follow Up": "2025-12-30",
+            "Engineer": "Richie",
+            "Comment": ""
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 8,
+          "hidden": false,
+          "values": {
+            "Change": "Forward Public IP To NCN For Temporary Testing (1 Week)",
+            "Date Implemented": "2025-12-02",
+            "Date It Should Be Removed": "2025-12-31",
+            "Date To Follow Up": "2025-12-30",
+            "Engineer": "Sachin",
+            "Comment": ""
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 9,
+          "hidden": false,
+          "values": {
+            "Change": "C-017039 ( VPN for Enterone)",
+            "Date Implemented": "2025-11-12",
+            "Date It Should Be Removed": "2026-01-01",
+            "Date To Follow Up": "2026-01-01",
+            "Engineer": "Bheesham",
+            "Comment": ""
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 10,
+          "hidden": false,
+          "values": {
+            "Change": "Remove chensuixin.huawei vpn account (created for weekly video management system (VMS) inspections and maintenance in China)",
+            "Date Implemented": "2026-01-12",
+            "Date It Should Be Removed": "2026-02-12",
+            "Date To Follow Up": "2026-01-31",
+            "Engineer": "Timothy",
+            "Comment": ""
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 11,
+          "hidden": false,
+          "values": {
+            "Change": "Remove vlan 2205 from La Grange and West Dem after fiber restored route",
+            "Date Implemented": "2026-02-14",
+            "Date It Should Be Removed": "",
+            "Date To Follow Up": "2026-02-16",
+            "Engineer": "Richie",
+            "Comment": "OSP to fix redundant link"
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 12,
+          "hidden": false,
+          "values": {
+            "Change": "Remove  randy.huawei  vpn account from utm 1&2",
+            "Date Implemented": "2026-01-19",
+            "Date It Should Be Removed": "2026-02-17",
+            "Date To Follow Up": "2026-02-17",
+            "Engineer": "Timothy",
+            "Comment": ""
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 13,
+          "hidden": false,
+          "values": {
+            "Change": "Temporary Public IP for Owen ESD Internal Identity [168.232.144.82]",
+            "Date Implemented": "2025-10-23",
+            "Date It Should Be Removed": "2026-03-17",
+            "Date To Follow Up": "2026-03-16",
+            "Engineer": "ASN",
+            "Comment": ""
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 14,
+          "hidden": false,
+          "values": {
+            "Change": "IVS045_RuimveldtPublicRdNorth-GPON-LPR IP changed to 10.14.0.239/24. Old IP to be removed in 3 months",
+            "Date Implemented": "2025-12-17",
+            "Date It Should Be Removed": "2026-03-17",
+            "Date To Follow Up": "2026-03-17",
+            "Engineer": "Gerard",
+            "Comment": ""
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 15,
+          "hidden": false,
+          "values": {
+            "Change": "Parika Microwave Link vlanif 2 Shutdown\nSkeldon Microwave Link vlanif 2 Shutdown\nCane Grove Microwave Link vlanif 2 Shutdown\nZeeburg Microwave Link vlanif 2 Shutdown",
+            "Date Implemented": "2024-12-27",
+            "Date It Should Be Removed": "2026-03-31",
+            "Date To Follow Up": "2026-03-30",
+            "Engineer": "Sachin",
+            "Comment": "Transmission team to fix the microwave link at Parika, Skeldon\nBecause it's intermittent, its causing a lot of alarms"
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 16,
+          "hidden": false,
+          "values": {
+            "Change": "Temporary VPN Account testvpn1, testvpn2 On 10.6.0.29",
+            "Date Implemented": "2025-09-04",
+            "Date It Should Be Removed": "2026-03-31",
+            "Date To Follow Up": "2026-03-30",
+            "Engineer": "Sachin",
+            "Comment": ""
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 17,
+          "hidden": false,
+          "values": {
+            "Change": "Remove Old IP for IVS014 - 0ld - 10.14.0.195",
+            "Date Implemented": "2026-01-22",
+            "Date It Should Be Removed": "2026-04-22",
+            "Date To Follow Up": "2026-04-22",
+            "Engineer": "Bheesham",
+            "Comment": ""
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 18,
+          "hidden": false,
+          "values": {
+            "Change": "Remove OLD IP for IVS3043 - 10.14.4.168",
+            "Date Implemented": "2026-02-02",
+            "Date It Should Be Removed": "2026-05-25",
+            "Date To Follow Up": "2026-05-25",
+            "Engineer": "Bheesham",
+            "Comment": ""
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 19,
+          "hidden": false,
+          "values": {
+            "Change": "Remove zhantao.huawei vpn account from utm 1&2",
+            "Date Implemented": "2026-10-01",
+            "Date It Should Be Removed": "2027-10-01",
+            "Date To Follow Up": "2027-09-01",
+            "Engineer": "ASN",
+            "Comment": ""
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 20,
+          "hidden": false,
+          "values": {
+            "Change": "Add GPL PLC Bandwidth tomorrow",
+            "Date Implemented": "2026-03-18",
+            "Date It Should Be Removed": "2026-03-19",
+            "Date To Follow Up": "2026-03-19",
+            "Engineer": "Richie",
+            "Comment": "10.6.1.44 & 10.6.1.41 GPL Sophia\ntraffic-limit inbound acl 4212 cir 50000 pir 51000 cbs 6250000 pbs 6375000\ntraffic-limit outbound acl 4212 cir 50000 pir 51000 cbs 6250000 pbs 6375000\n\n10.6.1.22 & 10.6.1.23 GPL Main St\n qos car cir 30000 pir 33000 cbs 5610000 pbs 6171000 green pass yellow pass red discard inbound\n qos car cir 30000 pir 33000 cbs 5610000 pbs 6171000 green pass yellow pass red discard outbound"
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 21,
+          "hidden": false,
+          "values": {
+            "Change": "Remove TEMP~ EID 99SVRMGMT -> INET from 10.6.6.10",
+            "Date Implemented": "2026-03-23",
+            "Date It Should Be Removed": "2026-03-27",
+            "Date To Follow Up": "2026-03-26",
+            "Engineer": "ASN",
+            "Comment": "To facilitate inet access for NDMA servers at EID to be updated"
+          }
+        },
+        {
+          "sourceFile": "TemporaryTracker_20241231_v01.xlsx",
+          "sheetName": "2024",
+          "originalRow": 22,
+          "hidden": false,
+          "values": {
+            "Change": "Allow SSH To Cash Grant Server For GCTO",
+            "Date Implemented": "2026-03-29",
+            "Date It Should Be Removed": "2026-04-03",
+            "Date To Follow Up": "2026-04-02",
+            "Engineer": "Sachin",
+            "Comment": ""
+          }
+        }
+      ]
+    }
+  ],
+  "totalRows": 21
+}

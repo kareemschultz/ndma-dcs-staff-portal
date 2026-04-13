@@ -1,0 +1,1125 @@
+{
+  "sourceFile": "LeaveDates_DCS.xlsx",
+  "sheets": [
+    {
+      "sheetName": "2021",
+      "totalRows": 6,
+      "visibleRows": 6,
+      "hiddenRows": 0,
+      "columns": [
+        "Staff Name",
+        "Leave Dates"
+      ],
+      "rows": [
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2021",
+          "originalRow": 2,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Jared McArthur",
+            "Leave Dates": "2021/04/05 - 2021/04/19, 2021/10/11 - 2021/10/25",
+            "Col3": "2021/06/09 - 2021/06/17"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2021",
+          "originalRow": 3,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Sachin Ramsuran",
+            "Leave Dates": "2021/11/15 - 2021/12/12"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2021",
+          "originalRow": 4,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Alicia Arthur",
+            "Leave Dates": "2021/06/01 - 2021/06/14",
+            "Col3": "2021/07/27 - 2021/08/09"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2021",
+          "originalRow": 5,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Devon Abrams",
+            "Leave Dates": "2021/06/07 - 2021/06/20, 2021/11/08 - 2021/11/21"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2021",
+          "originalRow": 6,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Kevin Pharous",
+            "Leave Dates": "",
+            "Col3": "2021/07/26 - 2021/08/22"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2021",
+          "originalRow": 7,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Nicolai Mahangi",
+            "Leave Dates": ""
+          }
+        }
+      ]
+    },
+    {
+      "sheetName": "2022",
+      "totalRows": 7,
+      "visibleRows": 7,
+      "hiddenRows": 0,
+      "columns": [
+        "Staff Name",
+        "Leave Dates"
+      ],
+      "rows": [
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2022",
+          "originalRow": 2,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Alicia Arthur",
+            "Leave Dates": "9th May-30th May"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2022",
+          "originalRow": 3,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Devon Abrams",
+            "Leave Dates": "16th November - 1st December",
+            "Col3": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2022",
+          "originalRow": 4,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Gerard Budhan",
+            "Leave Dates": "17th October - 13th November"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2022",
+          "originalRow": 5,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Kareem Schultz",
+            "Leave Dates": "24th October - 20th November",
+            "Col3": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2022",
+          "originalRow": 6,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Kevin Pharous",
+            "Leave Dates": "22nd  August - 4th September"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2022",
+          "originalRow": 7,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Nicolai Mahangi",
+            "Leave Dates": "18th  August - 11th September"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2022",
+          "originalRow": 8,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Sachin Ramsuran",
+            "Leave Dates": "2nd August - 19th August & 1st November - 21st November"
+          }
+        }
+      ]
+    },
+    {
+      "sheetName": "2023",
+      "totalRows": 12,
+      "visibleRows": 12,
+      "hiddenRows": 0,
+      "columns": [
+        "Staff Name",
+        "Leave Dates",
+        "Number of days",
+        "Comments"
+      ],
+      "rows": [
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2023",
+          "originalRow": 2,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Alicia Arthur",
+            "Leave Dates": "15th June -28th June, 24th July- 6th August",
+            "Number of days": "28",
+            "Comments": "Completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2023",
+          "originalRow": 3,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Alicia Arthur",
+            "Leave Dates": "14th-19th August",
+            "Number of days": "7",
+            "Comments": "7 days for her new contract"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2023",
+          "originalRow": 4,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Devon Abrams",
+            "Leave Dates": "12 June- 15 June",
+            "Number of days": "4",
+            "Comments": "Remainder taken from jan 8-31, 2024"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2023",
+          "originalRow": 5,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Gerard Budhan",
+            "Leave Dates": "2nd-4th May, 2nd -26th October",
+            "Number of days": "28",
+            "Comments": "Completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2023",
+          "originalRow": 6,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Kareem Schultz",
+            "Leave Dates": "11th - 24 April,18th September - 1st October",
+            "Number of days": "28",
+            "Comments": "Completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2023",
+          "originalRow": 7,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Kevin Pharous",
+            "Leave Dates": "29th May - 26th June",
+            "Number of days": "28",
+            "Comments": "Completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2023",
+          "originalRow": 8,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Nicolai Mahangi",
+            "Leave Dates": "4th July - 31st July",
+            "Number of days": "28",
+            "Comments": "Completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2023",
+          "originalRow": 9,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Sachin Ramsuran",
+            "Leave Dates": "11th - 27th April, 1st - 18th December",
+            "Number of days": "35",
+            "Comments": "Completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2023",
+          "originalRow": 10,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Ataybia Williams",
+            "Leave Dates": "30th October-20th November, 2nd-10th Jan",
+            "Number of days": "28",
+            "Comments": "Completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2023",
+          "originalRow": 11,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Bheesham Ramjattan",
+            "Leave Dates": "1st-15th August, 14th-26th November",
+            "Number of days": "28",
+            "Comments": "Completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2023",
+          "originalRow": 12,
+          "hidden": false,
+          "values": {
+            "Staff Name": "No 4 persons on leave at same time",
+            "Leave Dates": "",
+            "Number of days": "",
+            "Comments": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2023",
+          "originalRow": 13,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Devon, Nicolai, Sachin: no two on leave at same time by much",
+            "Leave Dates": "",
+            "Number of days": "",
+            "Comments": ""
+          }
+        }
+      ]
+    },
+    {
+      "sheetName": "2024",
+      "totalRows": 10,
+      "visibleRows": 10,
+      "hiddenRows": 0,
+      "columns": [
+        "Staff Name",
+        "Leave Dates",
+        "Number of days",
+        "Comments"
+      ],
+      "rows": [
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2024",
+          "originalRow": 2,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Alicia Arthur",
+            "Leave Dates": "10th June -16 June, 22nd July -5th August, 10-13 October",
+            "Number of days": "28",
+            "Comments": "4 days taken from new contract 24 days remaining"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2024",
+          "originalRow": 3,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Devon Abrams",
+            "Leave Dates": "1st November - 28 November 2024",
+            "Number of days": "28",
+            "Comments": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2024",
+          "originalRow": 4,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Gerard Budhan",
+            "Leave Dates": "2-8 July, 25th September - 15th October",
+            "Number of days": "28",
+            "Comments": "7 days in July, 21 days in September/October"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2024",
+          "originalRow": 5,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Kareem Schultz",
+            "Leave Dates": "8-21 July, 11-17 November 2024",
+            "Number of days": "28",
+            "Comments": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2024",
+          "originalRow": 6,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Nicolai Mahangi",
+            "Leave Dates": "10th April - 7th May",
+            "Number of days": "28",
+            "Comments": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2024",
+          "originalRow": 7,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Sachin Ramsuran",
+            "Leave Dates": "19th March - 9th April 2024 \n9th December - 19th December ",
+            "Number of days": "35",
+            "Comments": "(24 days 2023/2024 contract)\n(11 days 2024/2025 contract subject to change in case I ga marrid) - All other staff leave would depend on if you get marrid too"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2024",
+          "originalRow": 8,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Ataybia Williams",
+            "Leave Dates": "4th-8th March, 18th July-7 August",
+            "Number of days": "28",
+            "Comments": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2024",
+          "originalRow": 9,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Bheesham Ramrattan",
+            "Leave Dates": "30th September - 27th October",
+            "Number of days": "28",
+            "Comments": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2024",
+          "originalRow": 10,
+          "hidden": false,
+          "values": {
+            "Staff Name": "No 4 persons on leave at same time",
+            "Leave Dates": "",
+            "Number of days": "",
+            "Comments": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2024",
+          "originalRow": 11,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Devon, Nicolai, Sachin: no two on leave at same time by much",
+            "Leave Dates": "",
+            "Number of days": "",
+            "Comments": ""
+          }
+        }
+      ]
+    },
+    {
+      "sheetName": "2025",
+      "totalRows": 14,
+      "visibleRows": 14,
+      "hiddenRows": 0,
+      "columns": [
+        "Staff Name",
+        "Leave Dates",
+        "Number of days",
+        "Comments"
+      ],
+      "rows": [
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2025",
+          "originalRow": 2,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Devon Abrams",
+            "Leave Dates": "August 26- September 8",
+            "Number of days": "14",
+            "Comments": "Additional dates to be provided"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2025",
+          "originalRow": 3,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Gerard Budhan",
+            "Leave Dates": "June 9-15, October 27-2, Nov 24- Dec12",
+            "Number of days": "28",
+            "Comments": "2 wks remaing for contract yr"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2025",
+          "originalRow": 4,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Kareem Schultz",
+            "Leave Dates": "3rd November - 30th November",
+            "Number of days": "28",
+            "Comments": "completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2025",
+          "originalRow": 5,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Nicolai Mahangi",
+            "Leave Dates": "August 18th - September 14th",
+            "Number of days": "28",
+            "Comments": "completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2025",
+          "originalRow": 6,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Sachin Ramsuran",
+            "Leave Dates": "18-31 August",
+            "Number of days": "35",
+            "Comments": "Additional dates to be provided"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2025",
+          "originalRow": 7,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Ataybia Williams",
+            "Leave Dates": "June 9-12, November 3 - 23",
+            "Number of days": "28",
+            "Comments": "completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2025",
+          "originalRow": 8,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Bheesham Ramrattan",
+            "Leave Dates": "September 8th-14th\nOctober 13th - Nov 2",
+            "Number of days": "28",
+            "Comments": "completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2025",
+          "originalRow": 9,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Johnathan Sukhlall",
+            "Leave Dates": "April  22th - 19th May",
+            "Number of days": "28",
+            "Comments": "completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2025",
+          "originalRow": 10,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Curlyann Morrise",
+            "Leave Dates": "October 21- November 17",
+            "Number of days": "28",
+            "Comments": "completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2025",
+          "originalRow": 11,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Timothy Paul",
+            "Leave Dates": "9th June - 6th July",
+            "Number of days": "28",
+            "Comments": "completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2025",
+          "originalRow": 12,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Richie Goring",
+            "Leave Dates": "14th July to 11th august",
+            "Number of days": "28",
+            "Comments": "completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2025",
+          "originalRow": 13,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Shemar Henry",
+            "Leave Dates": "January 27-9\nApril 14-27",
+            "Number of days": "28",
+            "Comments": "completed"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2025",
+          "originalRow": 14,
+          "hidden": false,
+          "values": {
+            "Staff Name": "No 4 persons on leave at same time",
+            "Leave Dates": "",
+            "Number of days": "",
+            "Comments": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2025",
+          "originalRow": 15,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Devon, Nicolai, Sachin: no two on leave at same time by much",
+            "Leave Dates": "",
+            "Number of days": "",
+            "Comments": ""
+          }
+        }
+      ]
+    },
+    {
+      "sheetName": "2026",
+      "totalRows": 31,
+      "visibleRows": 31,
+      "hiddenRows": 0,
+      "columns": [
+        "Staff Name",
+        "Leave Dates",
+        "Leave Dates",
+        "Number of days",
+        "Comments",
+        "Col6",
+        "Col7",
+        "IMPORTANT",
+        "IMPORTANT",
+        "IMPORTANT",
+        "IMPORTANT"
+      ],
+      "rows": [
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 2,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Sachin Ramsuran",
+            "Leave Dates": "2026-01-25",
+            "Number of days": "14",
+            "Comments": "Complete",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": "Leave must be taken in one or two parts unless approved by HR for additional periods"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 3,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Sachin Ramsuran",
+            "Leave Dates": "2026-05-18",
+            "Number of days": "36",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": "Devon, Nicolai, Sachin: no two on leave at same time or atleast not by much"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 4,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Sachin Ramsuran",
+            "Leave Dates": "",
+            "Number of days": "1",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": "Leave can not be rolled over to the new contract year unless approved by HR"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 5,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Ataybia Williams",
+            "Leave Dates": "2026-08-16",
+            "Number of days": "21",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": "No team should have all persons off at the same time"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 6,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Ataybia Williams",
+            "Leave Dates": "2026-11-16",
+            "Number of days": "7",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": "28 days is alloted to each staff except the manager, holidays and weekends are included in that count"
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 7,
+          "hidden": false,
+          "values": {
+            "Staff Name": "CUSTOMER RELATIONS",
+            "Leave Dates": "CUSTOMER RELATIONS",
+            "Number of days": "CUSTOMER RELATIONS",
+            "Comments": "CUSTOMER RELATIONS",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 8,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Curlyann Morrise",
+            "Leave Dates": "2026-12-20",
+            "Number of days": "28",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 9,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Curlyann Morrise",
+            "Leave Dates": "",
+            "Number of days": "",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 10,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Molly Hurbard",
+            "Leave Dates": "2026-08-09",
+            "Number of days": "28",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 11,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Molly Hurbard",
+            "Leave Dates": "",
+            "Number of days": "1",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 12,
+          "hidden": false,
+          "values": {
+            "Staff Name": "ENTERPRISE",
+            "Leave Dates": "ENTERPRISE",
+            "Number of days": "ENTERPRISE",
+            "Comments": "ENTERPRISE",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 13,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Gerard Budhan",
+            "Leave Dates": "2026-06-14",
+            "Number of days": "7",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 14,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Gerard Budhan",
+            "Leave Dates": "2026-10-25",
+            "Number of days": "21",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 15,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Richie Goring",
+            "Leave Dates": "2026-05-15",
+            "Number of days": "12",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 16,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Richie Goring",
+            "Leave Dates": "",
+            "Number of days": "1",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 17,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Johnathan Sukhlall",
+            "Leave Dates": "2026-05-04",
+            "Number of days": "28",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 18,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Johnathan Sukhlall",
+            "Leave Dates": "",
+            "Number of days": "1",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 19,
+          "hidden": false,
+          "values": {
+            "Staff Name": "ASN",
+            "Leave Dates": "ASN",
+            "Number of days": "ASN",
+            "Comments": "ASN",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 20,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Nicolai Mahangi",
+            "Leave Dates": "2026-07-26",
+            "Number of days": "28",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 21,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Nicolai Mahangi",
+            "Leave Dates": "",
+            "Number of days": "1",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 22,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Timothy Paul",
+            "Leave Dates": "2026-06-24",
+            "Number of days": "28",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 23,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Timothy Paul",
+            "Leave Dates": "",
+            "Number of days": "1",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 24,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Shemar Henry",
+            "Leave Dates": "",
+            "Number of days": "1",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 25,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Shemar Henry",
+            "Leave Dates": "2026-06-07",
+            "Number of days": "28",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 26,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Kareem Schultz",
+            "Leave Dates": "2026-04-12",
+            "Number of days": "6",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 27,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Kareem Schultz",
+            "Leave Dates": "2026-08-24",
+            "Number of days": "22",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 28,
+          "hidden": false,
+          "values": {
+            "Staff Name": "CORE",
+            "Leave Dates": "CORE",
+            "Number of days": "CORE",
+            "Comments": "CORE",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 29,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Devon Abrams",
+            "Leave Dates": "2026-02-08",
+            "Number of days": "14",
+            "Comments": "Complete",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 30,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Devon Abrams",
+            "Leave Dates": "2026-08-16",
+            "Number of days": "28",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 31,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Bheesham Ramrattan",
+            "Leave Dates": "2026-11-01",
+            "Number of days": "28",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        },
+        {
+          "sourceFile": "LeaveDates_DCS.xlsx",
+          "sheetName": "2026",
+          "originalRow": 32,
+          "hidden": false,
+          "values": {
+            "Staff Name": "Bheesham Ramrattan",
+            "Leave Dates": "",
+            "Number of days": "1",
+            "Comments": "",
+            "Col6": "",
+            "Col7": "",
+            "IMPORTANT": ""
+          }
+        }
+      ]
+    }
+  ],
+  "totalRows": 80
+}

@@ -138,11 +138,10 @@ export default function SignInForm() {
         variant="outline"
         className="w-full"
         disabled
-        title="Active Directory integration — coming soon"
+        title="Active Directory integration — contact IT to enable"
       >
         <Building2 className="mr-2 size-4" />
         Sign in with Active Directory
-        <span className="ms-auto text-xs text-muted-foreground">(Coming soon)</span>
       </Button>
     </div>
   );

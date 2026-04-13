@@ -18,7 +18,7 @@ COPY packages/config/package.json packages/config/
 COPY turbo.json ./
 
 # Install all workspace dependencies (dev + prod — needed for build steps)
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # ── Stage 2: Build web app (static assets) ───────────────────────────────────
 FROM deps AS web-builder
@@ -42,9 +42,10 @@ FROM oven/bun:1.3-slim AS runner
 
 WORKDIR /app
 
-# Copy package manifests for a clean production-only install
+# Copy installed node_modules from builder (avoids re-running bun install with a
+# potentially mismatched lockfile version between CI bun and builder bun).
+COPY --from=server-builder /app/node_modules ./node_modules
 COPY --from=server-builder /app/package.json ./package.json
-COPY --from=server-builder /app/bun.lock ./bun.lock
 COPY --from=server-builder /app/turbo.json ./turbo.json
 COPY --from=server-builder /app/apps/server/package.json ./apps/server/package.json
 COPY --from=server-builder /app/packages/api/package.json ./packages/api/package.json
@@ -52,9 +53,6 @@ COPY --from=server-builder /app/packages/auth/package.json ./packages/auth/packa
 COPY --from=server-builder /app/packages/db/package.json ./packages/db/package.json
 COPY --from=server-builder /app/packages/env/package.json ./packages/env/package.json
 COPY --from=server-builder /app/packages/config/package.json ./packages/config/package.json
-
-# Install only production dependencies — strips dev tooling from final image
-RUN bun install --frozen-lockfile --production
 
 # 1. Server source (Bun runs TypeScript directly — no transpile step)
 COPY --chown=bun:bun --from=server-builder /app/packages ./packages
