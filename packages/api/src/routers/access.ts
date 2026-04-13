@@ -16,6 +16,7 @@ import { and, eq, isNull, isNotNull, lte, sql } from "drizzle-orm";
 
 import { protectedProcedure } from "../index";
 import { logAudit } from "../lib/audit";
+import { runSyncJob } from "../lib/sync";
 
 // ── Shared enum values ────────────────────────────────────────────────────
 
@@ -1085,6 +1086,12 @@ export const accessRouter = {
           afterValue: { integrationId: input.integrationId, triggeredBy: "manual" },
           ipAddress: context.ipAddress,
           userAgent: context.userAgent,
+        });
+
+        // Run the sync job in the background — don't await so the HTTP response
+        // returns immediately while the sync progresses asynchronously.
+        void runSyncJob(job.id).catch((err) => {
+          console.error(`[sync] Job ${job.id} crashed:`, err);
         });
 
         return job;

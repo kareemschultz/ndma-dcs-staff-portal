@@ -2,6 +2,7 @@ import type { RouterClient } from "@orpc/server";
 
 import { protectedProcedure, publicProcedure } from "../index";
 import { accessRouter } from "./access";
+import { importRouter } from "./import";
 import { appraisalsRouter } from "./appraisals";
 import { auditRouter } from "./audit";
 import { complianceRouter } from "./compliance";
@@ -39,6 +40,7 @@ export const appRouter = {
   services: servicesRouter,
   staff: staffRouter,
   tempChanges: tempChangesRouter,
+  import: importRouter,
   work: workRouter,
 };
 

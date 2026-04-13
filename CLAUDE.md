@@ -123,6 +123,10 @@ The login page must show BOTH:
 - `queryClient.invalidateQueries({ queryKey: orpc.X.list.key() })` is correct (no args to `key()`).
 - Root cause: `@orpc/tanstack-query` `QueryKeyOptions<TInput>` type requires an `input:` key when `TInput` is not undefined.
 
+### Zod v4 `z.record` — requires two arguments
+- **WRONG:** `z.record(z.string())` — TypeScript infers value type as `unknown`
+- **CORRECT:** `z.record(z.string(), z.string())` — explicit key + value types
+
 ### Better Auth
 - Auth config in `packages/auth/src/index.ts`, NOT in apps/server.
 - `sameSite: "none"` + `secure: true` on cookies — requires HTTPS in production.
@@ -193,6 +197,7 @@ The login page must show BOTH:
 | `contracts.ts` | contracts + contract_status enum |
 | `appraisals.ts` | appraisals + appraisal_status enum |
 | `compliance.ts` | training_records, ppe_records, policy_acknowledgements + compliance_item_status enum |
+| `imports.ts` | import_jobs + import_job_status / import_type enums |
 
 ---
 
@@ -216,10 +221,15 @@ The login page must show BOTH:
 | `appraisals.ts` | list, get, create, update, getOverdue, getByStaff |
 | `compliance.ts` | training.{list,create,update,delete}, ppe.{list,create,update,delete}, policyAck.{list,acknowledge}, getExpiringItems |
 | `dashboard.ts` | main, opsReadiness, recentActivity |
+| `import.ts` | execute, getHistory |
 
 **Shared API utilities:**
 - `packages/api/src/lib/audit.ts` — `logAudit(params)` — call from EVERY mutation procedure
 - `packages/api/src/lib/notify.ts` — `createNotification(params)` — call when notifying a user
+- `packages/api/src/lib/sync/types.ts` — `SyncConnector` / `ExternalAccount` / `SyncResult` interfaces
+- `packages/api/src/lib/sync/index.ts` — `runSyncJob(syncJobId)` — processor called after triggerSync
+- `packages/api/src/lib/sync/connectors/ipam.ts` — phpIPAM REST connector
+- `packages/api/src/lib/sync/connectors/ldap.ts` — AD/LDAP connector (optional `ldapts` peer dep)
 
 **Context (packages/api/src/context.ts):** Provides `session`, `ipAddress`, `userAgent` to all procedures.
 
