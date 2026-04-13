@@ -13,6 +13,7 @@ export * from "./notifications";
 export * from "./procurement";
 export * from "./staff";
 export * from "./rota";
+export * from "./operational-overlays";
 export * from "./temp-changes";
 export * from "./work";
 export * from "./cycles";

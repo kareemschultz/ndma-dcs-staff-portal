@@ -45,20 +45,21 @@ export const conflictTypeEnum = pgEnum("conflict_type", [
 ]);
 
 // ── on_call_schedules ──────────────────────────────────────────────────────
-// One row per week. week_start is always a Monday (ISO week).
+// One row per week. week_start is always a Sunday (DCS uses Sun–Sat weeks).
 export const onCallSchedules = pgTable(
   "on_call_schedules",
   {
     id: text("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    weekStart: date("week_start").notNull().unique(), // ISO date, always Monday
-    weekEnd: date("week_end").notNull(), // Always Sunday
+    weekStart: date("week_start").notNull().unique(), // ISO date, always Sunday
+    weekEnd: date("week_end").notNull(), // Always Saturday
     status: scheduleStatusEnum("status").default("draft").notNull(),
     publishedAt: timestamp("published_at"),
     publishedById: text("published_by_id").references(() => user.id),
     notes: text("notes"),
     hasConflicts: boolean("has_conflicts").default(false).notNull(),
+    isLegacyImport: boolean("is_legacy_import").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -98,6 +99,11 @@ export const onCallAssignments = pgTable(
       .default([]),
     isConfirmed: boolean("is_confirmed").default(false).notNull(),
     notifiedAt: timestamp("notified_at"),
+    // Acknowledgement — staff member confirms they received the assignment
+    acknowledgedAt: timestamp("acknowledged_at"),
+    acknowledgedById: text("acknowledged_by_id").references(() => staffProfiles.id),
+    // Legacy import flag — marks assignments imported from the legacy spreadsheet
+    isLegacyImport: boolean("is_legacy_import").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -196,6 +202,11 @@ export const onCallAssignmentRelations = relations(
       fields: [onCallAssignments.staffProfileId],
       references: [staffProfiles.id],
     }),
+    acknowledgedBy: one(staffProfiles, {
+      fields: [onCallAssignments.acknowledgedById],
+      references: [staffProfiles.id],
+      relationName: "acknowledgedAssignments",
+    }),
     swaps: many(onCallSwaps),
   }),
 );
@@ -236,6 +247,45 @@ export const assignmentHistoryRelations = relations(
     }),
     performedBy: one(user, {
       fields: [assignmentHistory.performedById],
+      references: [user.id],
+    }),
+  }),
+);
+
+// ── rota_import_warnings ───────────────────────────────────────────────────
+// Tracks ambiguous or multi-name legacy spreadsheet entries that need review.
+export const rotaImportWarnings = pgTable(
+  "rota_import_warnings",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    scheduleId: text("schedule_id").references(() => onCallSchedules.id),
+    weekStart: date("week_start").notNull(),
+    weekEnd: date("week_end").notNull(),
+    role: onCallRoleEnum("role").notNull(),
+    rawValue: text("raw_value").notNull(), // e.g. "Gerard/ Shemar", "Richie/ Timothy"
+    status: text("status").default("pending").notNull(), // pending | resolved | dismissed
+    resolvedById: text("resolved_by_id").references(() => user.id),
+    resolvedAt: timestamp("resolved_at"),
+    resolutionNotes: text("resolution_notes"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("import_warnings_weekStart_idx").on(table.weekStart),
+    index("import_warnings_status_idx").on(table.status),
+  ],
+);
+
+export const rotaImportWarningRelations = relations(
+  rotaImportWarnings,
+  ({ one }) => ({
+    schedule: one(onCallSchedules, {
+      fields: [rotaImportWarnings.scheduleId],
+      references: [onCallSchedules.id],
+    }),
+    resolvedBy: one(user, {
+      fields: [rotaImportWarnings.resolvedById],
       references: [user.id],
     }),
   }),
