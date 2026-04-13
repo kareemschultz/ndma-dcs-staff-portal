@@ -1,5 +1,6 @@
 import { createContext } from "@ndma-dcs-staff-portal/api/context";
 import { appRouter } from "@ndma-dcs-staff-portal/api/routers/index";
+import { startSyncScheduler } from "@ndma-dcs-staff-portal/api/lib/sync/scheduler";
 import { auth } from "@ndma-dcs-staff-portal/auth";
 import { env } from "@ndma-dcs-staff-portal/env/server";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
@@ -106,5 +107,10 @@ if (process.env.NODE_ENV === "production") {
 app.get("/", (c) => {
   return c.text("OK");
 });
+
+// ── Sync scheduler ────────────────────────────────────────────────────────
+// Fires on startup and then every 5 minutes, running sync jobs for any
+// integration that has syncEnabled + a frequency and is past due.
+startSyncScheduler();
 
 export default app;
