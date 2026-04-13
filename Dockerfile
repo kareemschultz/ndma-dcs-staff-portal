@@ -108,19 +108,28 @@ WORKDIR /app/apps/docs
 
 RUN bun run build
 
-# ── Stage 6: Docs production runtime (nginx static) ──────────────────────────
-# Static export in out/ — served by nginx, no Node process needed at all.
-FROM nginx:alpine AS docs-runner
+# ── Stage 6: Docs production runtime (Next.js standalone) ────────────────────
+# output: "standalone" bundles a self-contained Node server in .next/standalone.
+# No nginx needed — just node server.js.
+FROM node:20-alpine AS docs-runner
 
-COPY --from=docs-builder /app/apps/docs/out /usr/share/nginx/html
+WORKDIR /app
 
-# Single-page-app style: all unknown paths fall back to index.html
-# (Fumadocs generates one HTML file per page, so 404 fallback isn't strictly
-# needed, but it's good practice for any /docs/* deep-links.)
-RUN printf 'server {\n  listen 4000;\n  root /usr/share/nginx/html;\n  index index.html;\n  location / {\n    try_files $uri $uri.html $uri/ /404.html =404;\n  }\n}\n' \
-    > /etc/nginx/conf.d/default.conf
+ENV NODE_ENV=production \
+    PORT=4000 \
+    HOSTNAME=0.0.0.0 \
+    NEXT_TELEMETRY_DISABLED=1
+
+# Standalone output includes a minimal node_modules and server.js
+COPY --from=docs-builder /app/apps/docs/.next/standalone ./
+# Static assets (chunks, images, etc.) must be copied separately
+COPY --from=docs-builder /app/apps/docs/.next/static ./.next/static
 
 EXPOSE 4000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
   CMD wget -qO- http://localhost:4000 > /dev/null 2>&1 || exit 1
+
+# In a Bun monorepo, Next.js standalone mirrors the workspace path:
+# .next/standalone/apps/docs/server.js (not /server.js at root)
+CMD ["node", "apps/docs/server.js"]
