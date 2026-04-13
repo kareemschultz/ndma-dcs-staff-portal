@@ -35,6 +35,49 @@
 
 ---
 
+## Screenshots
+
+> To view the live app, run `bun run dev` — the web app starts at **http://localhost:5173**.
+> Toggle between Light and Dark mode via the theme switcher in the user menu (top-right of the sidebar).
+
+| Page | Route | Description |
+|------|-------|-------------|
+| Dashboard | `/` | KPI cards, ops readiness indicator, workload imbalance widget, active cycles progress, recent activity feed |
+| Ops Readiness | `/ops-readiness` | Service health status grid, on-call coverage, recent incidents, staffing availability |
+| Work Register | `/work` | 5-view work item register: List · Kanban · Grid · Calendar · Analytics; per-engineer bar chart |
+| Work Workload | `/work/workload` | Per-engineer workload cards with load score, colour-coded overload/low-load grouping |
+| Cycles | `/cycles` | Sprint/cycle board; create cycles, link work items, track progress |
+| Incidents | `/incidents` | Active and historical incidents, severity badges, MTTR stats |
+| On-Call Roster | `/rota` | Weekly schedule grid; assign/swap/publish; escalation policy editor |
+| Rota Planner | `/rota/planner` | Drag-and-drop weekly planner for next cycle |
+| Temp Changes | `/changes` | Temporary technical changes with remove-by dates; overdue auto-flagging |
+| Procurement | `/procurement` | PR list with status pipeline badges; pending approvals queue for managers |
+| New PR | `/procurement/new` | Multi-step PR creation form with line items |
+| Staff Directory | `/staff` | Staff cards with status indicators; full profile modal |
+| Staff Profile | `/staff/:staffId` | Tabbed profile: Overview · Contracts · Training · PPE · On-Call · Leave |
+| Leave | `/leave` | Leave requests list; team calendar heatmap |
+| New Leave | `/leave/new` | Leave request form with balance display |
+| Contracts | `/contracts` | Contract register with expiry tracking |
+| Appraisals | `/appraisals` | Appraisal records with rating distribution |
+| Service Registry | `/services` | Platform services catalogue with runbook/docs links |
+| Platform Access | `/access` | Identity governance — Accounts · VPN · Groups · Contacts · Integrations · Reconciliation · Reviews tabs |
+| Compliance | `/compliance/training` | Training certification records with expiry alerts |
+| PPE | `/compliance/ppe` | PPE issuance records per staff member |
+| Policy Acks | `/compliance/items` | Policy acknowledgement tracking |
+| Reports | `/reports` | Cross-module reporting dashboard |
+| Audit Log | `/audit` | Searchable append-only audit trail with before/after diff |
+| Import Data | `/import` | CSV/XLSX staff data import with dry-run preview |
+| Notifications | `/notifications` | In-app notification centre; mark-read, dismiss |
+| Settings | `/settings/general` | System-wide configuration |
+| Departments | `/settings/departments` | Department management |
+| Leave Types | `/settings/leave-types` | Configurable leave type catalogue |
+| Escalation | `/settings/escalation` | Escalation policy and step editor |
+| Roles | `/settings/roles` | RBAC role viewer |
+| Automation | `/settings/automation` | Automation rules engine — create rules, view fire logs |
+| Documentation | `http://localhost:4000` | Fumadocs MDX wiki (separate Next.js app) |
+
+---
+
 ## What is DCS Ops Center?
 
 **DCS Ops Center** is a **production-ready enterprise operations platform** built for the **Data Centre Services (DCS)** division of the **National Data Management Authority (NDMA)**.
@@ -116,7 +159,8 @@ Every action in the system is captured in an append-only audit log — who did w
 - Settings UI at `/settings/automation` — create, edit, enable/disable, view logs
 
 **🔌 Platform Access & Identity Governance**
-- Account registry for VPN, Fortigate, phpIPAM, RADIUS, AD, uPortal, Zabbix, biometric and more
+- Full CRUD for accounts, external contacts, access groups, and platform integrations (create + edit dialogs)
+- Account registry: VPN, Fortigate, phpIPAM, RADIUS, AD, uPortal, Zabbix, biometric, and more
 - **External contacts** — contractors, consultants, vendors, agency users (not just NDMA staff)
 - **User affiliation** — ndma_internal / external_agency / contractor / consultant / vendor / shared_service
 - **VPN management** — per-account VPN flag, group, and profile; dedicated VPN Access tab
@@ -124,6 +168,7 @@ Every action in the system is captured in an append-only audit log — who did w
 - **Access review (certification)** workflow — approve/revoke/escalate; revoking auto-disables the account
 - Multi-source auth: Local · AD/LDAP · RADIUS · SAML · OAuth/OIDC · Service Accounts · API-only
 - Three sync modes: Manual, Synced (API-owned), Hybrid
+- **Background sync scheduler** — auto-fires sync jobs based on `syncFrequencyMinutes` per integration (5-min polling loop)
 - Reconciliation engine: orphaned accounts, disabled-staff-active-account, expired-contractor, mismatches
 
 **🛡️ Compliance**
