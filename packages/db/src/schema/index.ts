@@ -16,3 +16,4 @@ export * from "./rota";
 export * from "./temp-changes";
 export * from "./work";
 export * from "./cycles";
+export * from "./automation";

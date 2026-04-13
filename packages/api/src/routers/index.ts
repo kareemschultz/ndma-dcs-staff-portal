@@ -20,6 +20,7 @@ import { tempChangesRouter } from "./temp-changes";
 import { workRouter } from "./work";
 import { cyclesRouter } from "./cycles";
 import { workloadRouter } from "./workload";
+import { automationRouter } from "./automation";
 
 export const appRouter = {
   healthCheck: publicProcedure.handler(() => "OK"),
@@ -46,6 +47,7 @@ export const appRouter = {
   work: workRouter,
   cycles: cyclesRouter,
   workload: workloadRouter,
+  automation: automationRouter,
 };
 
 export type AppRouter = typeof appRouter;
