@@ -23,7 +23,7 @@ import {
 } from "./schema/incidents";
 import {
   workItems, workItemAssignees, workItemTeamAllocations, workInitiatives,
-  workItemComments, workItemWeeklyUpdates, workItemDependencies,
+  workItemComments, workItemWeeklyUpdates, workItemDependencies, workItemTemplates,
 } from "./schema/work";
 import { cycles, cycleWorkItems } from "./schema/cycles";
 import {
@@ -56,7 +56,8 @@ import { onCallSwaps } from "./schema/rota";
 // ── ID registries (for targeted clear) ─────────────────────────────────────
 
 const DEMO_SERVICE_IDS       = ["svc-dcn", "svc-inet", "svc-ad", "svc-monitoring", "svc-ipam", "svc-email"] as const;
-const DEMO_WORK_ITEM_IDS     = ["wi-001","wi-002","wi-003","wi-004","wi-005","wi-006","wi-007","wi-008","wi-009","wi-010","wi-011","wi-012","wi-013"] as const;
+const DEMO_WORK_ITEM_IDS     = ["wi-001","wi-002","wi-003","wi-004","wi-005","wi-006","wi-007","wi-008","wi-009","wi-010","wi-011","wi-012","wi-013","wi-014","wi-015","wi-016","wi-017","wi-018","wi-019","wi-020","wi-021","wi-022"] as const;
+const DEMO_TEMPLATE_IDS      = ["wt-001","wt-002","wt-003","wt-004"] as const;
 const DEMO_INCIDENT_IDS      = ["inc-001","inc-002","inc-003","inc-004"] as const;
 const DEMO_LEAVE_TYPE_IDS    = ["lt-annual","lt-sick","lt-emergency","lt-study"] as const;
 const DEMO_LEAVE_BALANCE_IDS = ["lb-kareem-annual","lb-shemar-annual","lb-bheesham-annual","lb-timothy-annual","lb-timothy-study","lb-richie-sick","lb-gerard-annual"] as const;
@@ -81,7 +82,7 @@ const DEMO_NOTIFICATION_IDS  = ["notif-001","notif-002","notif-003","notif-004",
 const DEMO_ACCESS_REVIEW_IDS = ["arev-001","arev-002","arev-003","arev-004"] as const;
 const DEMO_SWAP_IDS          = ["swap-001","swap-002"] as const;
 const DEMO_COMMENT_IDS       = ["wic-001","wic-002","wic-003","wic-004","wic-005","wic-006"] as const;
-const DEMO_UPDATE_IDS        = ["wiu-001","wiu-002","wiu-003","wiu-004"] as const;
+const DEMO_UPDATE_IDS        = ["wiu-001","wiu-002","wiu-003","wiu-004","wiu-005","wiu-006","wiu-007","wiu-008"] as const;
 const DEMO_DEP_IDS           = ["wid-001","wid-002","wid-003"] as const;
 const DEMO_PIR_IDS           = ["pir-001","pir-002"] as const;
 const DEMO_RECON_IDS         = ["ri-001","ri-002","ri-003"] as const;
@@ -176,8 +177,9 @@ async function clearDemo() {
   await db.delete(workItemAssignees).where(inArray(workItemAssignees.id, [...DEMO_ASSIGNEE_IDS]));
   await db.delete(workItemTeamAllocations).where(inArray(workItemTeamAllocations.id, [...DEMO_TEAM_ALLOC_IDS]));
 
-  // Work items
+  // Work items + templates
   await db.delete(workItems).where(inArray(workItems.id, [...DEMO_WORK_ITEM_IDS]));
+  await db.delete(workItemTemplates).where(inArray(workItemTemplates.id, [...DEMO_TEMPLATE_IDS]));
 
   // Services
   await db.delete(services).where(inArray(services.id, [...DEMO_SERVICE_IDS]));
@@ -218,6 +220,18 @@ async function seedDemo() {
     { id: "wi-011", title: "Setup Grafana dashboard for LTE monitoring", type: "project", status: "review", priority: "medium",   assignedToId: "sp-shemar",    description: "Create Grafana panels pulling from LTE gateway SNMP metrics to monitor signal quality and throughput.", dueDate: "2026-04-20", createdById: "user-sachin" },
     { id: "wi-012", title: "Decommission legacy PBX system",       type: "project",   status: "done",        priority: "medium",   assignedToId: "sp-devon",     description: "Remove Panasonic KX-TDA100 PBX and migrate remaining extensions to MS Teams calling.", dueDate: "2026-03-15", completedAt: new Date("2026-03-12"), createdById: "user-sachin" },
     { id: "wi-013", title: "Replace UPS batteries in Room A",       type: "project",   status: "blocked",     priority: "critical", assignedToId: "sp-gerard",    description: "APC battery replacement approved in PR-003. Blocked on vendor delivery — Schneider confirmed shipment delayed to 2026-04-28.", dueDate: "2026-04-28", createdById: "user-sachin" },
+
+    // ── Real DCS tasks from WorkUpdate_20240118_v01.xlsx ──────────────────────
+    // CurrentWork sheet — real ongoing projects adapted to 2026 timeframe
+    { id: "wi-014", title: "Bartica LEO Aggregation — Starlink Bonding",  type: "project",         status: "in_progress", priority: "high",     assignedToId: "sp-devon",     description: "Design and implement bonded Starlink backhaul for Bartica region. Aggregate two LEO devices, encrypted tunnel, MPLS+IS-IS/OSPF overlay. Coordinate with Wintz and Rovin at OSP. Test with PE router in office first.", dueDate: "2026-06-30", createdById: "user-sachin" },
+    { id: "wi-015", title: "VPN User Groups — AD Group Migration",         type: "project",         status: "in_progress", priority: "high",     assignedToId: "sp-kareem",    description: "Migrate all NDMA staff from local Fortigate VPN accounts to Active Directory-based VPN groups. Adjust all policies, ensure correct AD group added. Map local groups → AD groups, coordinate with Cloud Services, test MFA cutover one-by-one.", dueDate: "2026-05-17", createdById: "user-sachin" },
+    { id: "wi-016", title: "WiFiGY Captive Portal Implementation",          type: "project",         status: "in_progress", priority: "medium",   assignedToId: "sp-kareem",    description: "Implement captive portal for WiFiGY public Wi-Fi across NDMA sites. Covers UniFi (Kareem), Cambium (Nicolai), Huawei (Sachin), LEO sites (Sachin). UI being developed by Avinash+Sachin.", dueDate: "2026-06-30", createdById: "user-sachin" },
+    { id: "wi-017", title: "Safecountry Phase 3 — Network Low Level Design", type: "project",       status: "review",      priority: "high",     assignedToId: "sp-nicolai",   description: "Review Huawei's Phase 3 LLD document for Safecountry. Compile and send review comments to Huawei by agreed deadline. Document covers IVS ring topology, camera additions, and backhaul changes.", dueDate: "2026-04-30", createdById: "user-sachin" },
+    { id: "wi-018", title: "Secondary IXP Link — OneComm Onboarding",       type: "project",        status: "todo",        priority: "critical", assignedToId: "sp-sachin",    description: "Bring up OneComm secondary IXP link for internet redundancy. Internal fibre approval pending. Will provide failover for primary GTT IXP. Includes BGP config, route filtering, and failover testing.", dueDate: "2026-06-30", createdById: "user-sachin" },
+    { id: "wi-019", title: "Add DCS/NOC Servers to Wazuh SIEM",             type: "project",        status: "todo",        priority: "high",     assignedToId: "sp-shemar",    description: "Deploy Wazuh agents to all DCS and NOC servers. Configure log collection, file integrity monitoring, and alerting rules. Integrate with existing Kibana dashboard.", dueDate: "2026-05-31", createdById: "user-sachin" },
+    { id: "wi-020", title: "Assess Logging Infrastructure — Syslog Strategy", type: "project",      status: "todo",        priority: "medium",   assignedToId: "sp-shemar",    description: "Evaluate current logging: Syslog-NG, Kiwi Syslog, NAT logs, VPN logs, DHCP logs. Determine future state and storage requirements for ISO certification evidence. Produce infrastructure recommendation report.", dueDate: "2026-05-31", createdById: "user-sachin" },
+    { id: "wi-021", title: "MOH EMR Project — Network Infrastructure Support", type: "external_request", status: "in_progress", priority: "high", assignedToId: "sp-devon", description: "DCS providing network support for Ministry of Health EMR (Electronic Medical Records) rollout. Review project documents to understand scope. Provide connectivity configs and support for health facility sites.", dueDate: "2026-06-30", createdById: "user-sachin" },
+    { id: "wi-022", title: "Fortigate 1801F CGN-2 Redundancy Design",       type: "project",        status: "blocked",     priority: "high",     assignedToId: "sp-bheesham",  description: "Design HA/redundancy between the Fortigate 1801F and CGN-2 carrier-grade NAT. Currently reviewing CGNAT and 1801F configs. Blocked pending management approval on design direction.", dueDate: "2026-05-30", createdById: "user-sachin" },
   ]).onConflictDoNothing();
 
   // ── Work Item Multi-Assignees ──────────────────────────────────────────────
@@ -253,9 +267,10 @@ async function seedDemo() {
   // ── Work Item Initiative Links ─────────────────────────────────────────────
   console.log("🔗 Linking work items to initiatives...");
   // Use direct SQL update — onConflictDoNothing is only for inserts
-  await db.update(workItems).set({ initiativeId: "win-001" }).where(inArray(workItems.id, ["wi-001","wi-003","wi-005","wi-009","wi-013"]));
-  await db.update(workItems).set({ initiativeId: "win-002" }).where(inArray(workItems.id, ["wi-004","wi-008"]));
-  await db.update(workItems).set({ initiativeId: "win-003" }).where(inArray(workItems.id, ["wi-011","wi-010","wi-002"]));
+  await db.update(workItems).set({ initiativeId: "win-001" }).where(inArray(workItems.id, ["wi-001","wi-003","wi-005","wi-009","wi-013","wi-014","wi-018"]));
+  await db.update(workItems).set({ initiativeId: "win-002" }).where(inArray(workItems.id, ["wi-004","wi-008","wi-015","wi-022"]));
+  await db.update(workItems).set({ initiativeId: "win-003" }).where(inArray(workItems.id, ["wi-011","wi-010","wi-002","wi-019","wi-020"]));
+  // wi-016 WiFiGY, wi-017 Safecountry, wi-021 MOH are cross-functional — no single initiative
 
   // ── Work Item Dependencies ─────────────────────────────────────────────────
   console.log("🔀 Seeding work item dependencies...");
@@ -299,6 +314,78 @@ async function seedDemo() {
       id: "wiu-004", workItemId: "wi-009", authorId: "user-sachin", weekStart: "2026-04-07",
       statusSummary: "Kicked off DRP review kick-off meeting. Assigned sections to each team lead.",
       nextSteps: "Collect RTO/RPO inputs from all departments by 30 Apr. Schedule tabletop for 15 May.",
+    },
+    // New items from WorkUpdate Excel — real language from the tracker
+    {
+      id: "wiu-005", workItemId: "wi-014", authorId: "user-devon", weekStart: "2026-04-07",
+      statusSummary: "Design completed for bonded Starlink backhaul. Test bed set up in office with PE router and two LEO devices. MPLS+IS-IS adjacency forming correctly on the lab setup.",
+      blockers: "OSP not ready at Bartica site yet. Wintz to confirm access date.",
+      nextSteps: "Stand by for OSP site readiness. Prepare RFC for production cutover.",
+    },
+    {
+      id: "wiu-006", workItemId: "wi-015", authorId: "user-kareem", weekStart: "2026-04-07",
+      statusSummary: "All NDMA VPN policies reviewed. Mapped local VPN groups to AD group equivalents: NOCUsers1, CPUsers1, PME_Users1, TransmissionUsers, VSATUsers1, CloudUsers1. List sent to Cloud Services.",
+      blockers: "Waiting on Cloud Services to add users to AD groups before we can begin per-user MFA cutover testing.",
+      nextSteps: "Once Cloud confirms AD group population, begin cutover testing starting with NOC team.",
+    },
+    {
+      id: "wiu-007", workItemId: "wi-016", authorId: "user-kareem", weekStart: "2026-03-31",
+      statusSummary: "UniFi captive portal tested successfully at Castellani HQ. Users authenticated via splash page. Huawei portal config drafted by Sachin.",
+      nextSteps: "Cambium portal (Nicolai) and LEO sites (Sachin) still to be completed. Toni still to test at a few command centres.",
+    },
+    {
+      id: "wiu-008", workItemId: "wi-021", authorId: "user-devon", weekStart: "2026-04-07",
+      statusSummary: "Reviewed MOH EMR project charter and network scope document. Scope includes connectivity to 14 health facilities across 4 regions. DCS responsible for routing configs and firewall rules.",
+      nextSteps: "Schedule call with MOH IT team to clarify VLAN requirements. Produce network design for Region 4 facilities.",
+    },
+  ]).onConflictDoNothing();
+
+  // ── Work Item Templates (from Routine sheet — real recurring DCS tasks) ────
+  console.log("📋 Seeding work item templates...");
+  await db.insert(workItemTemplates).values([
+    {
+      id: "wt-001",
+      title: "Monthly Configuration Checks",
+      description: "Run configuration compliance checks on all managed network devices. Verify routing tables, firewall rules, BGP peers, OSPF adjacencies, and spanning-tree states match approved baselines. Follow up with engineers for any discrepancies.",
+      type: "routine",
+      priority: "medium",
+      departmentId: "dept-asn",
+      estimatedHours: 8,
+      recurrencePattern: "monthly",
+      createdById: "user-sachin",
+    },
+    {
+      id: "wt-002",
+      title: "Data Centre Maintenance Checklist",
+      description: "Physical walkthrough of Liliendaal and Castellani data centres. Check: cooling temps and airflow, UPS health and battery state, power feed redundancy, cable management, cleanliness, fire suppression system status, CCTV coverage, and physical security. Submit facilities report.",
+      type: "routine",
+      priority: "high",
+      departmentId: "dept-core",
+      estimatedHours: 4,
+      recurrencePattern: "monthly",
+      createdById: "user-sachin",
+    },
+    {
+      id: "wt-003",
+      title: "Critical Asset Inventory Report",
+      description: "Reconcile physical inventory against iTop CMDB, SnipeIT, and IPAM. Update asset locations, assigned users, and lifecycle dates. Flag items approaching end-of-life (core routers 8–10yr, customer routers 5yr). Produce re-order level report for procurement.",
+      type: "routine",
+      priority: "medium",
+      departmentId: "dept-core",
+      estimatedHours: 6,
+      recurrencePattern: "quarterly",
+      createdById: "user-sachin",
+    },
+    {
+      id: "wt-004",
+      title: "Unit Rapid Report — Critical Issue Summary",
+      description: "Compile weekly rapid report covering critical incidents, open Slack alerts at Castellani and Liliendaal, and any open iTop tickets with Critical priority. Distribute to Sachin and department leads via email by COB Monday.",
+      type: "routine",
+      priority: "high",
+      departmentId: "dept-asn",
+      estimatedHours: 2,
+      recurrencePattern: "weekly",
+      createdById: "user-sachin",
     },
   ]).onConflictDoNothing();
 
@@ -607,10 +694,19 @@ async function seedDemo() {
     { cycleId: "cyc-002", workItemId: "wi-004" },
     { cycleId: "cyc-002", workItemId: "wi-005" },
     { cycleId: "cyc-002", workItemId: "wi-009" },
+    { cycleId: "cyc-002", workItemId: "wi-014" },
+    { cycleId: "cyc-002", workItemId: "wi-015" },
+    { cycleId: "cyc-002", workItemId: "wi-016" },
+    { cycleId: "cyc-002", workItemId: "wi-017" },
+    { cycleId: "cyc-002", workItemId: "wi-018" },
+    { cycleId: "cyc-002", workItemId: "wi-021" },
+    { cycleId: "cyc-002", workItemId: "wi-022" },
     { cycleId: "cyc-003", workItemId: "wi-006" },
     { cycleId: "cyc-003", workItemId: "wi-008" },
     { cycleId: "cyc-003", workItemId: "wi-010" },
     { cycleId: "cyc-003", workItemId: "wi-011" },
+    { cycleId: "cyc-003", workItemId: "wi-019" },
+    { cycleId: "cyc-003", workItemId: "wi-020" },
   ]).onConflictDoNothing();
 
   // ── Contracts ──────────────────────────────────────────────────────────────
