@@ -19,9 +19,13 @@ export const queryClient = new QueryClient({
   }),
 });
 
+// Resolve the RPC base URL: use VITE_SERVER_URL in dev, otherwise fall back to
+// window.location.origin so the URL is always absolute (new URL() requires this).
+const rpcBase =
+  env.VITE_SERVER_URL || (typeof window !== "undefined" ? window.location.origin : "");
+
 export const link = new RPCLink({
-  // Empty VITE_SERVER_URL → relative /rpc (same origin). Set in .env.local for dev.
-  url: `${env.VITE_SERVER_URL}/rpc`,
+  url: `${rpcBase}/rpc`,
   fetch(url, options) {
     return fetch(url, {
       ...options,
