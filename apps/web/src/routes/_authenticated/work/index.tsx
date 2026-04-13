@@ -3,7 +3,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertCircle,
+  BarChart2,
+  CalendarDays,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   ClipboardCheck,
   Columns3,
   LayoutGrid,
@@ -12,8 +16,20 @@ import {
   Plus,
   RefreshCw,
   Timer,
+  User,
 } from "lucide-react";
-import { format, isPast, parseISO } from "date-fns";
+import {
+  format,
+  isPast,
+  parseISO,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameDay,
+  getDay,
+  addMonths,
+  subMonths,
+} from "date-fns";
 import {
   BarChart,
   Bar,
@@ -61,7 +77,7 @@ export const Route = createFileRoute("/_authenticated/work/")({
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
-type ViewMode = "list" | "kanban" | "grid";
+type ViewMode = "list" | "kanban" | "grid" | "calendar" | "analytics";
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
@@ -426,9 +442,275 @@ function WorkGridView({ items }: { items: WorkItem[] }) {
   );
 }
 
+// ── Analytics view ─────────────────────────────────────────────────────────
+
+function WorkAnalyticsView({ items }: { items: WorkItem[] }) {
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Aggregate per assignee
+  const byAssignee: Record<
+    string,
+    { open: number; overdue: number; done: number }
+  > = {};
+
+  for (const item of items) {
+    const name = item.assignedTo?.user?.name ?? "Unassigned";
+    if (!byAssignee[name]) byAssignee[name] = { open: 0, overdue: 0, done: 0 };
+    if (item.status === "done" || item.status === "cancelled") {
+      if (item.status === "done") byAssignee[name].done++;
+    } else {
+      byAssignee[name].open++;
+      if (item.dueDate && item.dueDate < today) byAssignee[name].overdue++;
+    }
+  }
+
+  const chartData = Object.entries(byAssignee)
+    .map(([name, c]) => ({ name, ...c }))
+    .filter((d) => d.open + d.done > 0)
+    .sort((a, b) => b.open - a.open)
+    .slice(0, 20); // cap at 20 engineers for readability
+
+  if (chartData.length === 0) {
+    return (
+      <p className="py-12 text-center text-sm text-muted-foreground">
+        No assigned work items to analyse.
+      </p>
+    );
+  }
+
+  // Dynamic bar height: 32px per row + header padding
+  const chartHeight = Math.max(200, chartData.length * 36 + 20);
+
+  return (
+    <div className="space-y-6">
+      {/* Horizontal bar chart — open items per engineer */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <User className="h-4 w-4 text-primary" />
+            Open Work Items per Engineer
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={chartHeight}>
+            <BarChart
+              layout="vertical"
+              data={chartData}
+              margin={{ top: 4, right: 48, left: 8, bottom: 4 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+              <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ fontSize: 12 }} cursor={{ fill: "hsl(var(--muted))" }} />
+              <Bar dataKey="open" name="Open" fill="#3b82f6" radius={[0, 4, 4, 0]} label={{ position: "right", fontSize: 11 }} />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Summary table */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">Breakdown by Engineer</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="rounded-b-md overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/50 text-xs text-muted-foreground uppercase tracking-wide">
+                  <th className="px-4 py-2 text-left font-medium">Engineer</th>
+                  <th className="px-4 py-2 text-right font-medium">Open</th>
+                  <th className="px-4 py-2 text-right font-medium text-red-600">Overdue</th>
+                  <th className="px-4 py-2 text-right font-medium text-green-600">Done</th>
+                </tr>
+              </thead>
+              <tbody>
+                {chartData.map((row, i) => (
+                  <tr key={row.name} className={`border-b last:border-0 ${i % 2 === 0 ? "" : "bg-muted/20"}`}>
+                    <td className="px-4 py-2 font-medium">{row.name}</td>
+                    <td className="px-4 py-2 text-right tabular-nums">{row.open}</td>
+                    <td className={`px-4 py-2 text-right tabular-nums ${row.overdue > 0 ? "text-red-600 font-semibold" : "text-muted-foreground"}`}>
+                      {row.overdue}
+                    </td>
+                    <td className="px-4 py-2 text-right tabular-nums text-green-600">{row.done}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ── Calendar view ──────────────────────────────────────────────────────────
+
+const DAY_HEADERS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function WorkCalendarView({ items }: { items: WorkItem[] }) {
+  const [month, setMonth] = useState(new Date());
+
+  const monthStart = startOfMonth(month);
+  const monthEnd = endOfMonth(month);
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+  // Pad start to Monday (getDay returns 0=Sun, so shift: Mon=0..Sun=6)
+  const startPad = (getDay(monthStart) + 6) % 7;
+  const cells: (Date | null)[] = [
+    ...Array.from<null>({ length: startPad }).fill(null),
+    ...days,
+  ];
+  // Pad end to complete last row
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  // Group items by dueDate string (YYYY-MM-DD)
+  const byDate: Record<string, WorkItem[]> = {};
+  for (const item of items) {
+    if (item.dueDate) {
+      (byDate[item.dueDate] ??= []).push(item);
+    }
+  }
+
+  const today = new Date();
+
+  return (
+    <div>
+      {/* Month navigator */}
+      <div className="mb-4 flex items-center justify-between">
+        <button
+          onClick={() => setMonth((m) => subMonths(m, 1))}
+          className="rounded-md border p-1.5 hover:bg-muted transition-colors"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <h2 className="text-sm font-semibold">{format(month, "MMMM yyyy")}</h2>
+        <button
+          onClick={() => setMonth((m) => addMonths(m, 1))}
+          className="rounded-md border p-1.5 hover:bg-muted transition-colors"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Day headers */}
+      <div className="mb-1 grid grid-cols-7 text-center">
+        {DAY_HEADERS.map((d) => (
+          <div key={d} className="py-1 text-xs font-medium text-muted-foreground">
+            {d}
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar grid */}
+      <div className="grid grid-cols-7 border-l border-t">
+        {cells.map((day, i) => {
+          if (!day) {
+            return (
+              <div
+                key={`pad-${i}`}
+                className="min-h-[80px] border-b border-r bg-muted/20 p-1"
+              />
+            );
+          }
+
+          const dateKey = format(day, "yyyy-MM-dd");
+          const cellItems = byDate[dateKey] ?? [];
+          const isToday = isSameDay(day, today);
+          const MAX_VISIBLE = 3;
+
+          return (
+            <div
+              key={dateKey}
+              className={`min-h-[80px] border-b border-r p-1 ${isToday ? "bg-primary/5" : ""}`}
+            >
+              {/* Day number */}
+              <div
+                className={`mb-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-medium ${
+                  isToday
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {format(day, "d")}
+              </div>
+
+              {/* Items */}
+              <div className="space-y-0.5">
+                {cellItems.slice(0, MAX_VISIBLE).map((item) => {
+                  const overdue =
+                    item.status !== "done" &&
+                    item.status !== "cancelled" &&
+                    day < today;
+                  return (
+                    <div
+                      key={item.id}
+                      title={item.title}
+                      className={`truncate rounded px-1 py-0.5 text-[10px] leading-tight ${
+                        item.status === "done"
+                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                          : overdue
+                            ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                            : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                      }`}
+                    >
+                      {item.title}
+                    </div>
+                  );
+                })}
+                {cellItems.length > MAX_VISIBLE && (
+                  <div className="pl-1 text-[10px] text-muted-foreground">
+                    +{cellItems.length - MAX_VISIBLE} more
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Legend */}
+      <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <span className="h-2.5 w-2.5 rounded bg-blue-200" />
+          Open
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="h-2.5 w-2.5 rounded bg-red-200" />
+          Overdue
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="h-2.5 w-2.5 rounded bg-green-200" />
+          Done
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // ── Loading skeleton ───────────────────────────────────────────────────────
 
 function LoadingSkeleton({ view }: { view: ViewMode }) {
+  if (view === "analytics") {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-64 w-full rounded-md" />
+        <Skeleton className="h-48 w-full rounded-md" />
+      </div>
+    );
+  }
+  if (view === "calendar") {
+    return (
+      <div>
+        <Skeleton className="mb-4 h-6 w-40 mx-auto" />
+        <div className="grid grid-cols-7 gap-px">
+          {Array.from({ length: 35 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 rounded-none" />
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (view === "kanban") {
     return (
       <div className="flex gap-3 overflow-x-auto pb-4">
@@ -532,28 +814,24 @@ function WorkPage() {
         <div className="ms-auto flex items-center gap-2">
           {/* View switcher */}
           <div className="flex items-center rounded-md border p-0.5 gap-0.5">
-            <button
-              onClick={() => setView("list")}
-              title="List view"
-              className={`rounded p-1 transition-colors ${view === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              <LayoutList className="size-4" />
-            </button>
-            <button
-              onClick={() => setView("kanban")}
-              title="Kanban view"
-              className={`rounded p-1 transition-colors ${view === "kanban" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              <Columns3 className="size-4" />
-            </button>
-            <button
-              onClick={() => setView("grid")}
-              title="Grid view"
-              className={`rounded p-1 transition-colors ${view === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              <LayoutGrid className="size-4" />
-            </button>
-          </div>
+            {(
+              [
+                { mode: "list", icon: <LayoutList className="size-4" />, title: "List view" },
+                { mode: "kanban", icon: <Columns3 className="size-4" />, title: "Kanban view" },
+                { mode: "grid", icon: <LayoutGrid className="size-4" />, title: "Grid view" },
+                { mode: "calendar", icon: <CalendarDays className="size-4" />, title: "Calendar view" },
+                { mode: "analytics", icon: <BarChart2 className="size-4" />, title: "Analytics view" },
+              ] as const
+            ).map(({ mode, icon, title }) => (
+              <button
+                key={mode}
+                onClick={() => setView(mode)}
+                title={title}
+                className={`rounded p-1 transition-colors ${view === mode ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                {icon}
+              </button>
+            ))}</div>
 
           <Button variant="ghost" size="icon" onClick={() => refetch()} title="Refresh">
             <RefreshCw className="size-4" />
@@ -767,6 +1045,10 @@ function WorkPage() {
           <WorkKanbanView items={data ?? []} />
         ) : view === "grid" ? (
           <WorkGridView items={data ?? []} />
+        ) : view === "calendar" ? (
+          <WorkCalendarView items={data ?? []} />
+        ) : view === "analytics" ? (
+          <WorkAnalyticsView items={data ?? []} />
         ) : (
           <WorkListView items={data ?? []} />
         )}
