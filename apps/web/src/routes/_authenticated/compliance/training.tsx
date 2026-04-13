@@ -32,7 +32,7 @@ function ComplianceStatusBadge({ status }: { status: string }) {
     not_applicable: { label: "N/A", cls: "bg-muted text-muted-foreground" },
   };
   const cfg = map[status] ?? { label: status, cls: "bg-muted text-muted-foreground" };
-  return <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cfg.cls}`}>{cfg.label}</span>;
+  return <span className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${cfg.cls}`}>{cfg.label}</span>;
 }
 
 function TrainingPage() {
@@ -85,7 +85,7 @@ function TrainingPage() {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as TrainingStatus | "")}
-            className="rounded-md border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="">All Statuses</option>
             <option value="current">Current</option>
@@ -95,7 +95,7 @@ function TrainingPage() {
           </select>
         </div>
 
-        <div className="rounded-md border">
+        <div className="rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>

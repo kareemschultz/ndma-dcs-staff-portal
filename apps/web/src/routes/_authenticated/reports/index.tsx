@@ -57,7 +57,7 @@ function labelCase(s: string) {
 // ── Section skeleton ───────────────────────────────────────────────────────
 
 function ChartSkeleton({ height = 220 }: { height?: number }) {
-  return <Skeleton className="w-full rounded-md" style={{ height }} />;
+  return <Skeleton className="w-full rounded-xl" style={{ height }} />;
 }
 
 // ── KPI pill ──────────────────────────────────────────────────────────────
@@ -441,7 +441,7 @@ function ComplianceExpirySection() {
         {isLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-9 w-full rounded-md" />
+              <Skeleton key={i} className="h-9 w-full rounded-xl" />
             ))}
           </div>
         ) : urgentItems.length === 0 ? (
@@ -449,7 +449,7 @@ function ComplianceExpirySection() {
             No items expiring within 30 days.
           </p>
         ) : (
-          <div className="divide-y rounded-md border">
+          <div className="divide-y rounded-xl border">
             {urgentItems.slice(0, 8).map((item) => (
               <div
                 key={item.id}
@@ -463,7 +463,7 @@ function ComplianceExpirySection() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span
-                    className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
+                    className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${
                       item.type === "training"
                         ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
                         : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
@@ -472,7 +472,7 @@ function ComplianceExpirySection() {
                     {item.type}
                   </span>
                   <span
-                    className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-bold tabular-nums ${
+                    className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-bold tabular-nums ${
                       item.daysLeft <= 7
                         ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
                         : "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"

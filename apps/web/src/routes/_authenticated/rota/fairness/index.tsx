@@ -184,7 +184,7 @@ function SummaryTable({
   const sorted = [...data].sort((a, b) => b.total - a.total);
 
   return (
-    <div className="overflow-x-auto rounded-md border">
+    <div className="overflow-x-auto rounded-xl border">
       <table className="w-full min-w-[600px] text-sm">
         <thead>
           <tr className="border-b bg-muted/30">
@@ -192,22 +192,22 @@ function SummaryTable({
               Engineer
             </th>
             <th className="py-2.5 px-3 text-center font-medium">
-              <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+              <span className="inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
                 Lead
               </span>
             </th>
             <th className="py-2.5 px-3 text-center font-medium">
-              <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+              <span className="inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
                 ASN
               </span>
             </th>
             <th className="py-2.5 px-3 text-center font-medium">
-              <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
+              <span className="inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
                 Core
               </span>
             </th>
             <th className="py-2.5 px-3 text-center font-medium">
-              <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
+              <span className="inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
                 Enterprise
               </span>
             </th>
@@ -338,7 +338,7 @@ function FairnessPage() {
             </Card>
           </div>
         ) : stats.length === 0 ? (
-          <div className="rounded-md border border-dashed p-12 text-center text-muted-foreground text-sm">
+          <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground text-sm">
             No assignment data available yet. Publish schedules to see fairness metrics.
           </div>
         ) : (
@@ -392,7 +392,7 @@ function FairnessPage() {
                   {overloaded.map((e) => (
                     <div
                       key={e.staffProfileId}
-                      className="flex items-center justify-between rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-3 py-2"
+                      className="flex items-center justify-between rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-3 py-2"
                     >
                       <div>
                         <p className="text-sm font-medium">{e.name}</p>
@@ -408,7 +408,7 @@ function FairnessPage() {
                   {underloaded.map((e) => (
                     <div
                       key={e.staffProfileId}
-                      className="flex items-center justify-between rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 px-3 py-2"
+                      className="flex items-center justify-between rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 px-3 py-2"
                     >
                       <div>
                         <p className="text-sm font-medium">{e.name}</p>

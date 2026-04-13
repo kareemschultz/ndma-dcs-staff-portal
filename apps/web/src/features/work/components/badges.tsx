@@ -40,7 +40,7 @@ const typeConfig: Record<WorkType, { label: string }> = {
 function StatusBadge({ status }: { status: WorkStatus }) {
   const cfg = statusConfig[status] ?? statusConfig.backlog;
   return (
-    <span className={cn("inline-flex items-center rounded px-2 py-0.5 text-xs font-medium", cfg.className)}>
+    <span className={cn("inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium", cfg.className)}>
       {cfg.label}
     </span>
   );
@@ -49,7 +49,7 @@ function StatusBadge({ status }: { status: WorkStatus }) {
 function PriorityBadge({ priority }: { priority: WorkPriority }) {
   const cfg = priorityConfig[priority] ?? priorityConfig.medium;
   return (
-    <span className={cn("inline-flex items-center rounded px-2 py-0.5 text-xs font-medium", cfg.className)}>
+    <span className={cn("inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium", cfg.className)}>
       {cfg.label}
     </span>
   );
@@ -58,7 +58,7 @@ function PriorityBadge({ priority }: { priority: WorkPriority }) {
 function TypeBadge({ type }: { type: WorkType }) {
   const cfg = typeConfig[type] ?? typeConfig.routine;
   return (
-    <span className="inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+    <span className="inline-flex items-center rounded-lg border px-2 py-0.5 text-xs font-medium text-muted-foreground">
       {cfg.label}
     </span>
   );

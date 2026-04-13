@@ -95,7 +95,7 @@ function StaffPage() {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="rounded-md border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             {STATUS_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -105,7 +105,7 @@ function StaffPage() {
           <select
             value={deptId}
             onChange={(e) => setDeptId(e.target.value)}
-            className="rounded-md border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="">All Departments</option>
             {departments?.map((d) => (
@@ -115,7 +115,7 @@ function StaffPage() {
         </div>
 
         {/* Table */}
-        <div className="rounded-md border">
+        <div className="rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -168,7 +168,7 @@ function StaffPage() {
                     </TableCell>
                     <TableCell>
                       <span
-                        className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
+                        className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${
                           STATUS_COLORS[s.status] ?? "bg-muted text-muted-foreground"
                         }`}
                       >

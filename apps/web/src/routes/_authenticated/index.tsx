@@ -246,7 +246,7 @@ function DashboardPage() {
                   <CardTitle className="text-sm font-medium">
                     {card.title}
                   </CardTitle>
-                  <div className={`rounded-md p-1.5 ${card.bg}`}>
+                  <div className={`rounded-xl p-1.5 ${card.bg}`}>
                     <card.icon className={`size-4 ${card.color}`} />
                   </div>
                 </CardHeader>

@@ -94,7 +94,7 @@ function NewChangePage() {
             <input
               {...register("title")}
               placeholder="Brief description of the change"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
             {errors.title && (
               <p className="text-xs text-destructive mt-1">{errors.title.message}</p>
@@ -107,7 +107,7 @@ function NewChangePage() {
               {...register("description")}
               rows={3}
               placeholder="Detailed description of the change..."
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
           </div>
 
@@ -117,7 +117,7 @@ function NewChangePage() {
               {...register("justification")}
               rows={2}
               placeholder="Why was this change made?"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
           </div>
 
@@ -127,7 +127,7 @@ function NewChangePage() {
               <input
                 {...register("implementationDate")}
                 type="date"
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             <div>
@@ -135,7 +135,7 @@ function NewChangePage() {
               <input
                 {...register("removeByDate")}
                 type="date"
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
           </div>
@@ -144,7 +144,7 @@ function NewChangePage() {
             <label className="block text-sm font-medium mb-1.5">Owner</label>
             <select
               {...register("ownerId")}
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">Select owner (optional)</option>
               {staff?.map((s) => (
@@ -161,7 +161,7 @@ function NewChangePage() {
               {...register("rollbackPlan")}
               rows={3}
               placeholder="How can this change be reversed if needed?"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
           </div>
 

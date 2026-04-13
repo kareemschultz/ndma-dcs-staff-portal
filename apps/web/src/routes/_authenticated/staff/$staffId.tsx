@@ -68,7 +68,7 @@ function EmploymentTypeBadge({ type }: { type: string }) {
     temporary: "Temporary",
   };
   return (
-    <span className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+    <span className="inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
       {labels[type] ?? type}
     </span>
   );
@@ -266,7 +266,7 @@ function StaffProfilePage() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main info */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="rounded-md border p-5 space-y-4">
+            <div className="rounded-xl border p-5 space-y-4">
               <h2 className="font-semibold">Employment Details</h2>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -320,14 +320,14 @@ function StaffProfilePage() {
             </div>
 
             {/* Placeholder for future tabs */}
-            <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+            <div className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
               Additional tabs for Leave, Contracts, Training, PPE, and Appraisals coming in a later phase.
             </div>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-4">
-            <div className="rounded-md border p-4 space-y-3 text-sm">
+            <div className="rounded-xl border p-4 space-y-3 text-sm">
               <h3 className="font-semibold">Account</h3>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Mail className="size-3.5 shrink-0" />
@@ -338,7 +338,7 @@ function StaffProfilePage() {
               </div>
             </div>
 
-            <div className="rounded-md border p-4 text-sm">
+            <div className="rounded-xl border p-4 text-sm">
               <h3 className="font-semibold mb-2">Quick Links</h3>
               <div className="space-y-1.5">
                 <Link to="/rota" className="block text-muted-foreground hover:text-foreground">

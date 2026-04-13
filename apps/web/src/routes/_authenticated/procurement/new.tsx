@@ -118,7 +118,7 @@ function NewPRPage() {
               <input
                 {...register("title")}
                 placeholder="Brief title for the requisition"
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
               {errors.title && (
                 <p className="text-xs text-destructive mt-1">{errors.title.message}</p>
@@ -130,7 +130,7 @@ function NewPRPage() {
                 <label className="block text-sm font-medium mb-1.5">Priority</label>
                 <select
                   {...register("priority")}
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -142,7 +142,7 @@ function NewPRPage() {
                 <label className="block text-sm font-medium mb-1.5">Department</label>
                 <select
                   {...register("departmentId")}
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                   <option value="">Select department</option>
                   {departments?.map((d) => (
@@ -158,7 +158,7 @@ function NewPRPage() {
                 {...register("description")}
                 rows={2}
                 placeholder="What is being purchased?"
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
               />
             </div>
 
@@ -168,7 +168,7 @@ function NewPRPage() {
                 {...register("justification")}
                 rows={2}
                 placeholder="Why is this purchase needed?"
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
               />
             </div>
           </div>
@@ -199,13 +199,13 @@ function NewPRPage() {
 
             <div className="space-y-2">
               {fields.map((field, index) => (
-                <div key={field.id} className="rounded-md border p-3 space-y-2">
+                <div key={field.id} className="rounded-xl border p-3 space-y-2">
                   <div className="flex items-start gap-2">
                     <div className="flex-1">
                       <input
                         {...register(`lineItems.${index}.description`)}
                         placeholder="Item description"
-                        className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                       />
                     </div>
                     {fields.length > 1 && (
@@ -227,21 +227,21 @@ function NewPRPage() {
                         type="number"
                         min={1}
                         placeholder="Qty"
-                        className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                       />
                     </div>
                     <div>
                       <input
                         {...register(`lineItems.${index}.unitCost`)}
                         placeholder="Unit cost (GHS)"
-                        className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                       />
                     </div>
                     <div>
                       <input
                         {...register(`lineItems.${index}.unit`)}
                         placeholder="Unit (pcs, kg…)"
-                        className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                       />
                     </div>
                   </div>

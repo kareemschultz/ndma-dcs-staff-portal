@@ -198,7 +198,7 @@ function StatusBadge({ status }: { status: string }) {
   };
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium capitalize ${map[status] ?? map.pending}`}
+      className={`inline-flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-medium capitalize ${map[status] ?? map.pending}`}
     >
       {status}
     </span>
@@ -283,7 +283,7 @@ function ImportHistory() {
   }
 
   return (
-    <div className="rounded-md border overflow-x-auto">
+    <div className="rounded-xl border overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -518,7 +518,7 @@ function ImportPage() {
                     >
                       <CardHeader className="pb-2">
                         <div className="flex items-center gap-2">
-                          <div className="rounded-md bg-muted p-2">
+                          <div className="rounded-xl bg-muted p-2">
                             <target.icon className="size-4 text-foreground" />
                           </div>
                           <CardTitle className="text-sm">{target.title}</CardTitle>
@@ -536,7 +536,7 @@ function ImportPage() {
                           {target.columns.map((col) => (
                             <span
                               key={col}
-                              className="font-mono text-[10px] bg-muted rounded px-1.5 py-0.5"
+                              className="font-mono text-[10px] bg-muted rounded-lg px-1.5 py-0.5"
                             >
                               {col}
                             </span>
@@ -620,7 +620,7 @@ function ImportPage() {
                 </div>
 
                 {parsedRows.length > 0 && (
-                  <div className="rounded-md border bg-muted/30 p-3 text-sm">
+                  <div className="rounded-xl border bg-muted/30 p-3 text-sm">
                     <p className="font-medium">{fileName}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {parsedRows.length} data rows — headers: {parsedHeaders.join(", ")}
@@ -668,20 +668,20 @@ function ImportPage() {
                 </div>
 
                 {!allValid && (
-                  <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/20 px-3 py-2 text-sm text-red-700 dark:text-red-400">
+                  <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/20 px-3 py-2 text-sm text-red-700 dark:text-red-400">
                     <AlertCircle className="size-4 shrink-0" />
                     Fix all row errors before importing. Required fields must not be empty.
                   </div>
                 )}
 
                 {allValid && (
-                  <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/20 px-3 py-2 text-sm text-green-700 dark:text-green-400">
+                  <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/20 px-3 py-2 text-sm text-green-700 dark:text-green-400">
                     <CheckCircle className="size-4 shrink-0" />
                     All {validCount} rows passed validation. Ready to import.
                   </div>
                 )}
 
-                <div className="rounded-md border overflow-x-auto">
+                <div className="rounded-xl border overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -710,7 +710,7 @@ function ImportPage() {
                           ))}
                           <TableCell>
                             {row.errors.length === 0 ? (
-                              <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                              <span className="inline-flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
                                 <CheckCircle className="size-3" />
                                 Valid
                               </span>
@@ -719,7 +719,7 @@ function ImportPage() {
                                 {row.errors.map((err, j) => (
                                   <span
                                     key={j}
-                                    className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+                                    className="inline-flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
                                   >
                                     <AlertCircle className="size-3 shrink-0" />
                                     {err}
@@ -767,7 +767,7 @@ function ImportPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="rounded-md bg-muted/50 p-3 text-sm space-y-1.5">
+                    <div className="rounded-xl bg-muted/50 p-3 text-sm space-y-1.5">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Import type</span>
                         <span className="font-medium">{selectedType.title}</span>
@@ -790,7 +790,7 @@ function ImportPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+                    <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
                       <AlertCircle className="size-3.5 mt-0.5 shrink-0" />
                       This action will create new records. Duplicate emails will be skipped with an
                       error.
@@ -862,7 +862,7 @@ function ImportPage() {
                   </div>
 
                   {importResult.errors && importResult.errors.length > 0 && (
-                    <div className="text-left rounded-md border bg-red-50 dark:bg-red-950/20 p-3 mb-4 space-y-1.5 max-h-40 overflow-y-auto">
+                    <div className="text-left rounded-xl border bg-red-50 dark:bg-red-950/20 p-3 mb-4 space-y-1.5 max-h-40 overflow-y-auto">
                       {importResult.errors.slice(0, 10).map((e, i) => (
                         <p key={i} className="text-xs text-red-700 dark:text-red-400">
                           Row {e.row}

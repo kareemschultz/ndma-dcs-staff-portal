@@ -95,7 +95,7 @@ function ChartCardSkeleton() {
         <Skeleton className="h-5 w-40" />
       </CardHeader>
       <CardContent>
-        <Skeleton className="w-full h-[260px] rounded-md" />
+        <Skeleton className="w-full h-[260px] rounded-xl" />
       </CardContent>
     </Card>
   );
@@ -1121,7 +1121,7 @@ function AnalyticsPage() {
           <ThemeSwitch />
           <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium shadow-xs hover:bg-muted transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-medium shadow-xs hover:bg-muted transition-colors"
           >
             <Download className="size-3.5" />
             Export PDF
@@ -1148,7 +1148,7 @@ function AnalyticsPage() {
 
         {/* Error state */}
         {isError && (
-          <div className="mb-6 rounded-md border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300">
             Failed to load analytics data. Please refresh the page.
           </div>
         )}

@@ -36,7 +36,7 @@ function ComplianceStatusBadge({ status }: { status: string }) {
     not_started: { label: "Not Started", cls: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300" },
   };
   const cfg = map[status] ?? { label: status, cls: "bg-muted text-muted-foreground" };
-  return <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cfg.cls}`}>{cfg.label}</span>;
+  return <span className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${cfg.cls}`}>{cfg.label}</span>;
 }
 
 function PPEPage() {
@@ -78,7 +78,7 @@ function PPEPage() {
           </div>
         )}
 
-        <div className="rounded-md border">
+        <div className="rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -135,7 +135,7 @@ function PPEPage() {
                       </TableCell>
                       <TableCell>
                         <span
-                          className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
+                          className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${
                             CONDITION_COLORS[record.condition ?? "good"] ?? "bg-muted text-muted-foreground"
                           }`}
                         >

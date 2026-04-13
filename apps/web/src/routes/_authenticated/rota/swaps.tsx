@@ -69,7 +69,7 @@ function SwapTable({
 }) {
   if (isLoading) {
     return (
-      <div className="rounded-md border">
+      <div className="rounded-xl border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -100,7 +100,7 @@ function SwapTable({
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-xl border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -151,7 +151,7 @@ function SwapTable({
                   </TableCell>
                   <TableCell>
                     <span
-                      className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
+                      className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${
                         STATUS_COLORS[swap.status as SwapStatus] ?? ""
                       }`}
                     >

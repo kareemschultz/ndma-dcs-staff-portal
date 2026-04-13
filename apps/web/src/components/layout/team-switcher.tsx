@@ -77,7 +77,7 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
             ))}
             <DropdownMenuSeparator />
             <DropdownMenuItem className="gap-2 p-2" disabled>
-              <div className="flex size-6 items-center justify-center rounded-md border bg-background">
+              <div className="flex size-6 items-center justify-center rounded-xl border bg-background">
                 <Plus className="size-4" />
               </div>
               <div className="font-medium text-muted-foreground">Add organisation</div>

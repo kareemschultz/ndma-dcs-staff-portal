@@ -2,8 +2,6 @@ import { z } from "zod";
 import {
   db,
   staffProfiles,
-  workItems,
-  workItemAssignees,
   leaveRequests,
   onCallAssignments,
   onCallSchedules,

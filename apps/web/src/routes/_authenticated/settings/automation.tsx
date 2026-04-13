@@ -242,7 +242,7 @@ function RuleForm({
         </p>
         <div className="flex gap-2">
           <select
-            className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm flex-1"
+            className="flex h-9 rounded-xl border border-input bg-background px-3 py-1 text-sm flex-1"
             value={form.triggerModule}
             onChange={(e) => {
               const mod = e.target.value;
@@ -262,7 +262,7 @@ function RuleForm({
           </select>
 
           <select
-            className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm flex-1"
+            className="flex h-9 rounded-xl border border-input bg-background px-3 py-1 text-sm flex-1"
             value={form.triggerEvent}
             onChange={(e) => setField("triggerEvent", e.target.value)}
           >
@@ -301,7 +301,7 @@ function RuleForm({
                 onChange={(e) => updateCondition(i, { field: e.target.value })}
               />
               <select
-                className="flex h-9 rounded-md border border-input bg-background px-2 py-1 text-sm"
+                className="flex h-9 rounded-xl border border-input bg-background px-2 py-1 text-sm"
                 value={cond.operator}
                 onChange={(e) =>
                   updateCondition(i, {
@@ -349,11 +349,11 @@ function RuleForm({
           {form.actions.map((action, i) => (
             <div
               key={i}
-              className="border rounded-md p-3 space-y-2 bg-muted/30"
+              className="border rounded-xl p-3 space-y-2 bg-muted/30"
             >
               <div className="flex gap-2 items-center">
                 <select
-                  className="flex h-9 rounded-md border border-input bg-background px-2 py-1 text-sm"
+                  className="flex h-9 rounded-xl border border-input bg-background px-2 py-1 text-sm"
                   value={action.type}
                   onChange={(e) =>
                     updateAction(i, { type: e.target.value as Action["type"] })
@@ -804,7 +804,7 @@ function AutomationSettingsPage() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Trigger in-app notifications and actions when events occur across
-            modules. Use <code className="text-xs bg-muted px-1 rounded">{"{{field}}"}</code>{" "}
+            modules. Use <code className="text-xs bg-muted px-1 rounded-lg">{"{{field}}"}</code>{" "}
             placeholders in titles and bodies to include event data.
           </p>
         </div>
@@ -854,10 +854,10 @@ function AutomationSettingsPage() {
 
         {rules && rules.length > 0 && (
           <p className="text-xs text-muted-foreground mt-4">
-            Tip: Use fields like <code className="bg-muted px-1 rounded">assignedToId</code>,{" "}
-            <code className="bg-muted px-1 rounded">title</code>,{" "}
-            <code className="bg-muted px-1 rounded">priority</code>,{" "}
-            <code className="bg-muted px-1 rounded">status</code> in conditions
+            Tip: Use fields like <code className="bg-muted px-1 rounded-lg">assignedToId</code>,{" "}
+            <code className="bg-muted px-1 rounded-lg">title</code>,{" "}
+            <code className="bg-muted px-1 rounded-lg">priority</code>,{" "}
+            <code className="bg-muted px-1 rounded-lg">status</code> in conditions
             and action bodies — these match the fields on the event payload.
           </p>
         )}

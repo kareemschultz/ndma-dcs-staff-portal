@@ -20,7 +20,7 @@ function ComplianceStatusBadge({ status }: { status: string }) {
     not_started: { label: "Not Started", cls: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300" },
   };
   const cfg = map[status] ?? { label: status, cls: "bg-muted text-muted-foreground" };
-  return <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cfg.cls}`}>{cfg.label}</span>;
+  return <span className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${cfg.cls}`}>{cfg.label}</span>;
 }
 
 function ComplianceItemsPage() {
@@ -58,7 +58,7 @@ function ComplianceItemsPage() {
             ))}
           </div>
         ) : totalExpiring === 0 ? (
-          <div className="rounded-md border border-green-200 bg-green-50 dark:bg-green-900/20 p-8 text-center">
+          <div className="rounded-xl border border-green-200 bg-green-50 dark:bg-green-900/20 p-8 text-center">
             <Shield className="size-8 text-green-600 mx-auto mb-2" />
             <p className="font-medium text-green-700 dark:text-green-300">All compliance items are current</p>
             <p className="text-sm text-green-600 dark:text-green-400 mt-1">
@@ -68,7 +68,7 @@ function ComplianceItemsPage() {
         ) : (
           <>
             {totalExpiring > 0 && (
-              <div className="mb-4 flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-900/20 p-3 text-sm text-amber-700 dark:text-amber-300">
+              <div className="mb-4 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-900/20 p-3 text-sm text-amber-700 dark:text-amber-300">
                 <AlertTriangle className="size-4 shrink-0" />
                 <strong>{totalExpiring}</strong> compliance item{totalExpiring > 1 ? "s" : ""} need
                 attention within the next 90 days.
@@ -82,7 +82,7 @@ function ComplianceItemsPage() {
                   <GraduationCap className="size-3.5" />
                   Training ({data.training.length})
                 </h2>
-                <div className="rounded-md border divide-y">
+                <div className="rounded-xl border divide-y">
                   {data.training.map((record) => {
                     const expired = record.expiryDate && isPast(parseISO(record.expiryDate));
                     return (
@@ -113,7 +113,7 @@ function ComplianceItemsPage() {
                   <HardHat className="size-3.5" />
                   PPE ({data.ppe.length})
                 </h2>
-                <div className="rounded-md border divide-y">
+                <div className="rounded-xl border divide-y">
                   {data.ppe.map((record) => {
                     const expired = record.expiryDate && isPast(parseISO(record.expiryDate));
                     return (

@@ -100,7 +100,7 @@ function AddStepForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="mt-2 flex flex-wrap items-end gap-2 rounded-md border border-dashed p-3 bg-muted/30"
+      className="mt-2 flex flex-wrap items-end gap-2 rounded-xl border border-dashed p-3 bg-muted/30"
     >
       <div className="flex flex-col gap-1">
         <label className="text-xs text-muted-foreground">Delay (minutes)</label>
@@ -119,7 +119,7 @@ function AddStepForm({
         <select
           value={role}
           onChange={(e) => setRole(e.target.value as OnCallRole)}
-          className="h-8 rounded-md border bg-background px-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className="h-8 rounded-xl border bg-background px-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         >
           {ON_CALL_ROLES.map(([val, label]) => (
             <option key={val} value={val}>
@@ -190,7 +190,7 @@ function PolicyCard({ policy }: { policy: PolicyWithSteps }) {
             <div className="flex items-center gap-2 flex-wrap">
               <CardTitle className="text-base">{policy.name}</CardTitle>
               <span
-                className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
+                className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${
                   policy.isActive
                     ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
                     : "bg-muted text-muted-foreground"
@@ -199,12 +199,12 @@ function PolicyCard({ policy }: { policy: PolicyWithSteps }) {
                 {policy.isActive ? "Active" : "Inactive"}
               </span>
               {policy.service && (
-                <span className="text-xs text-muted-foreground rounded px-2 py-0.5 bg-muted">
+                <span className="text-xs text-muted-foreground rounded-lg px-2 py-0.5 bg-muted">
                   Service: {policy.service.name}
                 </span>
               )}
               {policy.department && (
-                <span className="text-xs text-muted-foreground rounded px-2 py-0.5 bg-muted">
+                <span className="text-xs text-muted-foreground rounded-lg px-2 py-0.5 bg-muted">
                   Dept: {policy.department.name}
                 </span>
               )}
@@ -391,7 +391,7 @@ function CreatePolicyForm({ onDone }: { onDone: () => void }) {
               type="checkbox"
               checked={isActive}
               onChange={(e) => setIsActive(e.target.checked)}
-              className="rounded border-input"
+              className="rounded-lg border-input"
             />
             <span className="text-sm">Active (enable this policy)</span>
           </label>
@@ -476,7 +476,7 @@ function EscalationSettingsPage() {
               </Card>
             ))
           ) : !policies?.length ? (
-            <div className="rounded-md border border-dashed p-8 text-center">
+            <div className="rounded-xl border border-dashed p-8 text-center">
               <AlertTriangle className="size-8 mx-auto mb-2 text-muted-foreground" />
               <p className="font-medium text-sm">No policies configured</p>
               <p className="text-xs text-muted-foreground mt-1">

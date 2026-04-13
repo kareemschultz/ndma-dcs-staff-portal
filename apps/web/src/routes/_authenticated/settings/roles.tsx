@@ -62,7 +62,7 @@ function RolesSettingsPage() {
         {/* Role cards */}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 mb-8">
           {ROLES.map((role) => (
-            <div key={role.key} className="rounded-md border p-3">
+            <div key={role.key} className="rounded-xl border p-3">
               <p className="text-sm font-semibold">{role.label}</p>
               <p className="text-xs text-muted-foreground mt-1">{role.description}</p>
             </div>
@@ -74,7 +74,7 @@ function RolesSettingsPage() {
           Permission Matrix
         </h2>
 
-        <div className="rounded-md border overflow-x-auto">
+        <div className="rounded-xl border overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>

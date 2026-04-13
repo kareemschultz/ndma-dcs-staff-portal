@@ -61,7 +61,7 @@ function ReadinessCheck({
   return (
     <Link to={href}>
       <div
-        className={`rounded-md border p-4 flex items-start gap-3 hover:border-primary/50 transition-colors cursor-pointer ${
+        className={`rounded-xl border p-4 flex items-start gap-3 hover:border-primary/50 transition-colors cursor-pointer ${
           ok ? "" : "border-red-200 bg-red-50/50 dark:bg-red-900/10"
         }`}
       >

@@ -47,7 +47,7 @@ function ModuleBadge({ module }: { module: string }) {
     import: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
   };
   return (
-    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium capitalize ${map[module] ?? "bg-muted text-muted-foreground"}`}>
+    <span className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium capitalize ${map[module] ?? "bg-muted text-muted-foreground"}`}>
       {module}
     </span>
   );
@@ -60,7 +60,7 @@ function DiffViewer({ before, after }: { before?: unknown; after?: unknown }) {
       {before != null && (
         <div>
           <p className="text-muted-foreground mb-1">Before</p>
-          <pre className="rounded bg-red-50 dark:bg-red-900/20 p-2 overflow-auto max-h-32 text-red-700 dark:text-red-300">
+          <pre className="rounded-lg bg-red-50 dark:bg-red-900/20 p-2 overflow-auto max-h-32 text-red-700 dark:text-red-300">
             {JSON.stringify(before, null, 2)}
           </pre>
         </div>
@@ -68,7 +68,7 @@ function DiffViewer({ before, after }: { before?: unknown; after?: unknown }) {
       {after != null && (
         <div>
           <p className="text-muted-foreground mb-1">After</p>
-          <pre className="rounded bg-green-50 dark:bg-green-900/20 p-2 overflow-auto max-h-32 text-green-700 dark:text-green-300">
+          <pre className="rounded-lg bg-green-50 dark:bg-green-900/20 p-2 overflow-auto max-h-32 text-green-700 dark:text-green-300">
             {JSON.stringify(after, null, 2)}
           </pre>
         </div>
@@ -92,7 +92,7 @@ function AuditRow({ log }: { log: any }) {
         </TableCell>
         <TableCell className="font-medium text-sm">{log.actorName ?? "System"}</TableCell>
         <TableCell>
-          <span className="font-mono text-xs bg-muted rounded px-1.5 py-0.5">{log.action}</span>
+          <span className="font-mono text-xs bg-muted rounded-lg px-1.5 py-0.5">{log.action}</span>
         </TableCell>
         <TableCell><ModuleBadge module={log.module} /></TableCell>
         <TableCell className="text-muted-foreground text-xs">{log.resourceType}</TableCell>
@@ -152,7 +152,7 @@ function AuditPage() {
           <select
             value={module}
             onChange={(e) => setModule(e.target.value)}
-            className="rounded-md border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             {MODULE_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -162,7 +162,7 @@ function AuditPage() {
           <select
             value={limit}
             onChange={(e) => setLimit(Number(e.target.value))}
-            className="rounded-md border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value={50}>Last 50</option>
             <option value={100}>Last 100</option>
@@ -174,7 +174,7 @@ function AuditPage() {
           Click a row with changes to expand the before/after diff.
         </p>
 
-        <div className="rounded-md border">
+        <div className="rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>

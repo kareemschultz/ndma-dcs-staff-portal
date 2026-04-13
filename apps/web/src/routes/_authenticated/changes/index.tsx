@@ -105,7 +105,7 @@ function StatusBadge({ status }: { status: string }) {
   const cfg = map[status] ?? { label: status, cls: "bg-muted text-muted-foreground" };
   return (
     <span
-      className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cfg.cls}`}
+      className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${cfg.cls}`}
     >
       {cfg.label}
     </span>
@@ -123,7 +123,7 @@ function RiskBadge({ risk }: { risk?: string | null }) {
   };
   return (
     <span
-      className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium uppercase ${map[risk] ?? "bg-muted text-muted-foreground"}`}
+      className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium uppercase ${map[risk] ?? "bg-muted text-muted-foreground"}`}
     >
       {risk}
     </span>
@@ -139,7 +139,7 @@ function CategoryBadge({ category }: { category?: string | null }) {
     other: "Other",
   };
   return (
-    <span className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+    <span className="inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
       {labels[category ?? ""] ?? (category ?? "Change")}
     </span>
   );
@@ -339,7 +339,7 @@ function MarkRemovedDialog({
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               placeholder="Describe what was done to remove this change..."
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
               required
             />
           </div>
@@ -480,7 +480,7 @@ function ChangeFormDialog({
               onChange={(e) => set("title", e.target.value)}
               placeholder="Brief description of the change"
               required
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
 
@@ -491,7 +491,7 @@ function ChangeFormDialog({
               <select
                 value={form.category}
                 onChange={(e) => set("category", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="public_ip_exposure">Public IP Exposure</option>
                 <option value="temporary_service">Temporary Service</option>
@@ -505,7 +505,7 @@ function ChangeFormDialog({
               <select
                 value={form.environment}
                 onChange={(e) => set("environment", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="production">Production</option>
                 <option value="test">Test</option>
@@ -522,7 +522,7 @@ function ChangeFormDialog({
               onChange={(e) => set("description", e.target.value)}
               rows={3}
               placeholder="Detailed description of the change..."
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
           </div>
 
@@ -533,7 +533,7 @@ function ChangeFormDialog({
               value={form.systemName}
               onChange={(e) => set("systemName", e.target.value)}
               placeholder="e.g. Firewall, LDAP Server, VPN Gateway"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
 
@@ -545,7 +545,7 @@ function ChangeFormDialog({
                 value={form.publicIp}
                 onChange={(e) => set("publicIp", e.target.value)}
                 placeholder="0.0.0.0"
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             <div>
@@ -554,7 +554,7 @@ function ChangeFormDialog({
                 value={form.internalIp}
                 onChange={(e) => set("internalIp", e.target.value)}
                 placeholder="10.x.x.x"
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             <div>
@@ -563,7 +563,7 @@ function ChangeFormDialog({
                 value={form.port}
                 onChange={(e) => set("port", e.target.value)}
                 placeholder="443"
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
           </div>
@@ -575,7 +575,7 @@ function ChangeFormDialog({
               <select
                 value={form.protocol}
                 onChange={(e) => set("protocol", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">Not specified</option>
                 <option value="tcp">TCP</option>
@@ -589,7 +589,7 @@ function ChangeFormDialog({
                   type="checkbox"
                   checked={form.externalExposure}
                   onChange={(e) => set("externalExposure", e.target.checked)}
-                  className="h-4 w-4 rounded border"
+                  className="h-4 w-4 rounded-lg border"
                 />
                 <span className="text-sm font-medium">External Exposure</span>
               </label>
@@ -606,7 +606,7 @@ function ChangeFormDialog({
                 value={form.externalAgencyName}
                 onChange={(e) => set("externalAgencyName", e.target.value)}
                 placeholder="Agency or organisation name"
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
           )}
@@ -618,7 +618,7 @@ function ChangeFormDialog({
               <select
                 value={form.ownerType}
                 onChange={(e) => set("ownerType", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="internal_staff">Internal Staff</option>
                 <option value="external_contact">External Contact</option>
@@ -632,7 +632,7 @@ function ChangeFormDialog({
                 value={form.engineer}
                 onChange={(e) => set("engineer", e.target.value)}
                 placeholder="Name of responsible engineer"
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
           </div>
@@ -648,7 +648,7 @@ function ChangeFormDialog({
                 value={form.removeByDate}
                 onChange={(e) => set("removeByDate", e.target.value)}
                 required
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             <div>
@@ -657,7 +657,7 @@ function ChangeFormDialog({
                 type="date"
                 value={form.followUpDate}
                 onChange={(e) => set("followUpDate", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
           </div>
@@ -668,7 +668,7 @@ function ChangeFormDialog({
             <select
               value={form.riskLevel}
               onChange={(e) => set("riskLevel", e.target.value)}
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -688,7 +688,7 @@ function ChangeFormDialog({
               onChange={(e) => set("notes", e.target.value)}
               rows={2}
               placeholder="Any additional notes or context..."
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
           </div>
 
@@ -864,7 +864,7 @@ function TempChangesPage() {
 
         {/* Overdue alert banner */}
         {overdueItems && overdueItems.length > 0 && (
-          <div className="mb-5 flex items-center gap-2.5 rounded-md border border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800 p-3 text-sm text-red-700 dark:text-red-300">
+          <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800 p-3 text-sm text-red-700 dark:text-red-300">
             <AlertCircle className="size-4 shrink-0" />
             <span>
               <strong>{overdueItems.length}</strong> change
@@ -938,7 +938,7 @@ function TempChangesPage() {
 
           {/* ── All Changes tab ────────────────────────────────────────────── */}
           <TabsContent value="all">
-            <div className="rounded-md border">
+            <div className="rounded-xl border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -1023,7 +1023,7 @@ function TempChangesPage() {
 
           {/* ── Overdue tab ────────────────────────────────────────────────── */}
           <TabsContent value="overdue">
-            <div className="rounded-md border">
+            <div className="rounded-xl border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -1098,7 +1098,7 @@ function TempChangesPage() {
 
           {/* ── Expiring Soon tab ──────────────────────────────────────────── */}
           <TabsContent value="expiring">
-            <div className="rounded-md border">
+            <div className="rounded-xl border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -1179,7 +1179,7 @@ function TempChangesPage() {
 
           {/* ── Public IPs tab ────────────────────────────────────────────── */}
           <TabsContent value="public-ips">
-            <div className="rounded-md border">
+            <div className="rounded-xl border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -1218,7 +1218,7 @@ function TempChangesPage() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
+                          <code className="rounded-lg bg-muted px-1.5 py-0.5 text-xs font-mono">
                             {change.publicIp ?? "—"}
                           </code>
                         </TableCell>

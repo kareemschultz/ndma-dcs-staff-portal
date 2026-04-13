@@ -90,7 +90,7 @@ function DeclareIncidentPage() {
             <select
               id="severity"
               {...register("severity")}
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="sev1">Sev1 — Critical (production down, data loss)</option>
               <option value="sev2">Sev2 — High (major feature broken)</option>
@@ -123,7 +123,7 @@ function DeclareIncidentPage() {
             <select
               id="commanderId"
               {...register("commanderId")}
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">Assign later</option>
               {staffList?.map((s) => (

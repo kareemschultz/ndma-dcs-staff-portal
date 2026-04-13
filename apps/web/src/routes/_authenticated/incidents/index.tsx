@@ -89,7 +89,7 @@ function SeverityBadge({ severity }: { severity: string }) {
   const cls = SEV_COLORS[severity as IncidentSeverity] ?? "bg-muted text-muted-foreground";
   const label = SEV_LABELS[severity as IncidentSeverity] ?? severity.toUpperCase();
   return (
-    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cls}`}>
+    <span className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${cls}`}>
       {label}
     </span>
   );
@@ -99,7 +99,7 @@ function IncidentStatusBadge({ status }: { status: string }) {
   const cls = STATUS_COLORS[status as IncidentStatus] ?? "bg-muted text-muted-foreground";
   const label = STATUS_LABELS[status as IncidentStatus] ?? status.replace("_", " ");
   return (
-    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cls}`}>
+    <span className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${cls}`}>
       {label}
     </span>
   );
@@ -186,7 +186,7 @@ function IncidentsPage() {
           <select
             value={severity}
             onChange={(e) => setSeverity(e.target.value)}
-            className="rounded-md border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             {SEV_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -196,7 +196,7 @@ function IncidentsPage() {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="rounded-md border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             {STATUS_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -204,7 +204,7 @@ function IncidentsPage() {
           </select>
         </div>
 
-        <div className="rounded-md border">
+        <div className="rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>

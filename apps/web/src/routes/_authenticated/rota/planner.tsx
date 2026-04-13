@@ -81,7 +81,7 @@ function RoleAssignRow({
   return (
     <div className="flex items-center gap-3 py-2.5 border-b last:border-0">
       <span
-        className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium shrink-0 w-40 justify-center ${ROLE_COLORS[role]}`}
+        className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium shrink-0 w-40 justify-center ${ROLE_COLORS[role]}`}
       >
         {ROLE_LABELS[role]}
       </span>
@@ -91,7 +91,7 @@ function RoleAssignRow({
           <Skeleton className="h-8 w-full" />
         ) : (
           <select
-            className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             value={currentAssignment?.staffProfileId ?? ""}
             onChange={(e) => {
               if (!e.target.value) return;
@@ -159,7 +159,7 @@ function ScheduleCard({
   );
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-xl border">
       {/* Header row */}
       <div className="flex items-center gap-3 px-4 py-3">
         <div className="flex-1 min-w-0">
@@ -173,7 +173,7 @@ function ScheduleCard({
         </div>
 
         <span
-          className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium shrink-0 ${
+          className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium shrink-0 ${
             schedule.status === "published"
               ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
               : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
@@ -273,7 +273,7 @@ function NewScheduleForm({ onClose }: { onClose: () => void }) {
               value={weekStart}
               onChange={(e) => setWeekStart(e.target.value)}
               required
-              className="rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
           <div className="flex-1 min-w-48">
@@ -285,7 +285,7 @@ function NewScheduleForm({ onClose }: { onClose: () => void }) {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. Training week — check availability"
-              className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
           <div className="flex gap-2">
@@ -342,11 +342,11 @@ function PlannerPage() {
         {isLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full rounded-md" />
+              <Skeleton key={i} className="h-16 w-full rounded-xl" />
             ))}
           </div>
         ) : !schedules?.length ? (
-          <div className="rounded-md border border-dashed p-12 text-center text-muted-foreground text-sm">
+          <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground text-sm">
             No schedules yet. Create your first draft above.
           </div>
         ) : (

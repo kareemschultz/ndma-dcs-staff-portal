@@ -76,7 +76,7 @@ function PRStatusBadge({ status }: { status: string }) {
   const cls = STATUS_COLORS[status as PRStatus] ?? "bg-muted text-muted-foreground";
   const label = STATUS_LABELS[status as PRStatus] ?? status.replace("_", " ");
   return (
-    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cls}`}>
+    <span className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${cls}`}>
       {label}
     </span>
   );
@@ -86,7 +86,7 @@ function PriorityBadge({ priority }: { priority: string }) {
   const cls = PRIORITY_COLORS[priority as PRPriority] ?? "bg-muted text-muted-foreground";
   const label = PRIORITY_LABELS[priority as PRPriority] ?? priority;
   return (
-    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cls}`}>
+    <span className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${cls}`}>
       {label}
     </span>
   );
@@ -119,7 +119,7 @@ function PRTable({
 }) {
   if (isLoading) {
     return (
-      <div className="rounded-md border">
+      <div className="rounded-xl border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -147,7 +147,7 @@ function PRTable({
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-xl border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -354,7 +354,7 @@ function ProcurementPage() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as PRStatus | "")}
-              className="rounded-md border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               {STATUS_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>

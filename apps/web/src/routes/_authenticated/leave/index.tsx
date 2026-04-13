@@ -43,7 +43,7 @@ function LeaveStatusBadge({ status }: { status: string }) {
   const cls = STATUS_COLORS[status as LeaveStatus] ?? "bg-muted text-muted-foreground";
   const label = STATUS_LABELS[status as LeaveStatus] ?? status;
   return (
-    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${cls}`}>
+    <span className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${cls}`}>
       {label}
     </span>
   );
@@ -144,7 +144,7 @@ function LeavePage() {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as LeaveStatus | "")}
-            className="rounded-md border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="">All Statuses</option>
             <option value="pending">Pending</option>
@@ -154,7 +154,7 @@ function LeavePage() {
           </select>
         </div>
 
-        <div className="rounded-md border">
+        <div className="rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>

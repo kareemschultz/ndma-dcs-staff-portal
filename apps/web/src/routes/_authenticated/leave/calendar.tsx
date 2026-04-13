@@ -279,7 +279,7 @@ function LeaveCalendarPage() {
                               <div
                                 key={req.id}
                                 title={`${name} — ${req.leaveType?.name ?? "Leave"}`}
-                                className={`flex items-center gap-1 rounded px-1 py-0.5 text-[10px] font-medium truncate ${CHIP_COLORS[colorIdx]}`}
+                                className={`flex items-center gap-1 rounded-lg px-1 py-0.5 text-[10px] font-medium truncate ${CHIP_COLORS[colorIdx]}`}
                               >
                                 <span className="shrink-0 font-semibold">
                                   {getInitials(name)}

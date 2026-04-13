@@ -674,7 +674,7 @@ function WorkCalendarView({ items }: { items: WorkItem[] }) {
                     <div
                       key={item.id}
                       title={item.title}
-                      className={`truncate rounded px-1 py-0.5 text-[10px] leading-tight ${
+                      className={`truncate rounded-lg px-1 py-0.5 text-[10px] leading-tight ${
                         item.status === "done"
                           ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
                           : overdue
@@ -700,15 +700,15 @@ function WorkCalendarView({ items }: { items: WorkItem[] }) {
       {/* Legend */}
       <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
         <span className="flex items-center gap-1">
-          <span className="h-2.5 w-2.5 rounded bg-blue-200" />
+          <span className="h-2.5 w-2.5 rounded-lg bg-blue-200" />
           Open
         </span>
         <span className="flex items-center gap-1">
-          <span className="h-2.5 w-2.5 rounded bg-red-200" />
+          <span className="h-2.5 w-2.5 rounded-lg bg-red-200" />
           Overdue
         </span>
         <span className="flex items-center gap-1">
-          <span className="h-2.5 w-2.5 rounded bg-green-200" />
+          <span className="h-2.5 w-2.5 rounded-lg bg-green-200" />
           Done
         </span>
       </div>
@@ -722,8 +722,8 @@ function LoadingSkeleton({ view }: { view: ViewMode }) {
   if (view === "analytics") {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-64 w-full rounded-md" />
-        <Skeleton className="h-48 w-full rounded-md" />
+        <Skeleton className="h-64 w-full rounded-xl" />
+        <Skeleton className="h-48 w-full rounded-xl" />
       </div>
     );
   }
@@ -746,7 +746,7 @@ function LoadingSkeleton({ view }: { view: ViewMode }) {
           <div key={s} className="flex-shrink-0 w-60 space-y-2">
             <Skeleton className="h-5 w-24" />
             {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full rounded-md" />
+              <Skeleton key={i} className="h-24 w-full rounded-xl" />
             ))}
           </div>
         ))}
@@ -757,7 +757,7 @@ function LoadingSkeleton({ view }: { view: ViewMode }) {
     return (
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton key={i} className="h-40 w-full rounded-md" />
+          <Skeleton key={i} className="h-40 w-full rounded-xl" />
         ))}
       </div>
     );
@@ -1037,7 +1037,7 @@ function WorkPage() {
               type="checkbox"
               checked={overdueOnly}
               onChange={(e) => setOverdueOnly(e.target.checked)}
-              className="rounded border"
+              className="rounded-lg border"
             />
             <Timer className="size-3.5 text-red-500" />
             Overdue only

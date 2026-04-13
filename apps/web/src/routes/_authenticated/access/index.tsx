@@ -168,7 +168,7 @@ type Tab = "accounts" | "vpn" | "groups" | "external" | "reviews" | "integration
 
 function AuthBadge({ source }: { source: string }) {
   return (
-    <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${AUTH_SOURCE_COLORS[source as AuthSource] ?? "bg-muted text-muted-foreground"}`}>
+    <span className={`inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs font-medium ${AUTH_SOURCE_COLORS[source as AuthSource] ?? "bg-muted text-muted-foreground"}`}>
       {AUTH_SOURCE_LABELS[source as AuthSource] ?? source}
     </span>
   );
@@ -176,7 +176,7 @@ function AuthBadge({ source }: { source: string }) {
 
 function StatusBadge({ status }: { status: string }) {
   return (
-    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[status as AccountStatus] ?? "bg-muted text-muted-foreground"}`}>
+    <span className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[status as AccountStatus] ?? "bg-muted text-muted-foreground"}`}>
       {status.replace(/_/g, " ")}
     </span>
   );
@@ -184,7 +184,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function AffiliationBadge({ affiliation }: { affiliation: string }) {
   return (
-    <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${AFFILIATION_COLORS[affiliation as Affiliation] ?? "bg-muted text-muted-foreground"}`}>
+    <span className={`inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs font-medium ${AFFILIATION_COLORS[affiliation as Affiliation] ?? "bg-muted text-muted-foreground"}`}>
       {AFFILIATION_LABELS[affiliation as Affiliation] ?? affiliation}
     </span>
   );
@@ -279,7 +279,7 @@ function AccountDialog({ open, onClose, staff, contacts, onSave, isPending, edit
                     key={t}
                     type="button"
                     onClick={() => set("identityType", t)}
-                    className={`flex-1 rounded-md border py-1.5 text-xs font-medium transition-colors ${form.identityType === t ? "border-primary bg-primary/10 text-primary" : "hover:bg-muted"}`}
+                    className={`flex-1 rounded-xl border py-1.5 text-xs font-medium transition-colors ${form.identityType === t ? "border-primary bg-primary/10 text-primary" : "hover:bg-muted"}`}
                   >
                     {t === "staff" ? "NDMA Staff" : "External Contact"}
                   </button>
@@ -293,7 +293,7 @@ function AccountDialog({ open, onClose, staff, contacts, onSave, isPending, edit
               <select
                 value={form.staffProfileId}
                 onChange={(e) => set("staffProfileId", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">— Select staff —</option>
                 {staff.map((s) => (
@@ -308,7 +308,7 @@ function AccountDialog({ open, onClose, staff, contacts, onSave, isPending, edit
               <select
                 value={form.externalContactId}
                 onChange={(e) => set("externalContactId", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">— Select contact —</option>
                 {contacts.map((c) => (
@@ -323,7 +323,7 @@ function AccountDialog({ open, onClose, staff, contacts, onSave, isPending, edit
               <select
                 value={form.platform}
                 onChange={(e) => set("platform", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 disabled={isEdit}
               >
                 {(Object.keys(PLATFORM_LABELS) as Platform[]).map((p) => (
@@ -347,7 +347,7 @@ function AccountDialog({ open, onClose, staff, contacts, onSave, isPending, edit
               <select
                 value={form.affiliationType}
                 onChange={(e) => set("affiliationType", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 {(["ndma_internal", "external_agency", "contractor", "consultant", "vendor", "shared_service"] as const).map((a) => (
                   <option key={a} value={a}>{AFFILIATION_LABELS[a]}</option>
@@ -358,7 +358,7 @@ function AccountDialog({ open, onClose, staff, contacts, onSave, isPending, edit
               <select
                 value={form.authSource}
                 onChange={(e) => set("authSource", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 {(Object.keys(AUTH_SOURCE_LABELS) as AuthSource[]).map((a) => (
                   <option key={a} value={a}>{AUTH_SOURCE_LABELS[a]}</option>
@@ -372,7 +372,7 @@ function AccountDialog({ open, onClose, staff, contacts, onSave, isPending, edit
               <select
                 value={form.status}
                 onChange={(e) => set("status", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 {(["active", "suspended", "disabled", "pending_creation", "pending_review"] as const).map((s) => (
                   <option key={s} value={s}>{s.replace(/_/g, " ")}</option>
@@ -383,7 +383,7 @@ function AccountDialog({ open, onClose, staff, contacts, onSave, isPending, edit
               <select
                 value={form.syncMode}
                 onChange={(e) => set("syncMode", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 {(["manual", "synced", "hybrid"] as const).map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -401,7 +401,7 @@ function AccountDialog({ open, onClose, staff, contacts, onSave, isPending, edit
             />
           </Field>
 
-          <div className="flex items-center gap-3 rounded-md border p-3">
+          <div className="flex items-center gap-3 rounded-xl border p-3">
             <Switch
               checked={form.vpnEnabled}
               onCheckedChange={(v) => set("vpnEnabled", v)}
@@ -503,7 +503,7 @@ function ContactDialog({ open, onClose, onSave, isPending, editData }: ContactDi
             <select
               value={form.affiliationType}
               onChange={(e) => set("affiliationType", e.target.value)}
-              className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               {(["external_agency", "contractor", "consultant", "vendor", "shared_service"] as const).map((a) => (
                 <option key={a} value={a}>{AFFILIATION_LABELS[a]}</option>
@@ -590,7 +590,7 @@ function GroupDialog({ open, onClose, onSave, isPending, editData }: GroupDialog
               <select
                 value={form.platform}
                 onChange={(e) => set("platform", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 disabled={isEdit}
               >
                 {(Object.keys(PLATFORM_LABELS) as Platform[]).map((p) => (
@@ -602,7 +602,7 @@ function GroupDialog({ open, onClose, onSave, isPending, editData }: GroupDialog
               <select
                 value={form.groupType}
                 onChange={(e) => set("groupType", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 disabled={isEdit}
               >
                 {(["ad_group", "vpn_group", "platform_role", "local_group", "radius_group"] as const).map((t) => (
@@ -616,7 +616,7 @@ function GroupDialog({ open, onClose, onSave, isPending, editData }: GroupDialog
               <select
                 value={form.syncMode}
                 onChange={(e) => set("syncMode", e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 {(["manual", "synced", "hybrid"] as const).map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -790,7 +790,7 @@ function IntegrationDialog({ open, onClose, onSave, isPending, editData }: Integ
                   <p className="font-semibold text-sm">{platformInfo?.label}</p>
                   <p className="text-xs text-muted-foreground truncate">{platformInfo?.description}</p>
                 </div>
-                <span className={`shrink-0 inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${catStyle.badge}`}>
+                <span className={`shrink-0 inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs font-medium ${catStyle.badge}`}>
                   {platformInfo?.category}
                 </span>
               </div>
@@ -820,7 +820,7 @@ function IntegrationDialog({ open, onClose, onSave, isPending, editData }: Integ
                 <select
                   value={form.status}
                   onChange={(e) => set("status", e.target.value)}
-                  className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                   {(["active", "inactive", "error", "pending"] as const).map((s) => (
                     <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
@@ -829,7 +829,7 @@ function IntegrationDialog({ open, onClose, onSave, isPending, editData }: Integ
               </Field>
             )}
 
-            <div className="flex items-center gap-3 rounded-md border p-3">
+            <div className="flex items-center gap-3 rounded-xl border p-3">
               <Switch checked={form.syncEnabled} onCheckedChange={(v) => set("syncEnabled", v)} />
               <div>
                 <span className="text-sm font-medium">Auto-sync enabled</span>
@@ -843,7 +843,7 @@ function IntegrationDialog({ open, onClose, onSave, isPending, editData }: Integ
                   <select
                     value={form.syncDirection}
                     onChange={(e) => set("syncDirection", e.target.value)}
-                    className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="w-full rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   >
                     <option value="inbound">Inbound (pull from platform)</option>
                     <option value="outbound">Outbound (push to platform)</option>
@@ -1145,20 +1145,20 @@ function PlatformAccountsPage() {
 
         {/* Alert banners */}
         {expiring && expiring.length > 0 && (
-          <div className="mb-3 flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-900/20 p-3 text-sm text-amber-700 dark:text-amber-300">
+          <div className="mb-3 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-900/20 p-3 text-sm text-amber-700 dark:text-amber-300">
             <AlertCircle className="size-4 shrink-0" />
             <strong>{expiring.length}</strong> account{expiring.length > 1 ? "s" : ""} expiring within 30 days.
           </div>
         )}
         {openIssueCount > 0 && (
-          <div className="mb-3 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-700 dark:text-red-300">
+          <div className="mb-3 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-700 dark:text-red-300">
             <AlertTriangle className="size-4 shrink-0" />
             <strong>{openIssueCount}</strong> unresolved reconciliation {openIssueCount === 1 ? "issue" : "issues"}.{" "}
             <button onClick={() => setActiveTab("reconciliation")} className="underline font-medium">View</button>
           </div>
         )}
         {pendingReviewCount > 0 && (
-          <div className="mb-3 flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 dark:bg-blue-900/20 p-3 text-sm text-blue-700 dark:text-blue-300">
+          <div className="mb-3 flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-900/20 p-3 text-sm text-blue-700 dark:text-blue-300">
             <Shield className="size-4 shrink-0" />
             <strong>{pendingReviewCount}</strong> access {pendingReviewCount === 1 ? "review" : "reviews"} pending certification.{" "}
             <button onClick={() => setActiveTab("reviews")} className="underline font-medium">Review now</button>
@@ -1204,7 +1204,7 @@ function PlatformAccountsPage() {
               <select
                 value={platform}
                 onChange={(e) => setPlatform(e.target.value as Platform | "")}
-                className="rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">All Platforms</option>
                 {(Object.keys(PLATFORM_LABELS) as Platform[]).map((p) => (
@@ -1214,7 +1214,7 @@ function PlatformAccountsPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as AccountStatus | "")}
-                className="rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">All Statuses</option>
                 <option value="active">Active</option>
@@ -1226,7 +1226,7 @@ function PlatformAccountsPage() {
               <select
                 value={syncMode}
                 onChange={(e) => setSyncMode(e.target.value as SyncMode | "")}
-                className="rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="rounded-xl border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">All Sync Modes</option>
                 <option value="manual">Manual</option>
@@ -1235,7 +1235,7 @@ function PlatformAccountsPage() {
               </select>
             </div>
 
-            <div className="rounded-md border">
+            <div className="rounded-xl border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -1289,7 +1289,7 @@ function PlatformAccountsPage() {
                           <TableCell><AffiliationBadge affiliation={account.affiliationType} /></TableCell>
                           <TableCell><AuthBadge source={account.authSource} /></TableCell>
                           <TableCell>
-                            <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${SYNC_MODE_COLORS[account.syncMode as SyncMode] ?? ""}`}>
+                            <span className={`inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs font-medium ${SYNC_MODE_COLORS[account.syncMode as SyncMode] ?? ""}`}>
                               {account.syncMode}
                             </span>
                           </TableCell>
@@ -1351,14 +1351,14 @@ function PlatformAccountsPage() {
             </p>
 
             {vpnLoading ? (
-              Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-md" />)
+              Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)
             ) : !vpnAccounts?.length ? (
-              <div className="rounded-md border border-dashed p-12 text-center text-muted-foreground">
+              <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
                 <Network className="size-8 mx-auto mb-3 opacity-40" />
                 <p className="font-medium">No VPN accounts recorded</p>
               </div>
             ) : (
-              <div className="rounded-md border">
+              <div className="rounded-xl border">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -1412,15 +1412,15 @@ function PlatformAccountsPage() {
             </p>
 
             {groupsLoading ? (
-              Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-md" />)
+              Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)
             ) : !groups?.length ? (
-              <div className="rounded-md border border-dashed p-12 text-center text-muted-foreground">
+              <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
                 <Users className="size-8 mx-auto mb-3 opacity-40" />
                 <p className="font-medium">No access groups defined</p>
                 <p className="text-sm mt-1">Define AD groups, VPN groups, or platform roles.</p>
               </div>
             ) : (
-              <div className="rounded-md border">
+              <div className="rounded-xl border">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -1439,18 +1439,18 @@ function PlatformAccountsPage() {
                         <TableCell className="font-medium">{group.name}</TableCell>
                         <TableCell className="text-sm">{PLATFORM_LABELS[group.platform as Platform] ?? group.platform}</TableCell>
                         <TableCell>
-                          <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
+                          <span className="inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
                             {group.groupType.replace(/_/g, " ")}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${SYNC_MODE_COLORS[group.syncMode as SyncMode] ?? ""}`}>
+                          <span className={`inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs font-medium ${SYNC_MODE_COLORS[group.syncMode as SyncMode] ?? ""}`}>
                             {group.syncMode}
                           </span>
                         </TableCell>
                         <TableCell className="font-mono text-xs text-muted-foreground">{group.externalId ?? "—"}</TableCell>
                         <TableCell>
-                          <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${group.isActive ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" : "bg-muted text-muted-foreground"}`}>
+                          <span className={`inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs font-medium ${group.isActive ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" : "bg-muted text-muted-foreground"}`}>
                             {group.isActive ? "Active" : "Inactive"}
                           </span>
                         </TableCell>
@@ -1482,15 +1482,15 @@ function PlatformAccountsPage() {
             </p>
 
             {extLoading ? (
-              Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-md" />)
+              Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)
             ) : !externalContacts?.length ? (
-              <div className="rounded-md border border-dashed p-12 text-center text-muted-foreground">
+              <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
                 <UserX className="size-8 mx-auto mb-3 opacity-40" />
                 <p className="font-medium">No external contacts</p>
                 <p className="text-sm mt-1">External contacts are non-NDMA identities with platform access.</p>
               </div>
             ) : (
-              <div className="rounded-md border">
+              <div className="rounded-xl border">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -1512,7 +1512,7 @@ function PlatformAccountsPage() {
                         <TableCell><AffiliationBadge affiliation={contact.affiliationType} /></TableCell>
                         <TableCell className="text-sm">{(contact as unknown as Record<string, unknown> & { platformAccounts?: unknown[] }).platformAccounts?.length ?? 0}</TableCell>
                         <TableCell>
-                          <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${contact.isActive ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" : "bg-muted text-muted-foreground"}`}>
+                          <span className={`inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs font-medium ${contact.isActive ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" : "bg-muted text-muted-foreground"}`}>
                             {contact.isActive ? "Active" : "Inactive"}
                           </span>
                         </TableCell>
@@ -1544,9 +1544,9 @@ function PlatformAccountsPage() {
             </p>
 
             {reviewsLoading ? (
-              Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-md" />)
+              Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)
             ) : !pendingReviews?.length ? (
-              <div className="rounded-md border border-dashed p-12 text-center text-muted-foreground">
+              <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
                 <Shield className="size-8 mx-auto mb-3 opacity-40 text-green-500" />
                 <p className="font-medium">All access reviews complete</p>
                 <p className="text-sm mt-1">No pending certifications.</p>
@@ -1556,7 +1556,7 @@ function PlatformAccountsPage() {
                 const account = (review as unknown as Record<string, unknown> & { platformAccount?: Record<string, unknown> & { staffProfile?: { user?: { name?: string } }; externalContact?: { name?: string }; platform?: string; accountIdentifier?: string; affiliationType?: string } }).platformAccount;
                 const displayName = account?.staffProfile?.user?.name ?? account?.externalContact?.name ?? "Unknown";
                 return (
-                  <div key={review.id} className="rounded-md border p-4">
+                  <div key={review.id} className="rounded-xl border p-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -1612,9 +1612,9 @@ function PlatformAccountsPage() {
             </p>
 
             {integrationsLoading ? (
-              Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-md" />)
+              Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-xl" />)
             ) : !integrations?.length ? (
-              <div className="rounded-md border border-dashed p-12 text-center text-muted-foreground">
+              <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
                 <Plug className="size-8 mx-auto mb-3 opacity-40" />
                 <p className="font-medium">No integrations configured</p>
                 <p className="text-sm mt-1">Platform integrations enable automatic account sync from external APIs.</p>
@@ -1651,21 +1651,21 @@ function PlatformAccountsPage() {
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="font-semibold text-sm">{integration.name}</p>
                             {/* Status badge */}
-                            <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${INTEGRATION_STATUS_COLORS[integration.status] ?? "bg-muted text-muted-foreground"}`}>
+                            <span className={`inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs font-medium ${INTEGRATION_STATUS_COLORS[integration.status] ?? "bg-muted text-muted-foreground"}`}>
                               {integration.status.charAt(0).toUpperCase() + integration.status.slice(1)}
                             </span>
                             {/* Sync badge */}
                             {integration.syncEnabled ? (
-                              <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                              <span className="inline-flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
                                 <Activity className="size-3" />Auto-sync
                               </span>
                             ) : (
-                              <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
+                              <span className="inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
                                 Manual
                               </span>
                             )}
                             {/* Category badge */}
-                            <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${catStyle.badge}`}>
+                            <span className={`inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs font-medium ${catStyle.badge}`}>
                               {platformInfo.category}
                             </span>
                           </div>
@@ -1751,20 +1751,20 @@ function PlatformAccountsPage() {
             </p>
 
             {reconcLoading ? (
-              Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-md" />)
+              Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)
             ) : !reconciliationData?.length ? (
-              <div className="rounded-md border border-dashed p-12 text-center text-muted-foreground">
+              <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
                 <CheckCircle className="size-8 mx-auto mb-3 opacity-40" />
                 <p className="font-medium">No open issues</p>
                 <p className="text-sm mt-1">All reconciliation checks passed.</p>
               </div>
             ) : (
               reconciliationData.map((issue) => (
-                <div key={issue.id} className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-900/10 p-4">
+                <div key={issue.id} className="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-900/10 p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                        <span className="inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
                           {issue.issueType.replace(/_/g, " ")}
                         </span>
                         <span className="text-xs text-muted-foreground">{(issue as unknown as Record<string, unknown> & { integration?: { name?: string } }).integration?.name}</span>

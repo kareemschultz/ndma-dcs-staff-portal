@@ -110,7 +110,7 @@ function WeekRow({
           <td key={role} className="py-2.5 px-3">
             {assignment ? (
               <span
-                className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[role]}`}
+                className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[role]}`}
                 title={name ?? undefined}
               >
                 {getFirstName(name)}
@@ -153,7 +153,7 @@ function MonthGroup({
                     className="py-2 px-3 text-left text-xs font-medium text-muted-foreground whitespace-nowrap"
                   >
                     <span
-                      className={`inline-flex items-center rounded px-1.5 py-0.5 ${ROLE_COLORS[role]}`}
+                      className={`inline-flex items-center rounded-lg px-1.5 py-0.5 ${ROLE_COLORS[role]}`}
                     >
                       {ROLE_LABELS[role]}
                     </span>
@@ -256,7 +256,7 @@ function CalendarPage() {
           {REQUIRED_ROLES.map((role) => (
             <span
               key={role}
-              className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${ROLE_COLORS[role]}`}
+              className={`inline-flex items-center rounded-lg px-2 py-1 text-xs font-medium ${ROLE_COLORS[role]}`}
             >
               {ROLE_LABELS[role]} Engineer
             </span>

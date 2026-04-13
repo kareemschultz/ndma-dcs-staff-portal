@@ -73,7 +73,7 @@ const STATUS_CLASSES: Record<ServiceStatus, string> = {
 function StatusBadge({ status }: { status: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium capitalize ${
+      className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium capitalize ${
         STATUS_CLASSES[status as ServiceStatus] ?? "bg-muted text-muted-foreground"
       }`}
     >
@@ -156,7 +156,7 @@ function ServiceDialog({
               onChange={(e) => setValues((v) => ({ ...v, description: e.target.value }))}
               placeholder="Brief description of this service…"
               rows={3}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
             />
           </div>
 
@@ -414,7 +414,7 @@ function ServiceRegistryPage() {
           </div>
         )}
 
-        <div className="rounded-md border">
+        <div className="rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>

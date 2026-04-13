@@ -12,7 +12,7 @@ import {
   workItemTeamAllocations,
   staffProfiles,
 } from "@ndma-dcs-staff-portal/db";
-import { and, desc, eq, inArray, lt, sql, isNotNull } from "drizzle-orm";
+import { and, desc, eq, lt, sql, isNotNull } from "drizzle-orm";
 
 import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";

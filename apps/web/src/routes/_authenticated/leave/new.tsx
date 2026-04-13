@@ -103,7 +103,7 @@ function NewLeavePage() {
             </label>
             <select
               {...register("staffProfileId")}
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">Select staff member</option>
               {staff?.map((s) => (
@@ -123,7 +123,7 @@ function NewLeavePage() {
             </label>
             <select
               {...register("leaveTypeId")}
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">Select leave type</option>
               {leaveTypes?.map((t) => (
@@ -145,7 +145,7 @@ function NewLeavePage() {
               <input
                 {...register("startDate")}
                 type="date"
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
               {errors.startDate && (
                 <p className="text-xs text-destructive mt-1">{errors.startDate.message}</p>
@@ -158,7 +158,7 @@ function NewLeavePage() {
               <input
                 {...register("endDate")}
                 type="date"
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
               {errors.endDate && (
                 <p className="text-xs text-destructive mt-1">{errors.endDate.message}</p>
@@ -178,7 +178,7 @@ function NewLeavePage() {
               {...register("reason")}
               rows={3}
               placeholder="Optional reason for leave..."
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
           </div>
 

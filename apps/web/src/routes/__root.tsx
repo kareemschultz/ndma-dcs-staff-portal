@@ -13,7 +13,7 @@ function RootErrorComponent({ error }: { error: Error }) {
       <h1 className="text-2xl font-semibold">Something went wrong</h1>
       <p className="text-sm text-muted-foreground max-w-md">{error.message}</p>
       <button
-        className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground"
+        className="rounded-xl bg-primary px-4 py-2 text-sm text-primary-foreground"
         onClick={() => window.location.reload()}
       >
         Reload

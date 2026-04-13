@@ -42,7 +42,7 @@ function LeaveTypesSettingsPage() {
           </p>
         </div>
 
-        <div className="rounded-md border max-w-2xl">
+        <div className="rounded-xl border max-w-2xl">
           <Table>
             <TableHeader>
               <TableRow>
@@ -81,7 +81,7 @@ function LeaveTypesSettingsPage() {
                     </TableCell>
                     <TableCell>
                       <span
-                        className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
+                        className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${
                           type.requiresApproval
                             ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
                             : "bg-muted text-muted-foreground"

@@ -423,7 +423,7 @@ function AppraisalsPage() {
         </div>
 
         {overdue && overdue.length > 0 && (
-          <div className="mb-4 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-700 dark:text-red-300">
+          <div className="mb-4 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-700 dark:text-red-300">
             <AlertCircle className="size-4 shrink-0" />
             <strong>{overdue.length}</strong> appraisal{overdue.length > 1 ? "s" : ""} are
             overdue and not yet completed.
@@ -451,7 +451,7 @@ function AppraisalsPage() {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as AppraisalStatus | "")}
-            className="rounded-md border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="">All Statuses</option>
             <option value="scheduled">Scheduled</option>
@@ -461,7 +461,7 @@ function AppraisalsPage() {
           </select>
         </div>
 
-        <div className="rounded-md border">
+        <div className="rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -517,7 +517,7 @@ function AppraisalsPage() {
                     </TableCell>
                     <TableCell>
                       <span
-                        className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
+                        className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${
                           STATUS_COLORS[appraisal.status as AppraisalStatus] ?? ""
                         }`}
                       >

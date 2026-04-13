@@ -62,7 +62,7 @@ function HistoryPage() {
           </p>
         </div>
 
-        <div className="rounded-md border">
+        <div className="rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -98,7 +98,7 @@ function HistoryPage() {
                     </TableCell>
                     <TableCell>
                       <span
-                        className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium capitalize ${
+                        className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium capitalize ${
                           ACTION_COLORS[entry.action as HistoryAction] ??
                           "bg-muted text-muted-foreground"
                         }`}

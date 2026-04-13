@@ -42,7 +42,7 @@ function DepartmentsSettingsPage() {
           </p>
         </div>
 
-        <div className="rounded-md border max-w-2xl">
+        <div className="rounded-xl border max-w-2xl">
           <Table>
             <TableHeader>
               <TableRow>
@@ -77,7 +77,7 @@ function DepartmentsSettingsPage() {
                     </TableCell>
                     <TableCell>
                       <span
-                        className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
+                        className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${
                           dept.isActive
                             ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
                             : "bg-muted text-muted-foreground"

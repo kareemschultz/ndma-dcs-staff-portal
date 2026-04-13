@@ -94,7 +94,7 @@ function AccountDetailPage() {
         </Header>
         <Main>
           <Skeleton className="h-8 w-64 mb-6" />
-          <Skeleton className="h-40 w-full rounded-md" />
+          <Skeleton className="h-40 w-full rounded-xl" />
         </Main>
       </>
     );
@@ -159,7 +159,7 @@ function AccountDetailPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${STATUS_COLORS[account.status] ?? "bg-muted text-muted-foreground"}`}>
+            <span className={`inline-flex items-center rounded-lg px-2 py-1 text-xs font-medium ${STATUS_COLORS[account.status] ?? "bg-muted text-muted-foreground"}`}>
               {account.status.replace(/_/g, " ")}
             </span>
             {account.status !== "disabled" && (
@@ -189,13 +189,13 @@ function AccountDetailPage() {
 
         {/* Alert banners */}
         {isExpired && (
-          <div className="mb-4 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-700 dark:text-red-300">
+          <div className="mb-4 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-700 dark:text-red-300">
             <AlertCircle className="size-4 shrink-0" />
             This account expired on {format(parseISO(account.expiresAt!), "dd MMM yyyy")}.
           </div>
         )}
         {isReviewDue && !isExpired && (
-          <div className="mb-4 flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-900/20 p-3 text-sm text-amber-700 dark:text-amber-300">
+          <div className="mb-4 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-900/20 p-3 text-sm text-amber-700 dark:text-amber-300">
             <AlertCircle className="size-4 shrink-0" />
             Access review was due on {format(parseISO(account.reviewDueDate!), "dd MMM yyyy")}.
           </div>
@@ -258,7 +258,7 @@ function AccountDetailPage() {
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 <Row label="Status" value={
-                  <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${STATUS_COLORS[account.status] ?? ""}`}>
+                  <span className={`inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs font-medium ${STATUS_COLORS[account.status] ?? ""}`}>
                     {account.status.replace(/_/g, " ")}
                   </span>
                 } />
@@ -341,13 +341,13 @@ function AccountDetailPage() {
         {activeTab === "groups" && (
           <div className="space-y-3">
             {activeGroupMemberships.length === 0 ? (
-              <div className="rounded-md border border-dashed p-12 text-center text-muted-foreground">
+              <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
                 <Users className="size-8 mx-auto mb-3 opacity-40" />
                 <p className="font-medium">No group memberships</p>
               </div>
             ) : (
               activeGroupMemberships.map((membership) => (
-                <div key={membership.id} className="rounded-md border p-4">
+                <div key={membership.id} className="rounded-xl border p-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <p className="font-medium text-sm">{membership.accessGroup?.name}</p>
@@ -372,17 +372,17 @@ function AccountDetailPage() {
         {activeTab === "reviews" && (
           <div className="space-y-3">
             {!account.reviews?.length ? (
-              <div className="rounded-md border border-dashed p-12 text-center text-muted-foreground">
+              <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
                 <Shield className="size-8 mx-auto mb-3 opacity-40" />
                 <p className="font-medium">No access reviews yet</p>
               </div>
             ) : (
               account.reviews.map((review) => (
-                <div key={review.id} className="rounded-md border p-4">
+                <div key={review.id} className="rounded-xl border p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${REVIEW_STATUS_COLORS[review.status] ?? "bg-muted text-muted-foreground"}`}>
+                        <span className={`inline-flex items-center rounded-lg px-1.5 py-0.5 text-xs font-medium ${REVIEW_STATUS_COLORS[review.status] ?? "bg-muted text-muted-foreground"}`}>
                           {review.status}
                         </span>
                         <span className="text-xs text-muted-foreground">

@@ -78,7 +78,7 @@ function RotaPage() {
               ))}
             </div>
           ) : !current ? (
-            <div className="rounded-md border border-dashed p-8 text-center text-muted-foreground text-sm">
+            <div className="rounded-xl border border-dashed p-8 text-center text-muted-foreground text-sm">
               No published schedule for this week.
             </div>
           ) : (
@@ -92,7 +92,7 @@ function RotaPage() {
                       <CardContent className="p-0">
                         <div className="flex items-start justify-between mb-2">
                           <span
-                            className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[role]}`}
+                            className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[role]}`}
                           >
                             {ROLE_LABELS[role]}
                           </span>
@@ -137,7 +137,7 @@ function RotaPage() {
               {upcoming.map((schedule) => (
                 <div
                   key={schedule.id}
-                  className="rounded-md border px-4 py-3 flex items-center justify-between"
+                  className="rounded-xl border px-4 py-3 flex items-center justify-between"
                 >
                   <div>
                     <p className="text-sm font-medium">
@@ -147,7 +147,7 @@ function RotaPage() {
                       {schedule.assignments.length} / 4 roles filled
                     </p>
                   </div>
-                  <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded px-2 py-0.5">
+                  <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded-lg px-2 py-0.5">
                     Published
                   </span>
                 </div>
@@ -165,7 +165,7 @@ function RotaPage() {
             </h2>
             <div className="space-y-2">
               {pendingSwaps.map((swap) => (
-                <div key={swap.id} className="rounded-md border px-4 py-3">
+                <div key={swap.id} className="rounded-xl border px-4 py-3">
                   <p className="text-sm">
                     <span className="font-medium">{swap.requester?.user?.name}</span>
                     {" → "}
@@ -196,7 +196,7 @@ function RotaPage() {
               {importWarnings.map((w) => {
                 const warn = w as unknown as { role: string; rawValue: string; weekStart: string; weekEnd: string };
                 return (
-                <div key={w.id} className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 px-4 py-3">
+                <div key={w.id} className="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 px-4 py-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="text-sm font-medium">

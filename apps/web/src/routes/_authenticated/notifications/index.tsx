@@ -65,11 +65,11 @@ function NotificationsPage() {
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full rounded-md" />
+              <Skeleton key={i} className="h-16 w-full rounded-xl" />
             ))}
           </div>
         ) : !data?.items?.length ? (
-          <div className="rounded-md border border-dashed p-12 text-center text-muted-foreground">
+          <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
             No notifications yet.
           </div>
         ) : (
@@ -79,7 +79,7 @@ function NotificationsPage() {
               return (
                 <div
                   key={n.id}
-                  className={`flex items-start gap-3 rounded-md border p-4 transition-colors ${
+                  className={`flex items-start gap-3 rounded-xl border p-4 transition-colors ${
                     isUnread ? "border-primary/30 bg-primary/5" : ""
                   }`}
                 >

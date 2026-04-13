@@ -138,11 +138,11 @@ function EngineerCard({ entry }: { entry: WorkloadEntry }) {
 
         {/* Metrics grid */}
         <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="rounded-md bg-background/60 px-2 py-1.5">
+          <div className="rounded-xl bg-background/60 px-2 py-1.5">
             <p className="text-muted-foreground">Open items</p>
             <p className="font-semibold">{entry.openWorkItems}</p>
           </div>
-          <div className="rounded-md bg-background/60 px-2 py-1.5">
+          <div className="rounded-xl bg-background/60 px-2 py-1.5">
             <p className="text-muted-foreground">Overdue</p>
             <p
               className={`font-semibold ${entry.overdueWorkItems > 0 ? "text-red-600" : ""}`}
@@ -151,7 +151,7 @@ function EngineerCard({ entry }: { entry: WorkloadEntry }) {
             </p>
           </div>
           {entry.onCallRole && (
-            <div className="col-span-2 rounded-md bg-blue-100/60 px-2 py-1.5 dark:bg-blue-900/20">
+            <div className="col-span-2 rounded-xl bg-blue-100/60 px-2 py-1.5 dark:bg-blue-900/20">
               <p className="text-muted-foreground">On-call role</p>
               <p className="font-semibold capitalize text-blue-700 dark:text-blue-300">
                 {entry.onCallRole}
@@ -159,14 +159,14 @@ function EngineerCard({ entry }: { entry: WorkloadEntry }) {
             </div>
           )}
           {entry.onLeave && (
-            <div className="col-span-2 rounded-md bg-amber-100/60 px-2 py-1.5 dark:bg-amber-900/20">
+            <div className="col-span-2 rounded-xl bg-amber-100/60 px-2 py-1.5 dark:bg-amber-900/20">
               <p className="font-medium text-amber-700 dark:text-amber-300">
                 On approved leave this week
               </p>
             </div>
           )}
           {entry.overdueChanges > 0 && (
-            <div className="col-span-2 rounded-md bg-orange-100/60 px-2 py-1.5 dark:bg-orange-900/20">
+            <div className="col-span-2 rounded-xl bg-orange-100/60 px-2 py-1.5 dark:bg-orange-900/20">
               <p className="text-muted-foreground">Overdue temp changes</p>
               <p className="font-semibold text-orange-700 dark:text-orange-300">
                 {entry.overdueChanges}
@@ -190,8 +190,8 @@ function WorkloadSkeleton() {
           <Skeleton className="mb-4 h-3 w-1/3" />
           <Skeleton className="mb-2 h-2 w-full rounded-full" />
           <div className="grid grid-cols-2 gap-2">
-            <Skeleton className="h-12 rounded-md" />
-            <Skeleton className="h-12 rounded-md" />
+            <Skeleton className="h-12 rounded-xl" />
+            <Skeleton className="h-12 rounded-xl" />
           </div>
         </Card>
       ))}
