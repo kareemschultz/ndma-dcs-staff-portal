@@ -2,7 +2,7 @@
 
 ## Project Overview
 Enterprise internal operations platform for NDMA Data Centre Services (DCS).
-Modules: Work Management · Incident Management · On-Call Rota · Procurement · Leave · Staff/Compliance · Audit · Access Management.
+Modules: Work Management · Incident Management · On-Call Rota · Procurement · Leave · Staff/Compliance · Audit · Access Management · Temporary Changes · Analytics · Import Pipeline.
 
 See `/docs/architecture/` for detailed reference docs.
 
@@ -40,6 +40,10 @@ bun run db:generate   # Generate migration files
 bun run db:migrate    # Apply migrations
 bun run db:studio     # Open Drizzle Studio
 bun run check-types   # TypeScript type check all packages
+
+# E2E tests (from apps/web/)
+bun run test:e2e      # Run Playwright smoke tests (dev server must be running)
+bun run test:e2e:ui   # Run with Playwright UI mode
 ```
 
 ## Adding oRPC Procedures
@@ -272,6 +276,19 @@ correlationId: context.requestId,
 - Conditions evaluate against the payload's flat fields — use the actual DB column names as field names
 - `{{fieldName}}` placeholders in action title/body are replaced with payload values at fire-time
 
+### Login route is `/login`, NOT `/sign-in`
+- The auth route is `apps/web/src/routes/login.tsx` → URL is `/login`
+- Playwright tests and any deep-links to the auth page must use `/login`
+
+### E2E Playwright tests — auth flow tests need empty storageState
+- All smoke tests use the stored session from `tests/.auth/user.json`
+- Auth flow tests (testing unauthenticated behavior) MUST use `test.use({ storageState: { cookies: [], origins: [] } })`
+- Otherwise the stored session auto-redirects `/login` → `/` and the login form never appears
+
+### import type enum — leave added in session 3
+- The `import_type` DB enum now includes `"leave"` (added via `db:push`)
+- Leave imports: 2026 dates only (schema validation enforces `^2026-\d{2}-\d{2}$`), existing staff only (never creates new users)
+
 ### git commit — pre-commit hook runs `bat`
 - The pre-commit hook tries to run `bat` (a cat alternative) to show diffs — fails if not installed
 - **Fix:** `git commit -m "your message here"` using `-m` flag directly (NOT heredoc syntax with `cat <<'EOF'`)
@@ -330,7 +347,7 @@ correlationId: context.requestId,
 | `automation.ts` | automation_rules, automation_rule_logs + automation_trigger_module enum |
 | `leave.ts` | leave_types, leave_balances, leave_requests + leave_request_status enum |
 | `procurement.ts` | purchase_requisitions, pr_line_items, pr_approvals + pr_status / pr_priority enums |
-| `temp-changes.ts` | temporary_changes + temp_change_status enum |
+| `temp-changes.ts` | temporary_changes (+ category, riskLevel, environment, systemName, publicIp, internalIp, port, protocol, externalExposure, ownerType, externalAgencyName, externalAgencyType, requestedByType, requestedByExternal, requestedById, departmentId) + tempChangeHistory + tempChangeLinks + enums: tempChangeCategoryEnum, tempChangeRiskEnum, tempChangeOwnerTypeEnum |
 | `access.ts` | external_contacts, platform_accounts (staffProfileId nullable), access_groups, account_group_memberships (soft-delete via removedAt), access_reviews, platform_integrations, sync_jobs, reconciliation_issues, service_owners + enums: platform_type (vpn/fortigate/uportal/biometric/ad/ipam/phpipam/radius/zabbix/esight/ivs_neteco/nce_fan_atp/neteco/lte_grafana/gen_grafana/plum/kibana/other), account_status (+orphaned/pending_review), auth_source, sync_mode, sync_direction, integration_status, sync_job_status, reconciliation_issue_type (+disabled_staff_active_account/expired_contractor/missing_internally/missing_externally), user_affiliation, access_review_status, access_group_type |
 | `contracts.ts` | contracts + contract_status enum |
 | `appraisals.ts` | appraisals + appraisal_status enum |
@@ -354,7 +371,8 @@ correlationId: context.requestId,
 | `services.ts` | list, get, create, update |
 | `leave.ts` | types.{list,create,update}, balances.{getByStaff,adjust}, requests.{list,create,approve,reject,cancel}, getTeamCalendar |
 | `procurement.ts` | list, get, create, update, submit, approve, reject, markOrdered, markReceived, getMyRequests, getPendingApprovals, stats |
-| `temp-changes.ts` | list, get, create, update, markRemoved, getOverdue, stats |
+| `temp-changes.ts` | list, get, create, update, markRemoved, getOverdue, getPublicIPs, getExpiringSoon, stats, statsExtended, getHistory, addLink |
+| `analytics.ts` | overview (cross-module analytics: work, incidents, leave, rota, procurement, tempChanges, appraisals, training — filterable by year) |
 | `access.ts` | accounts.{list,get,getByStaff,getByPlatform,getExpiring,getOrphaned,getStale,getVpnEnabled,create,update,disable,markReviewed}, externalContacts.{list,get,create,update}, groups.{list,get,create,update,delete,listMembers,addMember,removeMember}, reviews.{list,getPending,getOverdue,create,complete}, integrations.{list,get,create,update,triggerSync}, syncJobs.list, reconciliation.{list,resolve}, serviceOwners.{list,assign,remove,getByService} |
 | `staff.ts` | list, get, create, update, deactivate, getDepartments |
 | `contracts.ts` | list, get, create, update, getExpiringSoon |
