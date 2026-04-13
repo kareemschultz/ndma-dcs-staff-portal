@@ -7,7 +7,7 @@ import {
   workItemWeeklyUpdates,
   staffProfiles,
 } from "@ndma-dcs-staff-portal/db";
-import { and, desc, eq, lt, sql, isNotNull, inArray } from "drizzle-orm";
+import { and, desc, eq, lt, sql, isNotNull } from "drizzle-orm";
 
 import { protectedProcedure } from "../index";
 import { logAudit } from "../lib/audit";
@@ -46,6 +46,7 @@ const CreateWorkItemInput = z.object({
   sourceSystem: z.string().optional(),
   sourceReference: z.string().optional(),
   dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  followUpDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
 const UpdateWorkItemInput = z.object({
@@ -61,6 +62,7 @@ const UpdateWorkItemInput = z.object({
   sourceSystem: z.string().optional(),
   sourceReference: z.string().optional(),
   dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  followUpDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
 const ListWorkItemsInput = z.object({
@@ -94,7 +96,7 @@ export const workRouter = {
     .input(ListWorkItemsInput)
     .handler(async ({ input }) => {
       const conditions = [];
-      const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toISOString().slice(0, 10);
 
       if (input.status) conditions.push(eq(workItems.status, input.status));
       if (input.type) conditions.push(eq(workItems.type, input.type));
@@ -160,6 +162,7 @@ export const workRouter = {
           createdById: context.session.user.id,
         })
         .returning();
+      if (!item) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       await logAudit({
         actorId: context.session.user.id,
@@ -244,6 +247,7 @@ export const workRouter = {
         .set({ assignedToId: input.staffProfileId })
         .where(eq(workItems.id, input.id))
         .returning();
+      if (!updated) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
       await logAudit({
         actorId: context.session.user.id,
@@ -334,7 +338,7 @@ export const workRouter = {
     }),
 
   getOverdue: protectedProcedure.handler(async () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().slice(0, 10);
     return db.query.workItems.findMany({
       where: and(
         isNotNull(workItems.dueDate),
@@ -370,7 +374,7 @@ export const workRouter = {
     }),
 
   stats: protectedProcedure.handler(async () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().slice(0, 10);
 
     const all = await db.query.workItems.findMany({
       columns: { id: true, status: true, type: true, dueDate: true },

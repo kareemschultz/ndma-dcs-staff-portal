@@ -63,6 +63,7 @@ export const workItems = pgTable(
     sourceReference: text("source_reference"),
     // Scheduling
     dueDate: date("due_date"),
+    followUpDate: date("follow_up_date"),
     completedAt: timestamp("completed_at"),
     // Audit
     createdById: text("created_by_id").references(() => user.id, {
