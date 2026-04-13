@@ -5,6 +5,7 @@ import {
   workItems,
   workItemComments,
   workItemWeeklyUpdates,
+  workItemTemplates,
   staffProfiles,
 } from "@ndma-dcs-staff-portal/db";
 import { and, desc, eq, lt, sql, isNotNull, inArray } from "drizzle-orm";
@@ -85,6 +86,21 @@ const AddWeeklyUpdateInput = z.object({
   statusSummary: z.string().min(1),
   blockers: z.string().optional(),
   nextSteps: z.string().optional(),
+});
+
+const CreateTemplateInput = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().optional(),
+  type: WorkItemTypeSchema.default("routine"),
+  priority: WorkItemPrioritySchema.default("medium"),
+  departmentId: z.string().optional(),
+  estimatedHours: z.number().int().positive().optional(),
+  recurrencePattern: z.enum(["weekly", "monthly", "annually"]),
+});
+
+const GenerateFromTemplateInput = z.object({
+  templateId: z.string(),
+  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Must be YYYY-MM-DD"),
 });
 
 // ── Router ─────────────────────────────────────────────────────────────────
@@ -395,4 +411,92 @@ export const workRouter = {
 
     return { total: all.length, byStatus, byType, overdue };
   }),
+
+  // ── Templates sub-router ─────────────────────────────────────────────────
+
+  templates: {
+    list: protectedProcedure.handler(async () => {
+      return db.query.workItemTemplates.findMany({
+        orderBy: [desc(workItemTemplates.createdAt)],
+        with: {
+          department: true,
+          createdBy: true,
+        },
+      });
+    }),
+
+    create: protectedProcedure
+      .input(CreateTemplateInput)
+      .handler(async ({ input, context }) => {
+        const [template] = await db
+          .insert(workItemTemplates)
+          .values({
+            ...input,
+            departmentId: input.departmentId ?? null,
+            estimatedHours: input.estimatedHours ?? null,
+            description: input.description ?? null,
+            createdById: context.session.user.id,
+          })
+          .returning();
+
+        if (!template) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "work_item_template.create",
+          module: "work",
+          resourceType: "work_item_template",
+          resourceId: template.id,
+          afterValue: template as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return template;
+      }),
+
+    generate: protectedProcedure
+      .input(GenerateFromTemplateInput)
+      .handler(async ({ input, context }) => {
+        const template = await db.query.workItemTemplates.findFirst({
+          where: eq(workItemTemplates.id, input.templateId),
+        });
+        if (!template) {
+          throw new ORPCError("NOT_FOUND", { message: "Template not found" });
+        }
+
+        const [item] = await db
+          .insert(workItems)
+          .values({
+            title: template.title,
+            description: template.description ?? null,
+            type: template.type,
+            priority: template.priority,
+            departmentId: template.departmentId ?? null,
+            dueDate: input.dueDate,
+            createdById: context.session.user.id,
+          })
+          .returning();
+
+        if (!item) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          action: "work_item.create",
+          module: "work",
+          resourceType: "work_item",
+          resourceId: item.id,
+          afterValue: {
+            ...item,
+            fromTemplateId: template.id,
+          } as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+
+        return item;
+      }),
+  },
 };

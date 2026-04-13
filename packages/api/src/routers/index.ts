@@ -7,6 +7,7 @@ import { appraisalsRouter } from "./appraisals";
 import { auditRouter } from "./audit";
 import { complianceRouter } from "./compliance";
 import { contractsRouter } from "./contracts";
+import { cyclesRouter } from "./cycles";
 import { dashboardRouter } from "./dashboard";
 import { escalationRouter } from "./escalation";
 import { incidentsRouter } from "./incidents";
@@ -17,6 +18,7 @@ import { rotaRouter } from "./rota";
 import { servicesRouter } from "./services";
 import { staffRouter } from "./staff";
 import { tempChangesRouter } from "./temp-changes";
+import { workloadRouter } from "./workload";
 import { workRouter } from "./work";
 
 export const appRouter = {
@@ -30,6 +32,7 @@ export const appRouter = {
   audit: auditRouter,
   compliance: complianceRouter,
   contracts: contractsRouter,
+  cycles: cyclesRouter,
   dashboard: dashboardRouter,
   escalation: escalationRouter,
   incidents: incidentsRouter,
@@ -41,6 +44,7 @@ export const appRouter = {
   staff: staffRouter,
   tempChanges: tempChangesRouter,
   import: importRouter,
+  workload: workloadRouter,
   work: workRouter,
 };
 
