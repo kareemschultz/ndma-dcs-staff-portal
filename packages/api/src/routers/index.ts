@@ -4,6 +4,7 @@ import { protectedProcedure, publicProcedure } from "../index";
 import { accessRouter } from "./access";
 import { importRouter } from "./import";
 import { appraisalsRouter } from "./appraisals";
+import { appraisalCyclesRouter } from "./appraisal-cycles";
 import { auditRouter } from "./audit";
 import { complianceRouter } from "./compliance";
 import { contractsRouter } from "./contracts";
@@ -11,6 +12,7 @@ import { departmentAssignmentsRouter } from "./department-assignments";
 import { departmentsRouter } from "./departments";
 import { dashboardRouter } from "./dashboard";
 import { escalationRouter } from "./escalation";
+import { hrDocsRouter } from "./hr-docs";
 import { incidentsRouter } from "./incidents";
 import { leaveRouter } from "./leave";
 import { notificationsRouter } from "./notifications";
@@ -34,6 +36,7 @@ export const appRouter = {
   })),
   access: accessRouter,
   appraisals: appraisalsRouter,
+  appraisalCycles: appraisalCyclesRouter,
   audit: auditRouter,
   compliance: complianceRouter,
   contracts: contractsRouter,
@@ -41,6 +44,7 @@ export const appRouter = {
   departments: departmentsRouter,
   dashboard: dashboardRouter,
   escalation: escalationRouter,
+  hrDocs: hrDocsRouter,
   incidents: incidentsRouter,
   leave: leaveRouter,
   notifications: notificationsRouter,

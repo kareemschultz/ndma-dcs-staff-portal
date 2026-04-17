@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { ClipboardCheck, AlertCircle, Plus, Pencil } from "lucide-react";
@@ -40,11 +40,23 @@ export const Route = createFileRoute("/_authenticated/appraisals/")({
   component: AppraisalsPage,
 });
 
-type AppraisalStatus = "scheduled" | "in_progress" | "completed" | "overdue";
+type AppraisalStatus =
+  | "draft"
+  | "scheduled"
+  | "in_progress"
+  | "submitted"
+  | "approved"
+  | "rejected"
+  | "completed"
+  | "overdue";
 
 const STATUS_COLORS: Record<AppraisalStatus, string> = {
+  draft: "bg-muted text-muted-foreground",
   scheduled: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
   in_progress: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300",
+  submitted: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+  approved: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+  rejected: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
   completed: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
   overdue: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
 };
@@ -420,6 +432,9 @@ function AppraisalsPage() {
             <Plus className="size-4 mr-2" />
             Schedule Appraisal
           </Button>
+          <Button variant="outline" render={<Link to="/appraisals/inbox" />}>
+            Inbox
+          </Button>
         </div>
 
         {overdue && overdue.length > 0 && (
@@ -436,10 +451,14 @@ function AppraisalsPage() {
               <strong className="text-foreground">{data.length}</strong> total
             </span>
             <span className="text-green-600">
-              <strong>{data.filter((a) => a.status === "completed").length}</strong> completed
+              <strong>{data.filter((a) => a.status === "approved" || a.status === "completed").length}</strong>{" "}
+              approved
             </span>
             <span className="text-blue-600">
               <strong>{data.filter((a) => a.status === "scheduled").length}</strong> scheduled
+            </span>
+            <span className="text-amber-600">
+              <strong>{data.filter((a) => a.status === "submitted").length}</strong> submitted
             </span>
             <span className="text-red-600">
               <strong>{data.filter((a) => a.status === "overdue").length}</strong> overdue
@@ -454,8 +473,12 @@ function AppraisalsPage() {
             className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="">All Statuses</option>
+            <option value="draft">Draft</option>
             <option value="scheduled">Scheduled</option>
             <option value="in_progress">In Progress</option>
+            <option value="submitted">Submitted</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
             <option value="completed">Completed</option>
             <option value="overdue">Overdue</option>
           </select>
