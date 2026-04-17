@@ -592,12 +592,15 @@ export const appraisalsRouter = {
         },
       ];
 
-      await db.insert(appraisalFollowups).values(
-        followups.map((followUp) => ({
-          ...followUp,
-          dueDate: followUp.dueDate.toISOString().slice(0, 10),
-        })),
-      );
+      await db
+        .insert(appraisalFollowups)
+        .values(
+          followups.map((followUp) => ({
+            ...followUp,
+            dueDate: followUp.dueDate.toISOString().slice(0, 10),
+          })),
+        )
+        .onConflictDoNothing();
 
       await notifyRelatedPeople(
         {
