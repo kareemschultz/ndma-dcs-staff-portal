@@ -26,6 +26,17 @@
 - **Phase 1 started:** `packages/db/src/schema/staff.ts` now has `teamLeadId` column + self-relation + index.
 - **For next session:** continue Phase 1 — next tasks are `department_assignments` schema and auth/RBAC extension. See todo list below.
 
+### 2026-04-17 — Session C (Phase 2 appraisal workflow batch)
+- **Who:** Codex (current session)
+- **What:** Implemented the appraisal / HR-doc batch on top of the phase-1 baseline. Added appraisal cycles + follow-ups schema, expanded appraisals with workflow fields and rating matrix, added scoped appraisal list/get/submit/approve/reject flows, added promotion recommendations/letters, performance journal, career path plans/years, and staff feedback routers, and wired a new appraisal inbox route into the web app.
+- **Files touched:** `packages/db/src/schema/appraisal-cycles.ts`, `packages/db/src/schema/appraisal-followups.ts`, `packages/db/src/schema/hr-docs.ts`, `packages/db/src/schema/appraisals.ts`, `packages/api/src/routers/appraisals.ts`, `packages/api/src/routers/appraisal-cycles.ts`, `packages/api/src/routers/hr-docs.ts`, `packages/api/src/routers/index.ts`, `apps/web/src/routes/_authenticated/appraisals/inbox.tsx`, `apps/web/src/routes/_authenticated/appraisals/index.tsx`, `apps/web/src/components/layout/data/sidebar-data.ts`, `apps/web/src/routeTree.gen.ts`.
+- **Decisions:**
+  - Appraisal submissions are now immutable once approved/rejected.
+  - Approved appraisals automatically create 3-month and 6-month follow-ups.
+  - Promotion letters remain private HR artifacts and are gated by staff-private access checks.
+  - Career-path and journal data are exposed through role-gated routers rather than public endpoints.
+- **For next session:** add the remaining staff-detail tab UI, seed initial cycle/recommendation data, and continue Phase 3 operational HR items (PPE, attendance exceptions, timesheets).
+
 <!-- NEXT SESSION: add your entry here. Use ISO date + a short session ID. Keep it scannable. -->
 
 ---
@@ -60,6 +71,19 @@
 
 **Phase 1 (started):**
 - `packages/db/src/schema/staff.ts` — added `teamLeadId` column (bare text, self-referential FK applied at DB level via `db:push`) + index `staff_profiles_teamLeadId_idx` + relations for `teamLead` (one) and `directReports` (many, relationName `"teamLead"`).
+
+**Phase 2 (appraisal + HR docs batch):**
+- `packages/db/src/schema/appraisal-cycles.ts` — new appraisal cycle table + half/status enums.
+- `packages/db/src/schema/appraisal-followups.ts` — new post-approval follow-up tracking table.
+- `packages/db/src/schema/hr-docs.ts` — new promotion recommendations, promotion letters, performance journal, career path, and staff feedback tables.
+- `packages/db/src/schema/appraisals.ts` — expanded workflow fields, immutable stamp, rating matrix, and approval/submission metadata.
+- `packages/api/src/routers/appraisals.ts` — scoped list/get/getByStaff/getOverdue + submit/approve/reject flow.
+- `packages/api/src/routers/appraisal-cycles.ts` — cycle create/open/close/batch seed workflow.
+- `packages/api/src/routers/hr-docs.ts` — promotion recommendations, promotion letters, performance journal, career path, and staff feedback routers.
+- `apps/web/src/routes/_authenticated/appraisals/inbox.tsx` — reviewer queue for submitted appraisals.
+- `apps/web/src/routes/_authenticated/appraisals/index.tsx` — added inbox link and expanded status handling.
+- `apps/web/src/components/layout/data/sidebar-data.ts` — added appraisal inbox navigation.
+- `apps/web/src/routeTree.gen.ts` — registered the new inbox route.
 
 **Documents created:**
 - `IMPLEMENTATION_PLAN.md` — this file.
@@ -112,7 +136,10 @@ Maintained by the coding session's `TodoWrite` tool — copy here when marking a
 - [ ] Phase 1e — `department-assignments` router
 - [ ] Phase 1f — staff router additions (`setTeamLead`, `canAccessPrivate`, `getMyDirectReports`)
 - [ ] Phase 1g — NOC seed + initial assignments
-- [ ] Phase 2+ — see phase sections below
+- [~] Phase 2a — appraisal cycles + workflow batch landed
+- [ ] Phase 2b — staff detail tabs + promotion letters/performance journal/career path screens
+- [ ] Phase 2c — seed data for cycles, feedback, and promotion recommendations
+- [ ] Phase 3+ — see phase sections below
 
 ---
 
