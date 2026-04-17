@@ -7,7 +7,7 @@ import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 export const staffRouter = {
-  list: protectedProcedure
+  list: requireRole("staff", "read")
     .input(
       z.object({
         departmentId: z.string().optional(),
@@ -33,7 +33,7 @@ export const staffRouter = {
       });
     }),
 
-  get: protectedProcedure
+  get: requireRole("staff", "read")
     .input(z.object({ id: z.string() }))
     .handler(async ({ input }) => {
       const profile = await db.query.staffProfiles.findFirst({

@@ -3,11 +3,11 @@ import { z } from "zod";
 import { db, appraisals } from "@ndma-dcs-staff-portal/db";
 import { and, eq, lte, sql } from "drizzle-orm";
 
-import { protectedProcedure, requireRole } from "../index";
+import { requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 export const appraisalsRouter = {
-  list: protectedProcedure
+  list: requireRole("appraisal", "read")
     .input(
       z.object({
         staffProfileId: z.string().optional(),
@@ -35,7 +35,7 @@ export const appraisalsRouter = {
       });
     }),
 
-  get: protectedProcedure
+  get: requireRole("appraisal", "read")
     .input(z.object({ id: z.string() }))
     .handler(async ({ input }) => {
       const appraisal = await db.query.appraisals.findFirst({
@@ -151,7 +151,7 @@ export const appraisalsRouter = {
       return updated;
     }),
 
-  getOverdue: protectedProcedure.handler(async () => {
+  getOverdue: requireRole("appraisal", "read").handler(async () => {
     const today = new Date().toISOString().slice(0, 10);
     return db.query.appraisals.findMany({
       where: and(
@@ -166,7 +166,7 @@ export const appraisalsRouter = {
     });
   }),
 
-  getByStaff: protectedProcedure
+  getByStaff: requireRole("appraisal", "read")
     .input(z.object({ staffProfileId: z.string() }))
     .handler(async ({ input }) => {
       return db.query.appraisals.findMany({

@@ -10,7 +10,7 @@ import {
 } from "@ndma-dcs-staff-portal/db";
 import { and, desc, eq, sql } from "drizzle-orm";
 
-import { protectedProcedure, requireRole } from "../index";
+import { requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 // ── Input Schemas ──────────────────────────────────────────────────────────
@@ -82,7 +82,7 @@ const CreatePIRInput = z.object({
 // ── Router ─────────────────────────────────────────────────────────────────
 
 export const incidentsRouter = {
-  list: protectedProcedure
+  list: requireRole("work", "read")
     .input(
       z.object({
         status: z
@@ -121,7 +121,7 @@ export const incidentsRouter = {
       });
     }),
 
-  get: protectedProcedure
+  get: requireRole("work", "read")
     .input(z.object({ id: z.string() }))
     .handler(async ({ input }) => {
       const incident = await db.query.incidents.findFirst({
@@ -193,6 +193,26 @@ export const incidentsRouter = {
         where: eq(incidents.id, id),
       });
       if (!before) throw new ORPCError("NOT_FOUND");
+
+      // Enforce forward-only state transitions
+      if (updates.status && updates.status !== before.status) {
+        const order = [
+          "detected",
+          "investigating",
+          "identified",
+          "mitigating",
+          "resolved",
+          "post_mortem",
+          "closed",
+        ] as const;
+        const fromIdx = order.indexOf(before.status as typeof order[number]);
+        const toIdx = order.indexOf(updates.status as typeof order[number]);
+        if (toIdx < fromIdx) {
+          throw new ORPCError("CONFLICT", {
+            message: `Cannot move incident from '${before.status}' back to '${updates.status}'.`,
+          });
+        }
+      }
 
       const now = new Date();
       const statusTimestamps: Record<string, Date | undefined> = {};
@@ -332,6 +352,16 @@ export const incidentsRouter = {
   createPIR: requireRole("work", "create")
     .input(CreatePIRInput)
     .handler(async ({ input, context }) => {
+      const incident = await db.query.incidents.findFirst({
+        where: eq(incidents.id, input.incidentId),
+      });
+      if (!incident) throw new ORPCError("NOT_FOUND", { message: "Incident not found" });
+      if (!["resolved", "post_mortem", "closed"].includes(incident.status)) {
+        throw new ORPCError("CONFLICT", {
+          message: `A PIR can only be created once the incident is resolved. Current status: '${incident.status}'.`,
+        });
+      }
+
       const [pir] = await db
         .insert(postIncidentReviews)
         .values({
@@ -373,7 +403,7 @@ export const incidentsRouter = {
       return pir;
     }),
 
-  getActive: protectedProcedure.handler(async () => {
+  getActive: requireRole("work", "read").handler(async () => {
     return db.query.incidents.findMany({
       where: sql`${incidents.status} NOT IN ('resolved', 'post_mortem', 'closed')`,
       orderBy: [incidents.severity, desc(incidents.detectedAt)],
@@ -384,7 +414,7 @@ export const incidentsRouter = {
     });
   }),
 
-  stats: protectedProcedure.handler(async () => {
+  stats: requireRole("work", "read").handler(async () => {
     const all = await db.query.incidents.findMany({
       columns: {
         id: true,

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { db, temporaryChanges, tempChangeHistory, tempChangeLinks } from "@ndma-dcs-staff-portal/db";
 import { and, desc, eq, gt, isNotNull, lt, sql } from "drizzle-orm";
 
-import { protectedProcedure, requireRole } from "../index";
+import { requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 const StatusSchema = z.enum([
@@ -37,7 +37,7 @@ function deriveRiskLevel(data: {
 // ── Router ─────────────────────────────────────────────────────────────────────
 
 export const tempChangesRouter = {
-  list: protectedProcedure
+  list: requireRole("work", "read")
     .input(
       z.object({
         status: StatusSchema.optional(),
@@ -67,7 +67,7 @@ export const tempChangesRouter = {
       });
     }),
 
-  get: protectedProcedure
+  get: requireRole("work", "read")
     .input(z.object({ id: z.string() }))
     .handler(async ({ input }) => {
       const change = await db.query.temporaryChanges.findFirst({
@@ -259,7 +259,7 @@ export const tempChangesRouter = {
       return updated;
     }),
 
-  getOverdue: protectedProcedure.handler(async () => {
+  getOverdue: requireRole("work", "read").handler(async ({ context }) => {
     const today = new Date().toISOString().slice(0, 10);
 
     // Auto-flag items that are past their removeByDate but not yet marked overdue
@@ -287,7 +287,7 @@ export const tempChangesRouter = {
     });
   }),
 
-  stats: protectedProcedure.handler(async () => {
+  stats: requireRole("work", "read").handler(async () => {
     const all = await db.query.temporaryChanges.findMany({
       columns: { id: true, status: true, removeByDate: true },
     });
@@ -309,7 +309,7 @@ export const tempChangesRouter = {
     return { total: all.length, byStatus, overdue };
   }),
 
-  statsExtended: protectedProcedure.handler(async () => {
+  statsExtended: requireRole("work", "read").handler(async () => {
     const all = await db.query.temporaryChanges.findMany({
       columns: {
         id: true,
@@ -370,7 +370,7 @@ export const tempChangesRouter = {
     };
   }),
 
-  getPublicIPs: protectedProcedure
+  getPublicIPs: requireRole("work", "read")
     .input(z.object({}).optional())
     .handler(async () => {
       return db.query.temporaryChanges.findMany({
@@ -386,7 +386,7 @@ export const tempChangesRouter = {
       });
     }),
 
-  getExpiringSoon: protectedProcedure
+  getExpiringSoon: requireRole("work", "read")
     .input(z.object({ days: z.number().min(1).max(90).default(7) }))
     .handler(async ({ input }) => {
       const today = new Date().toISOString().slice(0, 10);
@@ -410,7 +410,7 @@ export const tempChangesRouter = {
     }),
 
   /** Get history for a specific temp change record */
-  getHistory: protectedProcedure
+  getHistory: requireRole("work", "read")
     .input(z.object({ tempChangeId: z.string() }))
     .handler(async ({ input }) => {
       return db.query.tempChangeHistory.findMany({

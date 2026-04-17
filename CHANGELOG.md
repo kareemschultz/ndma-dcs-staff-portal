@@ -6,7 +6,47 @@ All notable changes to DCS Ops Center are documented here.
 
 ## [Unreleased]
 
-### Added
+### Security hardening + Phase 0 + Phase 1 start (2026-04-17)
+
+**Reference:** `IMPLEMENTATION_PLAN.md` (root) and `/home/karetech/.claude/plans/paude-for-a-second-clever-salamander.md` (strategic plan, 7 phases).
+
+#### Security / RBAC
+- **Audit router** — `audit.list`, `audit.getByResource` gated to `requireRole("audit", "read")` (was `protectedProcedure` — any authenticated user could read the full audit trail).
+- **Dashboard router** — `opsReadiness` gated to `requireRole("report", "read")`; `recentActivity` gated to `requireRole("audit", "read")`. `main` (aggregate counts) intentionally left open.
+- **Analytics router** — `overview` gated to `requireRole("report", "read")`.
+- **Procurement router** — `list`, `get`, `getPendingApprovals`, `stats` gated. Approve requires status `submitted|under_review`; reject requires `submitted|under_review|approved`; `markOrdered` requires `approved`; `markReceived` requires `ordered`.
+- **Incidents router** — `list`, `get`, `getActive`, `stats` gated to `requireRole("work", "read")`. `update` enforces forward-only transitions through `detected → investigating → identified → mitigating → resolved → post_mortem → closed`. `createPIR` requires incident status in `resolved | post_mortem | closed` (was unconditional — a PIR could be written against an active incident).
+- **Rota router** — `swap.request` verifies the requester's staff profile matches the assignment's `staffProfileId` (was missing — any user could request a swap on another user's assignment). `list`, `getEligibleStaff`, `getAssignmentCounts`, `history`, `listImportWarnings` gated.
+- **Leave router** — `requests.list` scopes non-manager callers to their own profile via `staffProfiles.userId = session.user.id`. `balances.getByStaff` throws `FORBIDDEN` if a non-privileged caller requests another staff member's balances. `requests.create` enforces ownership (staff can only submit leave for themselves; manager/PA/admin can act on behalf of others). `getTeamCalendar` gated.
+- **Appraisals router** — all 4 read endpoints (`list`, `get`, `getOverdue`, `getByStaff`) gated to `requireRole("appraisal", "read")`.
+- **Contracts router** — `list`, `get`, `getExpiringSoon` gated.
+- **Services router** — `list`, `get` gated.
+- **Temp-changes router** — `list`, `get`, `getPublicIPs`, `getExpiringSoon`, `getHistory`, `stats`, `statsExtended`, `getOverdue` gated.
+- **Access router** — 23 read endpoints across `accounts`, `externalContacts`, `groups`, `reviews`, `integrations`, `syncJobs`, `reconciliation`, `serviceOwners` gated to `requireRole("access", "read")`.
+- **Staff router** — `list`, `get` gated; `getDepartments` intentionally left open (reference data).
+- **Compliance router** — `training.list`, `ppe.list`, `policyAck.list`, `getExpiringItems` gated to `requireRole("compliance", "read")`.
+- **Automation router** — `list`, `get`, `getLogs`, `stats` gated to `requireRole("settings", "read")`.
+- **Escalation router** — `policies.list`, `policies.get` gated.
+
+#### New functionality
+- **Departments CRUD** (`packages/api/src/routers/departments.ts`) — full router with `list`, `get`, `create`, `update`, `deactivate`; every mutation audit-logged.
+- **Departments admin UI** (`apps/web/src/routes/_authenticated/settings/departments.tsx`) — rewrote from read-only view to full CRUD with Add / Edit / Deactivate modals via `Dialog` component. Admin/hrAdminOps only.
+- **Notification bell wired** (`apps/web/src/components/notification-bell.tsx`) — replaced hardcoded `unreadCount = 0` with live `useQuery(orpc.notifications.list.queryOptions({ input: { includeRead: false, limit: 1 } }))`.
+- **Dashboard RBAC-aware** (`apps/web/src/routes/_authenticated/index.tsx`) — reads `authClient.useSession()` role and uses `enabled: canSeeOpsReadiness / canSeeAuditActivity` on privileged queries to prevent 403 toast noise for low-privilege users.
+
+#### Phase 1 foundation (started)
+- **Staff schema** (`packages/db/src/schema/staff.ts`) — added `teamLeadId` column (bare text, self-referential FK applied at DB level via `db:push` to work around Drizzle circular-ref limitation) + `staff_profiles_teamLeadId_idx` index + relations: `teamLead` (one) and `directReports` (many, both with `relationName: "teamLead"`).
+
+#### Documentation
+- **`IMPLEMENTATION_PLAN.md`** (new, project root) — actionable phase-by-phase tracker with session log, changelog, pending decisions, and conventions/gotchas. All future sessions and agents must append here.
+- **`/home/karetech/.claude/plans/paude-for-a-second-clever-salamander.md`** (new, user-global) — strategic 7-phase plan covering NOC integration, appraisal workflow, PPE/attendance/callouts/timesheets, NOC shifts, leave policy engine, training + policy versioning + document vault + career ladders, scheduled jobs.
+
+#### Outstanding (rolled into Phase 5)
+- Wrap multi-step writes in `db.transaction(...)` (leave approve/cancel balance updates, rota publish, import per-row).
+- Add missing FK constraints on `work_items.initiativeId`, `work_items.parentId`, temp-changes references.
+- Playwright RBAC regression suite.
+
+---
 
 #### Access & Accounts v3 — Identity Governance + VPN (2026-04-12)
 - **`external_contacts` table** — non-NDMA identities (contractors, consultants, vendors, external agencies) that hold platform accounts; optional FK to a staff profile for dual affiliation

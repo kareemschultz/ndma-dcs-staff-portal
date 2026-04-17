@@ -50,6 +50,10 @@ export const staffProfiles = pgTable(
       .default(false)
       .notNull(),
     isOnCallEligible: boolean("is_on_call_eligible").default(true).notNull(),
+    // Reporting relationship: this staff member's direct team lead.
+    // Bare text (no .references()) — the self-referential FK is created at the DB level on db:push
+    // to avoid Drizzle's circular reference limitation. See CLAUDE.md "Drizzle self-referential tables".
+    teamLeadId: text("team_lead_id"),
     contractExpiresAt: timestamp("contract_expires_at"),
     startDate: timestamp("start_date").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -61,10 +65,11 @@ export const staffProfiles = pgTable(
   (table) => [
     index("staff_profiles_userId_idx").on(table.userId),
     index("staff_profiles_departmentId_idx").on(table.departmentId),
+    index("staff_profiles_teamLeadId_idx").on(table.teamLeadId),
   ],
 );
 
-export const staffProfileRelations = relations(staffProfiles, ({ one }) => ({
+export const staffProfileRelations = relations(staffProfiles, ({ one, many }) => ({
   user: one(user, {
     fields: [staffProfiles.userId],
     references: [user.id],
@@ -73,4 +78,10 @@ export const staffProfileRelations = relations(staffProfiles, ({ one }) => ({
     fields: [staffProfiles.departmentId],
     references: [departments.id],
   }),
+  teamLead: one(staffProfiles, {
+    fields: [staffProfiles.teamLeadId],
+    references: [staffProfiles.id],
+    relationName: "teamLead",
+  }),
+  directReports: many(staffProfiles, { relationName: "teamLead" }),
 }));

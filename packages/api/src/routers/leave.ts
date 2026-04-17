@@ -92,7 +92,20 @@ export const leaveRouter = {
   balances: {
     getByStaff: protectedProcedure
       .input(z.object({ staffProfileId: z.string() }))
-      .handler(async ({ input }) => {
+      .handler(async ({ input, context }) => {
+        const role = context.userRole;
+        const canSeeAll = role && ["admin", "hrAdminOps", "manager", "readOnly"].includes(role);
+
+        if (!canSeeAll) {
+          // Staff can only see their own balances
+          const ownProfile = await db.query.staffProfiles.findFirst({
+            where: eq(staffProfiles.userId, context.session.user.id),
+          });
+          if (!ownProfile || ownProfile.id !== input.staffProfileId) {
+            throw new ORPCError("FORBIDDEN", { message: "You can only view your own leave balances." });
+          }
+        }
+
         return db.query.leaveBalances.findMany({
           where: eq(leaveBalances.staffProfileId, input.staffProfileId),
           with: { leaveType: true },
@@ -162,10 +175,24 @@ export const leaveRouter = {
           limit: z.number().min(1).max(200).default(50),
         }),
       )
-      .handler(async ({ input }) => {
+      .handler(async ({ input, context }) => {
+        const role = context.userRole;
+        const canSeeAll = role && ["admin", "hrAdminOps", "manager", "readOnly"].includes(role);
+
         const conditions = [];
-        if (input.staffProfileId)
-          conditions.push(eq(leaveRequests.staffProfileId, input.staffProfileId));
+
+        if (canSeeAll) {
+          if (input.staffProfileId)
+            conditions.push(eq(leaveRequests.staffProfileId, input.staffProfileId));
+        } else {
+          // Staff can only see their own requests
+          const ownProfile = await db.query.staffProfiles.findFirst({
+            where: eq(staffProfiles.userId, context.session.user.id),
+          });
+          if (!ownProfile) return [];
+          conditions.push(eq(leaveRequests.staffProfileId, ownProfile.id));
+        }
+
         if (input.status)
           conditions.push(eq(leaveRequests.status, input.status));
         if (input.from)
@@ -196,6 +223,18 @@ export const leaveRouter = {
         }),
       )
       .handler(async ({ input, context }) => {
+        // Staff can only create leave for themselves
+        const role = context.userRole;
+        const canActOnBehalf = role && ["admin", "hrAdminOps", "manager"].includes(role);
+        if (!canActOnBehalf) {
+          const ownProfile = await db.query.staffProfiles.findFirst({
+            where: eq(staffProfiles.userId, context.session.user.id),
+          });
+          if (!ownProfile || ownProfile.id !== input.staffProfileId) {
+            throw new ORPCError("FORBIDDEN", { message: "You can only submit leave for yourself." });
+          }
+        }
+
         // Check sufficient leave balance
         const balance = await db.query.leaveBalances.findFirst({
           where: and(
@@ -438,7 +477,7 @@ export const leaveRouter = {
   },
 
   // ── Team calendar: approved leave for a date range ─────────────────────
-  getTeamCalendar: protectedProcedure
+  getTeamCalendar: requireRole("leave", "read")
     .input(z.object({ from: z.string(), to: z.string(), departmentId: z.string().optional() }))
     .handler(async ({ input }) => {
       const conditions = [

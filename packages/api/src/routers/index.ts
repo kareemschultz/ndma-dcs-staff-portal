@@ -7,6 +7,7 @@ import { appraisalsRouter } from "./appraisals";
 import { auditRouter } from "./audit";
 import { complianceRouter } from "./compliance";
 import { contractsRouter } from "./contracts";
+import { departmentsRouter } from "./departments";
 import { dashboardRouter } from "./dashboard";
 import { escalationRouter } from "./escalation";
 import { incidentsRouter } from "./incidents";
@@ -35,6 +36,7 @@ export const appRouter = {
   audit: auditRouter,
   compliance: complianceRouter,
   contracts: contractsRouter,
+  departments: departmentsRouter,
   dashboard: dashboardRouter,
   escalation: escalationRouter,
   incidents: incidentsRouter,

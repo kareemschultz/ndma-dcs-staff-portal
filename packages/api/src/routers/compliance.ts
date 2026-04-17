@@ -8,13 +8,13 @@ import {
 } from "@ndma-dcs-staff-portal/db";
 import { and, eq, lte, sql } from "drizzle-orm";
 
-import { protectedProcedure, requireRole } from "../index";
+import { requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 export const complianceRouter = {
   // ── Training ─────────────────────────────────────────────────────────────
   training: {
-    list: protectedProcedure
+    list: requireRole("compliance", "read")
       .input(
         z.object({
           staffProfileId: z.string().optional(),
@@ -144,7 +144,7 @@ export const complianceRouter = {
 
   // ── PPE ───────────────────────────────────────────────────────────────────
   ppe: {
-    list: protectedProcedure
+    list: requireRole("compliance", "read")
       .input(z.object({ staffProfileId: z.string().optional() }))
       .handler(async ({ input }) => {
         return db.query.ppeRecords.findMany({
@@ -259,7 +259,7 @@ export const complianceRouter = {
 
   // ── Policy Acknowledgements ───────────────────────────────────────────────
   policyAck: {
-    list: protectedProcedure
+    list: requireRole("compliance", "read")
       .input(z.object({ staffProfileId: z.string().optional() }))
       .handler(async ({ input }) => {
         return db.query.policyAcknowledgements.findMany({
@@ -304,7 +304,7 @@ export const complianceRouter = {
   },
 
   // ── Cross-cutting: items expiring across all compliance tables ────────────
-  getExpiringItems: protectedProcedure
+  getExpiringItems: requireRole("compliance", "read")
     .input(z.object({ withinDays: z.number().default(30) }))
     .handler(async ({ input }) => {
       const cutoff = new Date();
