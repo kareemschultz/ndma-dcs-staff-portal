@@ -1,4 +1,8 @@
 import { db } from "./index";
+import {
+  departmentAssignments,
+  departmentAssignmentHistory,
+} from "./schema/department-assignments";
 import { departments } from "./schema/departments";
 import {
   onCallAssignments,
@@ -26,6 +30,12 @@ async function seed() {
         name: "Data Centre Services",
         code: "DCS",
         description: "Department leadership and administration",
+      },
+      {
+        id: "dept-noc",
+        name: "Network Operations Centre",
+        code: "NOC",
+        description: "24/7 network operations and on-call coordination",
       },
       {
         id: "dept-asn",
@@ -58,60 +68,70 @@ async function seed() {
       name: "Sachin Ramsuran",
       email: "sachin.ramsuran@ndma.gov",
       emailVerified: true,
+      role: "manager",
     },
     {
       id: "user-ataybia",
       name: "Ataybia Williams",
       email: "ataybia.williams@ndma.gov",
       emailVerified: true,
+      role: "personalAssistant",
     },
     {
       id: "user-nicolai",
       name: "Nicolai Mahangi",
       email: "nicolai.mahangi@ndma.gov",
       emailVerified: true,
+      role: "teamLead",
     },
     {
       id: "user-kareem",
       name: "Kareem Schultz",
       email: "kareem.schultz@ndma.gov",
       emailVerified: true,
+      role: "staff",
     },
     {
       id: "user-shemar",
       name: "Shemar Henry",
       email: "shemar.henry@ndma.gov",
       emailVerified: true,
+      role: "staff",
     },
     {
       id: "user-timothy",
       name: "Timothy Paul",
       email: "timothy.paul@ndma.gov",
       emailVerified: true,
+      role: "staff",
     },
     {
       id: "user-devon",
       name: "Devon Abrams",
       email: "devon.abrams@ndma.gov",
       emailVerified: true,
+      role: "teamLead",
     },
     {
       id: "user-bheesham",
       name: "Bheesham Ramrattan",
       email: "bheesham.ramrattan@ndma.gov",
       emailVerified: true,
+      role: "staff",
     },
     {
       id: "user-gerard",
       name: "Gerard Budhan",
       email: "gerard.budhan@ndma.gov",
       emailVerified: true,
+      role: "teamLead",
     },
     {
       id: "user-richie",
       name: "Richie Goring",
       email: "richie.goring@ndma.gov",
       emailVerified: true,
+      role: "staff",
     },
     // Note: ID uses legacy spelling "johnatan" to preserve FK references in existing DBs
     {
@@ -119,6 +139,7 @@ async function seed() {
       name: "Johnathan Sukhlall",
       email: "johnathan.sukhlall@ndma.gov",
       emailVerified: true,
+      role: "staff",
     },
   ];
 
@@ -149,6 +170,7 @@ async function seed() {
         isTeamLead: true,
         isLeadEngineerEligible: false,
         isOnCallEligible: false,
+        teamLeadId: null,
         startDate: new Date("2018-01-01"),
       },
       {
@@ -160,6 +182,7 @@ async function seed() {
         isTeamLead: false,
         isLeadEngineerEligible: false,
         isOnCallEligible: false,
+        teamLeadId: "sp-sachin",
         startDate: new Date("2020-06-01"),
       },
       // ASN — all eligible; Nicolai is team lead
@@ -172,6 +195,7 @@ async function seed() {
         isTeamLead: true,
         isLeadEngineerEligible: true,
         isOnCallEligible: true,
+        teamLeadId: "sp-sachin",
         startDate: new Date("2017-03-01"),
       },
       {
@@ -183,6 +207,7 @@ async function seed() {
         isTeamLead: false,
         isLeadEngineerEligible: true,
         isOnCallEligible: true,
+        teamLeadId: "sp-nicolai",
         startDate: new Date("2021-09-01"),
       },
       {
@@ -194,6 +219,7 @@ async function seed() {
         isTeamLead: false,
         isLeadEngineerEligible: true,
         isOnCallEligible: true,
+        teamLeadId: "sp-nicolai",
         startDate: new Date("2022-01-01"),
       },
       {
@@ -205,6 +231,7 @@ async function seed() {
         isTeamLead: false,
         isLeadEngineerEligible: true,
         isOnCallEligible: true,
+        teamLeadId: "sp-nicolai",
         startDate: new Date("2023-03-01"),
       },
       // Core — Devon is team lead
@@ -217,6 +244,7 @@ async function seed() {
         isTeamLead: true,
         isLeadEngineerEligible: true,
         isOnCallEligible: true,
+        teamLeadId: "sp-sachin",
         startDate: new Date("2016-07-01"),
       },
       {
@@ -228,6 +256,7 @@ async function seed() {
         isTeamLead: false,
         isLeadEngineerEligible: true,
         isOnCallEligible: true,
+        teamLeadId: "sp-devon",
         startDate: new Date("2019-11-01"),
       },
       // Enterprise — Gerard is team lead
@@ -240,6 +269,7 @@ async function seed() {
         isTeamLead: true,
         isLeadEngineerEligible: true,
         isOnCallEligible: true,
+        teamLeadId: "sp-sachin",
         startDate: new Date("2015-04-01"),
       },
       {
@@ -251,6 +281,7 @@ async function seed() {
         isTeamLead: false,
         isLeadEngineerEligible: true,
         isOnCallEligible: true,
+        teamLeadId: "sp-gerard",
         startDate: new Date("2020-02-01"),
       },
       // Note: ID uses legacy spelling to preserve FK references in existing DBs
@@ -263,6 +294,7 @@ async function seed() {
         isTeamLead: false,
         isLeadEngineerEligible: true,
         isOnCallEligible: true,
+        teamLeadId: "sp-gerard",
         startDate: new Date("2021-05-01"),
       },
     ])
@@ -274,6 +306,228 @@ async function seed() {
   // Ambiguous multi-name entries → import warning created.
   // Devon/Bheesham dual-role weeks → lead assigned, core flagged as warning.
   console.log("🗓️  Seeding 2026 roster...");
+
+  await db
+    .insert(departmentAssignments)
+    .values([
+      {
+        id: "dpa-sachin-dcs-manager",
+        staffProfileId: "sp-sachin",
+        departmentId: "dept-dcs",
+        role: "manager",
+        assignedAt: new Date("2018-01-01"),
+        assignedById: "user-sachin",
+        note: "DCS department head",
+      },
+      {
+        id: "dpa-sachin-noc-manager",
+        staffProfileId: "sp-sachin",
+        departmentId: "dept-noc",
+        role: "manager",
+        assignedAt: new Date("2018-01-01"),
+        assignedById: "user-sachin",
+        note: "NOC department oversight",
+      },
+      {
+        id: "dpa-ataybia-dcs-pa",
+        staffProfileId: "sp-ataybia",
+        departmentId: "dept-dcs",
+        role: "pa",
+        assignedAt: new Date("2020-06-01"),
+        assignedById: "user-sachin",
+        note: "DCS coordination and admin support",
+      },
+      {
+        id: "dpa-ataybia-noc-pa",
+        staffProfileId: "sp-ataybia",
+        departmentId: "dept-noc",
+        role: "pa",
+        assignedAt: new Date("2020-06-01"),
+        assignedById: "user-sachin",
+        note: "NOC coordination and admin support",
+      },
+      {
+        id: "dpa-nicolai-asn-team-lead",
+        staffProfileId: "sp-nicolai",
+        departmentId: "dept-asn",
+        role: "team_lead",
+        assignedAt: new Date("2017-03-01"),
+        assignedById: "user-sachin",
+        note: "ASN team lead",
+      },
+      {
+        id: "dpa-nicolai-dcs-supervisor",
+        staffProfileId: "sp-nicolai",
+        departmentId: "dept-dcs",
+        role: "supervisor",
+        assignedAt: new Date("2017-03-01"),
+        assignedById: "user-sachin",
+        note: "DCS supervisory coverage",
+      },
+      {
+        id: "dpa-devon-core-team-lead",
+        staffProfileId: "sp-devon",
+        departmentId: "dept-core",
+        role: "team_lead",
+        assignedAt: new Date("2016-07-01"),
+        assignedById: "user-sachin",
+        note: "Core team lead",
+      },
+      {
+        id: "dpa-devon-dcs-supervisor",
+        staffProfileId: "sp-devon",
+        departmentId: "dept-dcs",
+        role: "supervisor",
+        assignedAt: new Date("2016-07-01"),
+        assignedById: "user-sachin",
+        note: "DCS supervisory coverage",
+      },
+      {
+        id: "dpa-gerard-ent-team-lead",
+        staffProfileId: "sp-gerard",
+        departmentId: "dept-enterprise",
+        role: "team_lead",
+        assignedAt: new Date("2015-04-01"),
+        assignedById: "user-sachin",
+        note: "Enterprise team lead",
+      },
+      {
+        id: "dpa-gerard-dcs-supervisor",
+        staffProfileId: "sp-gerard",
+        departmentId: "dept-dcs",
+        role: "supervisor",
+        assignedAt: new Date("2015-04-01"),
+        assignedById: "user-sachin",
+        note: "DCS supervisory coverage",
+      },
+    ])
+    .onConflictDoNothing();
+
+  await db
+    .insert(departmentAssignmentHistory)
+    .values([
+      {
+        id: "dph-sachin-dcs-manager",
+        departmentAssignmentId: "dpa-sachin-dcs-manager",
+        action: "created",
+        afterValue: JSON.stringify({
+          staffProfileId: "sp-sachin",
+          departmentId: "dept-dcs",
+          role: "manager",
+        }),
+        changedById: "user-sachin",
+        note: "Initial DCS manager assignment",
+      },
+      {
+        id: "dph-sachin-noc-manager",
+        departmentAssignmentId: "dpa-sachin-noc-manager",
+        action: "created",
+        afterValue: JSON.stringify({
+          staffProfileId: "sp-sachin",
+          departmentId: "dept-noc",
+          role: "manager",
+        }),
+        changedById: "user-sachin",
+        note: "Initial NOC manager assignment",
+      },
+      {
+        id: "dph-ataybia-dcs-pa",
+        departmentAssignmentId: "dpa-ataybia-dcs-pa",
+        action: "created",
+        afterValue: JSON.stringify({
+          staffProfileId: "sp-ataybia",
+          departmentId: "dept-dcs",
+          role: "pa",
+        }),
+        changedById: "user-sachin",
+        note: "Initial DCS PA assignment",
+      },
+      {
+        id: "dph-ataybia-noc-pa",
+        departmentAssignmentId: "dpa-ataybia-noc-pa",
+        action: "created",
+        afterValue: JSON.stringify({
+          staffProfileId: "sp-ataybia",
+          departmentId: "dept-noc",
+          role: "pa",
+        }),
+        changedById: "user-sachin",
+        note: "Initial NOC PA assignment",
+      },
+      {
+        id: "dph-nicolai-asn-team-lead",
+        departmentAssignmentId: "dpa-nicolai-asn-team-lead",
+        action: "created",
+        afterValue: JSON.stringify({
+          staffProfileId: "sp-nicolai",
+          departmentId: "dept-asn",
+          role: "team_lead",
+        }),
+        changedById: "user-sachin",
+        note: "Initial ASN lead assignment",
+      },
+      {
+        id: "dph-nicolai-dcs-supervisor",
+        departmentAssignmentId: "dpa-nicolai-dcs-supervisor",
+        action: "created",
+        afterValue: JSON.stringify({
+          staffProfileId: "sp-nicolai",
+          departmentId: "dept-dcs",
+          role: "supervisor",
+        }),
+        changedById: "user-sachin",
+        note: "Initial DCS supervisor assignment",
+      },
+      {
+        id: "dph-devon-core-team-lead",
+        departmentAssignmentId: "dpa-devon-core-team-lead",
+        action: "created",
+        afterValue: JSON.stringify({
+          staffProfileId: "sp-devon",
+          departmentId: "dept-core",
+          role: "team_lead",
+        }),
+        changedById: "user-sachin",
+        note: "Initial Core lead assignment",
+      },
+      {
+        id: "dph-devon-dcs-supervisor",
+        departmentAssignmentId: "dpa-devon-dcs-supervisor",
+        action: "created",
+        afterValue: JSON.stringify({
+          staffProfileId: "sp-devon",
+          departmentId: "dept-dcs",
+          role: "supervisor",
+        }),
+        changedById: "user-sachin",
+        note: "Initial DCS supervisor assignment",
+      },
+      {
+        id: "dph-gerard-ent-team-lead",
+        departmentAssignmentId: "dpa-gerard-ent-team-lead",
+        action: "created",
+        afterValue: JSON.stringify({
+          staffProfileId: "sp-gerard",
+          departmentId: "dept-enterprise",
+          role: "team_lead",
+        }),
+        changedById: "user-sachin",
+        note: "Initial Enterprise lead assignment",
+      },
+      {
+        id: "dph-gerard-dcs-supervisor",
+        departmentAssignmentId: "dpa-gerard-dcs-supervisor",
+        action: "created",
+        afterValue: JSON.stringify({
+          staffProfileId: "sp-gerard",
+          departmentId: "dept-dcs",
+          role: "supervisor",
+        }),
+        changedById: "user-sachin",
+        note: "Initial DCS supervisor assignment",
+      },
+    ])
+    .onConflictDoNothing();
 
   const nameToProfile: Record<string, string> = {
     Kareem: "sp-kareem",

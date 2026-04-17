@@ -3,6 +3,8 @@ import {
   readOnlyRole,
   staffRole,
   managerRole,
+  teamLeadRole,
+  personalAssistantRole,
   hrAdminOpsRole,
   adminRole,
 } from "@ndma-dcs-staff-portal/auth";
@@ -36,6 +38,8 @@ const roleMap: Record<string, { statements: Record<string, readonly string[]> }>
   readOnly: readOnlyRole,
   staff: staffRole,
   manager: managerRole,
+  teamLead: teamLeadRole,
+  personalAssistant: personalAssistantRole,
   hrAdminOps: hrAdminOpsRole,
   admin: adminRole,
 };
