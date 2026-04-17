@@ -62,6 +62,7 @@ import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { orpc } from "@/utils/orpc";
+import { chartTheme } from "@/lib/chart-theme";
 import {
   StatusBadge,
   PriorityBadge,
@@ -527,9 +528,9 @@ function WorkAnalyticsView({ items }: { items: WorkItem[] }) {
               margin={{ top: 4, right: 48, left: 8, bottom: 4 }}
             >
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ fontSize: 12 }} cursor={{ fill: "hsl(var(--muted))" }} />
+              <XAxis type="number" allowDecimals={false} tick={chartTheme.axisTick} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="name" width={120} tick={chartTheme.axisTick} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={chartTheme.tooltipContent} cursor={chartTheme.tooltipCursor} />
               <Bar dataKey="open" name="Open" fill="#3b82f6" radius={[0, 4, 4, 0]} label={{ position: "right", fontSize: 11 }} />
             </BarChart>
           </ResponsiveContainer>
@@ -954,19 +955,19 @@ function WorkPage() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis
                     dataKey="status"
-                    tick={{ fontSize: 11 }}
+                    tick={chartTheme.axisTick}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
                     allowDecimals={false}
-                    tick={{ fontSize: 11 }}
+                    tick={chartTheme.axisTick}
                     axisLine={false}
                     tickLine={false}
                   />
                   <Tooltip
-                    contentStyle={{ fontSize: 12 }}
-                    cursor={{ fill: "hsl(var(--muted))" }}
+                    contentStyle={chartTheme.tooltipContent}
+                    cursor={chartTheme.tooltipCursor}
                   />
                   <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                     {chartData.map((entry, i) => (
