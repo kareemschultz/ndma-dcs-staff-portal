@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedWorkIndexRouteImport } from './routes/_authenticated/work/index'
+import { Route as AuthenticatedTimesheetsIndexRouteImport } from './routes/_authenticated/timesheets/index'
 import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff/index'
 import { Route as AuthenticatedServicesIndexRouteImport } from './routes/_authenticated/services/index'
 import { Route as AuthenticatedRotaIndexRouteImport } from './routes/_authenticated/rota/index'
@@ -29,7 +30,6 @@ import { Route as AuthenticatedContractsIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedChangesIndexRouteImport } from './routes/_authenticated/changes/index'
 import { Route as AuthenticatedAuditIndexRouteImport } from './routes/_authenticated/audit/index'
 import { Route as AuthenticatedAppraisalsIndexRouteImport } from './routes/_authenticated/appraisals/index'
-import { Route as AuthenticatedAppraisalsInboxRouteImport } from './routes/_authenticated/appraisals/inbox'
 import { Route as AuthenticatedAnalyticsIndexRouteImport } from './routes/_authenticated/analytics/index'
 import { Route as AuthenticatedAccessIndexRouteImport } from './routes/_authenticated/access/index'
 import { Route as AuthenticatedWorkWorkloadRouteImport } from './routes/_authenticated/work/workload'
@@ -46,21 +46,21 @@ import { Route as AuthenticatedSettingsAutomationRouteImport } from './routes/_a
 import { Route as AuthenticatedRotaSwapsRouteImport } from './routes/_authenticated/rota/swaps'
 import { Route as AuthenticatedRotaPlannerRouteImport } from './routes/_authenticated/rota/planner'
 import { Route as AuthenticatedRotaHistoryRouteImport } from './routes/_authenticated/rota/history'
-import { Route as AuthenticatedTimesheetsIndexRouteImport } from './routes/_authenticated/timesheets/index'
 import { Route as AuthenticatedProcurementNewRouteImport } from './routes/_authenticated/procurement/new'
 import { Route as AuthenticatedLeaveNewRouteImport } from './routes/_authenticated/leave/new'
 import { Route as AuthenticatedLeaveCalendarRouteImport } from './routes/_authenticated/leave/calendar'
 import { Route as AuthenticatedIncidentsNewRouteImport } from './routes/_authenticated/incidents/new'
 import { Route as AuthenticatedIncidentsIncidentIdRouteImport } from './routes/_authenticated/incidents/$incidentId'
+import { Route as AuthenticatedHrPpeRouteImport } from './routes/_authenticated/hr/ppe'
+import { Route as AuthenticatedHrCalloutsRouteImport } from './routes/_authenticated/hr/callouts'
+import { Route as AuthenticatedHrAttendanceRouteImport } from './routes/_authenticated/hr/attendance'
 import { Route as AuthenticatedCyclesCycleIdRouteImport } from './routes/_authenticated/cycles/$cycleId'
 import { Route as AuthenticatedComplianceTrainingRouteImport } from './routes/_authenticated/compliance/training'
 import { Route as AuthenticatedCompliancePpeRouteImport } from './routes/_authenticated/compliance/ppe'
 import { Route as AuthenticatedComplianceItemsRouteImport } from './routes/_authenticated/compliance/items'
-import { Route as AuthenticatedHrAttendanceRouteImport } from './routes/_authenticated/hr/attendance'
-import { Route as AuthenticatedHrCalloutsRouteImport } from './routes/_authenticated/hr/callouts'
-import { Route as AuthenticatedHrPpeRouteImport } from './routes/_authenticated/hr/ppe'
 import { Route as AuthenticatedChangesNewRouteImport } from './routes/_authenticated/changes/new'
 import { Route as AuthenticatedChangesChangeIdRouteImport } from './routes/_authenticated/changes/$changeId'
+import { Route as AuthenticatedAppraisalsInboxRouteImport } from './routes/_authenticated/appraisals/inbox'
 import { Route as AuthenticatedAccessAccountIdRouteImport } from './routes/_authenticated/access/$accountId'
 import { Route as AuthenticatedRotaWarningsIndexRouteImport } from './routes/_authenticated/rota/warnings/index'
 import { Route as AuthenticatedRotaFairnessIndexRouteImport } from './routes/_authenticated/rota/fairness/index'
@@ -90,6 +90,12 @@ const AuthenticatedWorkIndexRoute = AuthenticatedWorkIndexRouteImport.update({
   path: '/work/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTimesheetsIndexRoute =
+  AuthenticatedTimesheetsIndexRouteImport.update({
+    id: '/timesheets/',
+    path: '/timesheets/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStaffIndexRoute = AuthenticatedStaffIndexRouteImport.update({
   id: '/staff/',
   path: '/staff/',
@@ -174,12 +180,6 @@ const AuthenticatedAppraisalsIndexRoute =
   AuthenticatedAppraisalsIndexRouteImport.update({
     id: '/appraisals/',
     path: '/appraisals/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedAppraisalsInboxRoute =
-  AuthenticatedAppraisalsInboxRouteImport.update({
-    id: '/appraisals/inbox',
-    path: '/appraisals/inbox',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAnalyticsIndexRoute =
@@ -305,6 +305,22 @@ const AuthenticatedIncidentsIncidentIdRoute =
     path: '/incidents/$incidentId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHrPpeRoute = AuthenticatedHrPpeRouteImport.update({
+  id: '/hr/ppe',
+  path: '/hr/ppe',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHrCalloutsRoute = AuthenticatedHrCalloutsRouteImport.update({
+  id: '/hr/callouts',
+  path: '/hr/callouts',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHrAttendanceRoute =
+  AuthenticatedHrAttendanceRouteImport.update({
+    id: '/hr/attendance',
+    path: '/hr/attendance',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCyclesCycleIdRoute =
   AuthenticatedCyclesCycleIdRouteImport.update({
     id: '/cycles/$cycleId',
@@ -329,23 +345,6 @@ const AuthenticatedComplianceItemsRoute =
     path: '/compliance/items',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedHrAttendanceRoute =
-  AuthenticatedHrAttendanceRouteImport.update({
-    id: '/hr/attendance',
-    path: '/hr/attendance',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedHrCalloutsRoute =
-  AuthenticatedHrCalloutsRouteImport.update({
-    id: '/hr/callouts',
-    path: '/hr/callouts',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedHrPpeRoute = AuthenticatedHrPpeRouteImport.update({
-  id: '/hr/ppe',
-  path: '/hr/ppe',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedChangesNewRoute = AuthenticatedChangesNewRouteImport.update({
   id: '/changes/new',
   path: '/changes/new',
@@ -355,6 +354,12 @@ const AuthenticatedChangesChangeIdRoute =
   AuthenticatedChangesChangeIdRouteImport.update({
     id: '/changes/$changeId',
     path: '/changes/$changeId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAppraisalsInboxRoute =
+  AuthenticatedAppraisalsInboxRouteImport.update({
+    id: '/appraisals/inbox',
+    path: '/appraisals/inbox',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAccessAccountIdRoute =
@@ -381,27 +386,22 @@ const AuthenticatedRotaCalendarIndexRoute =
     path: '/rota/calendar/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedTimesheetsIndexRoute =
-  AuthenticatedTimesheetsIndexRouteImport.update({
-    id: '/timesheets/',
-    path: '/timesheets/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/access/$accountId': typeof AuthenticatedAccessAccountIdRoute
+  '/appraisals/inbox': typeof AuthenticatedAppraisalsInboxRoute
   '/changes/$changeId': typeof AuthenticatedChangesChangeIdRoute
   '/changes/new': typeof AuthenticatedChangesNewRoute
   '/compliance/items': typeof AuthenticatedComplianceItemsRoute
   '/compliance/ppe': typeof AuthenticatedCompliancePpeRoute
   '/compliance/training': typeof AuthenticatedComplianceTrainingRoute
+  '/cycles/$cycleId': typeof AuthenticatedCyclesCycleIdRoute
   '/hr/attendance': typeof AuthenticatedHrAttendanceRoute
   '/hr/callouts': typeof AuthenticatedHrCalloutsRoute
   '/hr/ppe': typeof AuthenticatedHrPpeRoute
-  '/cycles/$cycleId': typeof AuthenticatedCyclesCycleIdRoute
   '/incidents/$incidentId': typeof AuthenticatedIncidentsIncidentIdRoute
   '/incidents/new': typeof AuthenticatedIncidentsNewRoute
   '/leave/calendar': typeof AuthenticatedLeaveCalendarRoute
@@ -424,7 +424,6 @@ export interface FileRoutesByFullPath {
   '/access/': typeof AuthenticatedAccessIndexRoute
   '/analytics/': typeof AuthenticatedAnalyticsIndexRoute
   '/appraisals/': typeof AuthenticatedAppraisalsIndexRoute
-  '/appraisals/inbox': typeof AuthenticatedAppraisalsInboxRoute
   '/audit/': typeof AuthenticatedAuditIndexRoute
   '/changes/': typeof AuthenticatedChangesIndexRoute
   '/contracts/': typeof AuthenticatedContractsIndexRoute
@@ -439,26 +438,27 @@ export interface FileRoutesByFullPath {
   '/rota/': typeof AuthenticatedRotaIndexRoute
   '/services/': typeof AuthenticatedServicesIndexRoute
   '/staff/': typeof AuthenticatedStaffIndexRoute
+  '/timesheets/': typeof AuthenticatedTimesheetsIndexRoute
   '/work/': typeof AuthenticatedWorkIndexRoute
   '/rota/calendar/': typeof AuthenticatedRotaCalendarIndexRoute
   '/rota/fairness/': typeof AuthenticatedRotaFairnessIndexRoute
   '/rota/warnings/': typeof AuthenticatedRotaWarningsIndexRoute
-  '/timesheets/': typeof AuthenticatedTimesheetsIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/': typeof AuthenticatedIndexRoute
   '/access/$accountId': typeof AuthenticatedAccessAccountIdRoute
+  '/appraisals/inbox': typeof AuthenticatedAppraisalsInboxRoute
   '/changes/$changeId': typeof AuthenticatedChangesChangeIdRoute
   '/changes/new': typeof AuthenticatedChangesNewRoute
   '/compliance/items': typeof AuthenticatedComplianceItemsRoute
   '/compliance/ppe': typeof AuthenticatedCompliancePpeRoute
   '/compliance/training': typeof AuthenticatedComplianceTrainingRoute
+  '/cycles/$cycleId': typeof AuthenticatedCyclesCycleIdRoute
   '/hr/attendance': typeof AuthenticatedHrAttendanceRoute
   '/hr/callouts': typeof AuthenticatedHrCalloutsRoute
   '/hr/ppe': typeof AuthenticatedHrPpeRoute
-  '/cycles/$cycleId': typeof AuthenticatedCyclesCycleIdRoute
   '/incidents/$incidentId': typeof AuthenticatedIncidentsIncidentIdRoute
   '/incidents/new': typeof AuthenticatedIncidentsNewRoute
   '/leave/calendar': typeof AuthenticatedLeaveCalendarRoute
@@ -481,7 +481,6 @@ export interface FileRoutesByTo {
   '/access': typeof AuthenticatedAccessIndexRoute
   '/analytics': typeof AuthenticatedAnalyticsIndexRoute
   '/appraisals': typeof AuthenticatedAppraisalsIndexRoute
-  '/appraisals/inbox': typeof AuthenticatedAppraisalsInboxRoute
   '/audit': typeof AuthenticatedAuditIndexRoute
   '/changes': typeof AuthenticatedChangesIndexRoute
   '/contracts': typeof AuthenticatedContractsIndexRoute
@@ -496,11 +495,11 @@ export interface FileRoutesByTo {
   '/rota': typeof AuthenticatedRotaIndexRoute
   '/services': typeof AuthenticatedServicesIndexRoute
   '/staff': typeof AuthenticatedStaffIndexRoute
+  '/timesheets': typeof AuthenticatedTimesheetsIndexRoute
   '/work': typeof AuthenticatedWorkIndexRoute
   '/rota/calendar': typeof AuthenticatedRotaCalendarIndexRoute
   '/rota/fairness': typeof AuthenticatedRotaFairnessIndexRoute
   '/rota/warnings': typeof AuthenticatedRotaWarningsIndexRoute
-  '/timesheets': typeof AuthenticatedTimesheetsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -509,15 +508,16 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/access/$accountId': typeof AuthenticatedAccessAccountIdRoute
+  '/_authenticated/appraisals/inbox': typeof AuthenticatedAppraisalsInboxRoute
   '/_authenticated/changes/$changeId': typeof AuthenticatedChangesChangeIdRoute
   '/_authenticated/changes/new': typeof AuthenticatedChangesNewRoute
   '/_authenticated/compliance/items': typeof AuthenticatedComplianceItemsRoute
   '/_authenticated/compliance/ppe': typeof AuthenticatedCompliancePpeRoute
   '/_authenticated/compliance/training': typeof AuthenticatedComplianceTrainingRoute
+  '/_authenticated/cycles/$cycleId': typeof AuthenticatedCyclesCycleIdRoute
   '/_authenticated/hr/attendance': typeof AuthenticatedHrAttendanceRoute
   '/_authenticated/hr/callouts': typeof AuthenticatedHrCalloutsRoute
   '/_authenticated/hr/ppe': typeof AuthenticatedHrPpeRoute
-  '/_authenticated/cycles/$cycleId': typeof AuthenticatedCyclesCycleIdRoute
   '/_authenticated/incidents/$incidentId': typeof AuthenticatedIncidentsIncidentIdRoute
   '/_authenticated/incidents/new': typeof AuthenticatedIncidentsNewRoute
   '/_authenticated/leave/calendar': typeof AuthenticatedLeaveCalendarRoute
@@ -540,7 +540,6 @@ export interface FileRoutesById {
   '/_authenticated/access/': typeof AuthenticatedAccessIndexRoute
   '/_authenticated/analytics/': typeof AuthenticatedAnalyticsIndexRoute
   '/_authenticated/appraisals/': typeof AuthenticatedAppraisalsIndexRoute
-  '/_authenticated/appraisals/inbox': typeof AuthenticatedAppraisalsInboxRoute
   '/_authenticated/audit/': typeof AuthenticatedAuditIndexRoute
   '/_authenticated/changes/': typeof AuthenticatedChangesIndexRoute
   '/_authenticated/contracts/': typeof AuthenticatedContractsIndexRoute
@@ -555,11 +554,11 @@ export interface FileRoutesById {
   '/_authenticated/rota/': typeof AuthenticatedRotaIndexRoute
   '/_authenticated/services/': typeof AuthenticatedServicesIndexRoute
   '/_authenticated/staff/': typeof AuthenticatedStaffIndexRoute
+  '/_authenticated/timesheets/': typeof AuthenticatedTimesheetsIndexRoute
   '/_authenticated/work/': typeof AuthenticatedWorkIndexRoute
   '/_authenticated/rota/calendar/': typeof AuthenticatedRotaCalendarIndexRoute
   '/_authenticated/rota/fairness/': typeof AuthenticatedRotaFairnessIndexRoute
   '/_authenticated/rota/warnings/': typeof AuthenticatedRotaWarningsIndexRoute
-  '/_authenticated/timesheets/': typeof AuthenticatedTimesheetsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -568,15 +567,16 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/access/$accountId'
+    | '/appraisals/inbox'
     | '/changes/$changeId'
     | '/changes/new'
     | '/compliance/items'
     | '/compliance/ppe'
     | '/compliance/training'
+    | '/cycles/$cycleId'
     | '/hr/attendance'
     | '/hr/callouts'
     | '/hr/ppe'
-    | '/cycles/$cycleId'
     | '/incidents/$incidentId'
     | '/incidents/new'
     | '/leave/calendar'
@@ -613,26 +613,27 @@ export interface FileRouteTypes {
     | '/rota/'
     | '/services/'
     | '/staff/'
+    | '/timesheets/'
     | '/work/'
     | '/rota/calendar/'
     | '/rota/fairness/'
     | '/rota/warnings/'
-    | '/timesheets/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/profile'
     | '/'
     | '/access/$accountId'
+    | '/appraisals/inbox'
     | '/changes/$changeId'
     | '/changes/new'
     | '/compliance/items'
     | '/compliance/ppe'
     | '/compliance/training'
+    | '/cycles/$cycleId'
     | '/hr/attendance'
     | '/hr/callouts'
     | '/hr/ppe'
-    | '/cycles/$cycleId'
     | '/incidents/$incidentId'
     | '/incidents/new'
     | '/leave/calendar'
@@ -669,11 +670,11 @@ export interface FileRouteTypes {
     | '/rota'
     | '/services'
     | '/staff'
+    | '/timesheets'
     | '/work'
     | '/rota/calendar'
     | '/rota/fairness'
     | '/rota/warnings'
-    | '/timesheets'
   id:
     | '__root__'
     | '/_authenticated'
@@ -681,15 +682,16 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/'
     | '/_authenticated/access/$accountId'
+    | '/_authenticated/appraisals/inbox'
     | '/_authenticated/changes/$changeId'
     | '/_authenticated/changes/new'
     | '/_authenticated/compliance/items'
     | '/_authenticated/compliance/ppe'
     | '/_authenticated/compliance/training'
+    | '/_authenticated/cycles/$cycleId'
     | '/_authenticated/hr/attendance'
     | '/_authenticated/hr/callouts'
     | '/_authenticated/hr/ppe'
-    | '/_authenticated/cycles/$cycleId'
     | '/_authenticated/incidents/$incidentId'
     | '/_authenticated/incidents/new'
     | '/_authenticated/leave/calendar'
@@ -698,7 +700,6 @@ export interface FileRouteTypes {
     | '/_authenticated/rota/history'
     | '/_authenticated/rota/planner'
     | '/_authenticated/rota/swaps'
-    | '/_authenticated/timesheets/'
     | '/_authenticated/settings/automation'
     | '/_authenticated/settings/department-assignments'
     | '/_authenticated/settings/departments'
@@ -727,6 +728,7 @@ export interface FileRouteTypes {
     | '/_authenticated/rota/'
     | '/_authenticated/services/'
     | '/_authenticated/staff/'
+    | '/_authenticated/timesheets/'
     | '/_authenticated/work/'
     | '/_authenticated/rota/calendar/'
     | '/_authenticated/rota/fairness/'
@@ -773,6 +775,13 @@ declare module '@tanstack/react-router' {
       path: '/work'
       fullPath: '/work/'
       preLoaderRoute: typeof AuthenticatedWorkIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/timesheets/': {
+      id: '/_authenticated/timesheets/'
+      path: '/timesheets'
+      fullPath: '/timesheets/'
+      preLoaderRoute: typeof AuthenticatedTimesheetsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/staff/': {
@@ -880,13 +889,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppraisalsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/appraisals/inbox': {
-      id: '/_authenticated/appraisals/inbox'
-      path: '/appraisals/inbox'
-      fullPath: '/appraisals/inbox'
-      preLoaderRoute: typeof AuthenticatedAppraisalsInboxRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/analytics/': {
       id: '/_authenticated/analytics/'
       path: '/analytics'
@@ -964,18 +966,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsDepartmentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/settings/automation': {
-      id: '/_authenticated/settings/automation'
-      path: '/settings/automation'
-      fullPath: '/settings/automation'
-      preLoaderRoute: typeof AuthenticatedSettingsAutomationRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/settings/department-assignments': {
       id: '/_authenticated/settings/department-assignments'
       path: '/settings/department-assignments'
       fullPath: '/settings/department-assignments'
       preLoaderRoute: typeof AuthenticatedSettingsDepartmentAssignmentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings/automation': {
+      id: '/_authenticated/settings/automation'
+      path: '/settings/automation'
+      fullPath: '/settings/automation'
+      preLoaderRoute: typeof AuthenticatedSettingsAutomationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/rota/swaps': {
@@ -1034,6 +1036,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIncidentsIncidentIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hr/ppe': {
+      id: '/_authenticated/hr/ppe'
+      path: '/hr/ppe'
+      fullPath: '/hr/ppe'
+      preLoaderRoute: typeof AuthenticatedHrPpeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr/callouts': {
+      id: '/_authenticated/hr/callouts'
+      path: '/hr/callouts'
+      fullPath: '/hr/callouts'
+      preLoaderRoute: typeof AuthenticatedHrCalloutsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr/attendance': {
+      id: '/_authenticated/hr/attendance'
+      path: '/hr/attendance'
+      fullPath: '/hr/attendance'
+      preLoaderRoute: typeof AuthenticatedHrAttendanceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cycles/$cycleId': {
       id: '/_authenticated/cycles/$cycleId'
       path: '/cycles/$cycleId'
@@ -1062,27 +1085,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedComplianceItemsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/hr/attendance': {
-      id: '/_authenticated/hr/attendance'
-      path: '/hr/attendance'
-      fullPath: '/hr/attendance'
-      preLoaderRoute: typeof AuthenticatedHrAttendanceRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/hr/callouts': {
-      id: '/_authenticated/hr/callouts'
-      path: '/hr/callouts'
-      fullPath: '/hr/callouts'
-      preLoaderRoute: typeof AuthenticatedHrCalloutsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/hr/ppe': {
-      id: '/_authenticated/hr/ppe'
-      path: '/hr/ppe'
-      fullPath: '/hr/ppe'
-      preLoaderRoute: typeof AuthenticatedHrPpeRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/changes/new': {
       id: '/_authenticated/changes/new'
       path: '/changes/new'
@@ -1097,6 +1099,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChangesChangeIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/appraisals/inbox': {
+      id: '/_authenticated/appraisals/inbox'
+      path: '/appraisals/inbox'
+      fullPath: '/appraisals/inbox'
+      preLoaderRoute: typeof AuthenticatedAppraisalsInboxRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/access/$accountId': {
       id: '/_authenticated/access/$accountId'
       path: '/access/$accountId'
@@ -1109,13 +1118,6 @@ declare module '@tanstack/react-router' {
       path: '/rota/warnings'
       fullPath: '/rota/warnings/'
       preLoaderRoute: typeof AuthenticatedRotaWarningsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/timesheets/': {
-      id: '/_authenticated/timesheets/'
-      path: '/timesheets'
-      fullPath: '/timesheets/'
-      preLoaderRoute: typeof AuthenticatedTimesheetsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/rota/fairness/': {
@@ -1139,15 +1141,16 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAccessAccountIdRoute: typeof AuthenticatedAccessAccountIdRoute
+  AuthenticatedAppraisalsInboxRoute: typeof AuthenticatedAppraisalsInboxRoute
   AuthenticatedChangesChangeIdRoute: typeof AuthenticatedChangesChangeIdRoute
   AuthenticatedChangesNewRoute: typeof AuthenticatedChangesNewRoute
   AuthenticatedComplianceItemsRoute: typeof AuthenticatedComplianceItemsRoute
   AuthenticatedCompliancePpeRoute: typeof AuthenticatedCompliancePpeRoute
   AuthenticatedComplianceTrainingRoute: typeof AuthenticatedComplianceTrainingRoute
+  AuthenticatedCyclesCycleIdRoute: typeof AuthenticatedCyclesCycleIdRoute
   AuthenticatedHrAttendanceRoute: typeof AuthenticatedHrAttendanceRoute
   AuthenticatedHrCalloutsRoute: typeof AuthenticatedHrCalloutsRoute
   AuthenticatedHrPpeRoute: typeof AuthenticatedHrPpeRoute
-  AuthenticatedCyclesCycleIdRoute: typeof AuthenticatedCyclesCycleIdRoute
   AuthenticatedIncidentsIncidentIdRoute: typeof AuthenticatedIncidentsIncidentIdRoute
   AuthenticatedIncidentsNewRoute: typeof AuthenticatedIncidentsNewRoute
   AuthenticatedLeaveCalendarRoute: typeof AuthenticatedLeaveCalendarRoute
@@ -1157,6 +1160,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRotaPlannerRoute: typeof AuthenticatedRotaPlannerRoute
   AuthenticatedRotaSwapsRoute: typeof AuthenticatedRotaSwapsRoute
   AuthenticatedSettingsAutomationRoute: typeof AuthenticatedSettingsAutomationRoute
+  AuthenticatedSettingsDepartmentAssignmentsRoute: typeof AuthenticatedSettingsDepartmentAssignmentsRoute
   AuthenticatedSettingsDepartmentsRoute: typeof AuthenticatedSettingsDepartmentsRoute
   AuthenticatedSettingsEscalationRoute: typeof AuthenticatedSettingsEscalationRoute
   AuthenticatedSettingsGeneralRoute: typeof AuthenticatedSettingsGeneralRoute
@@ -1169,7 +1173,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccessIndexRoute: typeof AuthenticatedAccessIndexRoute
   AuthenticatedAnalyticsIndexRoute: typeof AuthenticatedAnalyticsIndexRoute
   AuthenticatedAppraisalsIndexRoute: typeof AuthenticatedAppraisalsIndexRoute
-  AuthenticatedAppraisalsInboxRoute: typeof AuthenticatedAppraisalsInboxRoute
   AuthenticatedAuditIndexRoute: typeof AuthenticatedAuditIndexRoute
   AuthenticatedChangesIndexRoute: typeof AuthenticatedChangesIndexRoute
   AuthenticatedContractsIndexRoute: typeof AuthenticatedContractsIndexRoute
@@ -1184,26 +1187,27 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRotaIndexRoute: typeof AuthenticatedRotaIndexRoute
   AuthenticatedServicesIndexRoute: typeof AuthenticatedServicesIndexRoute
   AuthenticatedStaffIndexRoute: typeof AuthenticatedStaffIndexRoute
+  AuthenticatedTimesheetsIndexRoute: typeof AuthenticatedTimesheetsIndexRoute
   AuthenticatedWorkIndexRoute: typeof AuthenticatedWorkIndexRoute
   AuthenticatedRotaCalendarIndexRoute: typeof AuthenticatedRotaCalendarIndexRoute
   AuthenticatedRotaFairnessIndexRoute: typeof AuthenticatedRotaFairnessIndexRoute
   AuthenticatedRotaWarningsIndexRoute: typeof AuthenticatedRotaWarningsIndexRoute
-  AuthenticatedTimesheetsIndexRoute: typeof AuthenticatedTimesheetsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAccessAccountIdRoute: AuthenticatedAccessAccountIdRoute,
+  AuthenticatedAppraisalsInboxRoute: AuthenticatedAppraisalsInboxRoute,
   AuthenticatedChangesChangeIdRoute: AuthenticatedChangesChangeIdRoute,
   AuthenticatedChangesNewRoute: AuthenticatedChangesNewRoute,
   AuthenticatedComplianceItemsRoute: AuthenticatedComplianceItemsRoute,
   AuthenticatedCompliancePpeRoute: AuthenticatedCompliancePpeRoute,
   AuthenticatedComplianceTrainingRoute: AuthenticatedComplianceTrainingRoute,
+  AuthenticatedCyclesCycleIdRoute: AuthenticatedCyclesCycleIdRoute,
   AuthenticatedHrAttendanceRoute: AuthenticatedHrAttendanceRoute,
   AuthenticatedHrCalloutsRoute: AuthenticatedHrCalloutsRoute,
   AuthenticatedHrPpeRoute: AuthenticatedHrPpeRoute,
-  AuthenticatedCyclesCycleIdRoute: AuthenticatedCyclesCycleIdRoute,
   AuthenticatedIncidentsIncidentIdRoute: AuthenticatedIncidentsIncidentIdRoute,
   AuthenticatedIncidentsNewRoute: AuthenticatedIncidentsNewRoute,
   AuthenticatedLeaveCalendarRoute: AuthenticatedLeaveCalendarRoute,
@@ -1213,6 +1217,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRotaPlannerRoute: AuthenticatedRotaPlannerRoute,
   AuthenticatedRotaSwapsRoute: AuthenticatedRotaSwapsRoute,
   AuthenticatedSettingsAutomationRoute: AuthenticatedSettingsAutomationRoute,
+  AuthenticatedSettingsDepartmentAssignmentsRoute:
+    AuthenticatedSettingsDepartmentAssignmentsRoute,
   AuthenticatedSettingsDepartmentsRoute: AuthenticatedSettingsDepartmentsRoute,
   AuthenticatedSettingsEscalationRoute: AuthenticatedSettingsEscalationRoute,
   AuthenticatedSettingsGeneralRoute: AuthenticatedSettingsGeneralRoute,
@@ -1225,7 +1231,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccessIndexRoute: AuthenticatedAccessIndexRoute,
   AuthenticatedAnalyticsIndexRoute: AuthenticatedAnalyticsIndexRoute,
   AuthenticatedAppraisalsIndexRoute: AuthenticatedAppraisalsIndexRoute,
-  AuthenticatedAppraisalsInboxRoute: AuthenticatedAppraisalsInboxRoute,
   AuthenticatedAuditIndexRoute: AuthenticatedAuditIndexRoute,
   AuthenticatedChangesIndexRoute: AuthenticatedChangesIndexRoute,
   AuthenticatedContractsIndexRoute: AuthenticatedContractsIndexRoute,
@@ -1240,11 +1245,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRotaIndexRoute: AuthenticatedRotaIndexRoute,
   AuthenticatedServicesIndexRoute: AuthenticatedServicesIndexRoute,
   AuthenticatedStaffIndexRoute: AuthenticatedStaffIndexRoute,
+  AuthenticatedTimesheetsIndexRoute: AuthenticatedTimesheetsIndexRoute,
   AuthenticatedWorkIndexRoute: AuthenticatedWorkIndexRoute,
   AuthenticatedRotaCalendarIndexRoute: AuthenticatedRotaCalendarIndexRoute,
   AuthenticatedRotaFairnessIndexRoute: AuthenticatedRotaFairnessIndexRoute,
   AuthenticatedRotaWarningsIndexRoute: AuthenticatedRotaWarningsIndexRoute,
-  AuthenticatedTimesheetsIndexRoute: AuthenticatedTimesheetsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

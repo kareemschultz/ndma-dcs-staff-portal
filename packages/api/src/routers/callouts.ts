@@ -5,7 +5,6 @@ import { z } from "zod";
 import {
   callouts,
   db,
-  incidents,
   staffProfiles,
 } from "@ndma-dcs-staff-portal/db";
 
@@ -111,7 +110,7 @@ export const calloutsRouter = {
         .values({
           staffProfileId: input.staffProfileId,
           relatedIncidentId: input.relatedIncidentId ?? null,
-          calloutAt: input.calloutAt,
+          calloutAt: new Date(input.calloutAt),
           calloutType: input.calloutType ?? "manual",
           reason: input.reason,
           outcome: input.outcome ?? null,
@@ -166,7 +165,7 @@ export const calloutsRouter = {
         .update(callouts)
         .set({
           relatedIncidentId: input.relatedIncidentId ?? before.relatedIncidentId,
-          calloutAt: input.calloutAt ?? before.calloutAt,
+          calloutAt: input.calloutAt ? new Date(input.calloutAt) : before.calloutAt,
           calloutType: input.calloutType ?? before.calloutType,
           reason: input.reason ?? before.reason,
           outcome: input.outcome ?? before.outcome,

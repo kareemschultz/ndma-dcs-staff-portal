@@ -71,7 +71,7 @@ function CreateCalloutDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
             <Label>Staff</Label>
-            <Select value={form.staffProfileId} onValueChange={(value) => setForm((current) => ({ ...current, staffProfileId: value }))}>
+            <Select value={form.staffProfileId} onValueChange={(value) => setForm((current) => ({ ...current, staffProfileId: value ?? "" }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Select staff member" />
               </SelectTrigger>
@@ -202,7 +202,7 @@ function CalloutsPage() {
                     </TableCell>
                     <TableCell className="capitalize">{row.calloutType}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {row.calloutAt ? format(parseISO(row.calloutAt), "dd MMM yyyy HH:mm") : "—"}
+                      {row.calloutAt ? format(new Date(row.calloutAt), "dd MMM yyyy HH:mm") : "—"}
                     </TableCell>
                     <TableCell className="capitalize">{row.status}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{row.outcome ?? "—"}</TableCell>

@@ -13,7 +13,6 @@ import { requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 const cycleHalfSchema = z.enum(["h1", "h2"]);
-const cycleStatusSchema = z.enum(["draft", "open", "closed", "archived"]);
 
 export const appraisalCyclesRouter = {
   list: requireRole("appraisal", "read").handler(async () => {

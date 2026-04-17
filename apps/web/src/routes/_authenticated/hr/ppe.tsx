@@ -76,7 +76,7 @@ function CreatePpeDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
             <Label>Staff</Label>
-            <Select value={form.staffProfileId} onValueChange={(value) => setForm((current) => ({ ...current, staffProfileId: value }))}>
+            <Select value={form.staffProfileId} onValueChange={(value) => setForm((current) => ({ ...current, staffProfileId: value ?? "" }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Select staff member" />
               </SelectTrigger>
@@ -92,7 +92,7 @@ function CreatePpeDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
 
           <div className="space-y-1.5">
             <Label>PPE Item</Label>
-            <Select value={form.ppeItemId} onValueChange={(value) => setForm((current) => ({ ...current, ppeItemId: value }))}>
+            <Select value={form.ppeItemId} onValueChange={(value) => setForm((current) => ({ ...current, ppeItemId: value ?? "" }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Select PPE item" />
               </SelectTrigger>
@@ -130,7 +130,7 @@ function CreatePpeDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
 
           <div className="space-y-1.5">
             <Label>Condition</Label>
-            <Select value={form.condition} onValueChange={(value) => setForm((current) => ({ ...current, condition: value }))}>
+            <Select value={form.condition} onValueChange={(value) => setForm((current) => ({ ...current, condition: value ?? "" }))}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

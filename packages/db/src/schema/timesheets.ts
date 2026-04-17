@@ -2,7 +2,6 @@ import { relations } from "drizzle-orm";
 import {
   date,
   index,
-  integer,
   numeric,
   pgEnum,
   pgTable,

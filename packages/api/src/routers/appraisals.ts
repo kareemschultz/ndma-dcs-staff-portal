@@ -669,6 +669,8 @@ export const appraisalsRouter = {
         .where(eq(appraisals.id, input.id))
         .returning();
 
+      if (!updated) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
       await notifyRelatedPeople(
         {
           staffProfileId: updated.staffProfileId,

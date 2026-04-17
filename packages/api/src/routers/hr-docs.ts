@@ -433,6 +433,8 @@ export const hrDocsRouter = {
           })
           .returning();
 
+        if (!row) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
         await logAudit({
           actorId: context.session.user.id,
           actorName: context.session.user.name,
@@ -499,6 +501,8 @@ export const hrDocsRouter = {
             notes: input.notes ?? null,
           })
           .returning();
+
+        if (!row) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,
@@ -606,6 +610,8 @@ export const hrDocsRouter = {
             status: "submitted",
           })
           .returning();
+
+        if (!row) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
         await logAudit({
           actorId: context.session.user.id,

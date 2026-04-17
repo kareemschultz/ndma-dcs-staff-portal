@@ -66,7 +66,7 @@ function CreateTimesheetDialog({ open, onOpenChange }: { open: boolean; onOpenCh
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
             <Label>Staff</Label>
-            <Select value={form.staffProfileId} onValueChange={(value) => setForm((current) => ({ ...current, staffProfileId: value }))}>
+            <Select value={form.staffProfileId} onValueChange={(value) => setForm((current) => ({ ...current, staffProfileId: value ?? "" }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Select staff member" />
               </SelectTrigger>

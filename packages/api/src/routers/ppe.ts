@@ -6,7 +6,6 @@ import {
   db,
   ppeIssuances,
   ppeItems,
-  staffProfiles,
 } from "@ndma-dcs-staff-portal/db";
 
 import { requireRole } from "../index";

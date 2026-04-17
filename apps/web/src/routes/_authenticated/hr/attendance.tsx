@@ -34,7 +34,7 @@ function CreateAttendanceDialog({ open, onOpenChange }: { open: boolean; onOpenC
   const [form, setForm] = useState({
     staffProfileId: "",
     exceptionDate: "",
-    exceptionType: "sick" as "sick" | "medical" | "lateness" | "early_leave" | "wfh" | "absent" | "time_off",
+    exceptionType: "reported_sick" as "reported_sick" | "medical" | "lateness" | "early_leave" | "wfh" | "absent" | "other",
     hours: "",
     reason: "",
     notes: "",
@@ -46,7 +46,7 @@ function CreateAttendanceDialog({ open, onOpenChange }: { open: boolean; onOpenC
         toast.success("Attendance exception created");
         await queryClient.invalidateQueries({ queryKey: orpc.attendance.list.key() });
         onOpenChange(false);
-        setForm({ staffProfileId: "", exceptionDate: "", exceptionType: "sick", hours: "", reason: "", notes: "" });
+        setForm({ staffProfileId: "", exceptionDate: "", exceptionType: "reported_sick", hours: "", reason: "", notes: "" });
       },
       onError: (error: Error) => toast.error(error.message ?? "Failed to create attendance exception"),
     }),
@@ -77,7 +77,7 @@ function CreateAttendanceDialog({ open, onOpenChange }: { open: boolean; onOpenC
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
             <Label>Staff</Label>
-            <Select value={form.staffProfileId} onValueChange={(value) => setForm((current) => ({ ...current, staffProfileId: value }))}>
+            <Select value={form.staffProfileId} onValueChange={(value) => setForm((current) => ({ ...current, staffProfileId: value ?? "" }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Select staff member" />
               </SelectTrigger>
@@ -103,13 +103,13 @@ function CreateAttendanceDialog({ open, onOpenChange }: { open: boolean; onOpenC
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sick">Sick</SelectItem>
+                  <SelectItem value="reported_sick">Reported Sick</SelectItem>
                   <SelectItem value="medical">Medical</SelectItem>
                   <SelectItem value="lateness">Lateness</SelectItem>
                   <SelectItem value="early_leave">Early Leave</SelectItem>
                   <SelectItem value="wfh">WFH</SelectItem>
                   <SelectItem value="absent">Absent</SelectItem>
-                  <SelectItem value="time_off">Time Off</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
