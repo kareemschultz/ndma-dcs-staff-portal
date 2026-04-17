@@ -78,6 +78,7 @@ export const ppeIssuances = pgTable(
       .notNull(),
   },
   (table) => [
+    unique("ppe_issuances_staff_item_unique").on(table.staffProfileId, table.ppeItemId),
     index("ppe_issuances_staffProfileId_idx").on(table.staffProfileId),
     index("ppe_issuances_ppeItemId_idx").on(table.ppeItemId),
     index("ppe_issuances_status_idx").on(table.status),

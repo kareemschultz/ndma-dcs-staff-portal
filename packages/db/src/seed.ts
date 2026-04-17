@@ -15,6 +15,7 @@ import {
   overlayTasks,
   overlayTypes,
 } from "./schema/operational-overlays";
+import { ppeItems } from "./schema/ppe";
 import { staffProfiles } from "./schema/staff";
 import { user } from "./schema/auth";
 
@@ -1285,6 +1286,34 @@ async function seed() {
       }
     }
   }
+
+  // ── Default PPE Items ──────────────────────────────────────────────────
+  console.log("🦺 Seeding default PPE items...");
+
+  const ppeItemsSeed = [
+    { code: "long_boots", name: "Long Boots", category: "safety" },
+    { code: "overalls", name: "Overalls", category: "uniform" },
+    { code: "mousepad", name: "Mousepad", category: "tooling" },
+    { code: "safety_boots", name: "Safety Boots", category: "safety", defaultSize: "required" },
+    { code: "bag", name: "Bag", category: "uniform" },
+    { code: "screwdriver", name: "Screwdriver (with torque)", category: "tooling" },
+    { code: "db9_rj45", name: "DB9-RJ45 Adapter", category: "electronics" },
+    { code: "db9_usb", name: "DB9-USB Adapter", category: "electronics" },
+    { code: "monitor", name: "Monitor", category: "electronics" },
+    { code: "hdmi_cable", name: "HDMI Cable", category: "electronics" },
+    { code: "laptop", name: "Laptop", category: "electronics" },
+    { code: "mifi", name: "MiFi Device", category: "electronics" },
+    { code: "cug_phone", name: "CUG Phone", category: "electronics" },
+    { code: "cug_sim", name: "CUG SIM", category: "electronics" },
+    { code: "ndma_shirts", name: "NDMA Shirts", category: "uniform" },
+    { code: "usb_ethernet", name: "USB-Ethernet Adapter", category: "electronics" },
+    { code: "umbrella", name: "Umbrella", category: "uniform" },
+  ];
+
+  await db
+    .insert(ppeItems)
+    .values(ppeItemsSeed)
+    .onConflictDoNothing();
 
   console.log("✅ Seed complete.");
   process.exit(0);

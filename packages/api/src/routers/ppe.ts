@@ -323,5 +323,91 @@ export const ppeRouter = {
 
         return row;
       }),
+
+    markDamaged: requireRole("ppe", "update")
+      .input(z.object({ id: z.string(), notes: z.string().optional() }))
+      .handler(async ({ input, context }) => {
+        const before = await db.query.ppeIssuances.findFirst({
+          where: eq(ppeIssuances.id, input.id),
+        });
+        if (!before) throw new ORPCError("NOT_FOUND");
+        if (before.status === "returned") {
+          throw new ORPCError("CONFLICT", {
+            message: "Returned PPE cannot be marked as damaged.",
+          });
+        }
+
+        await assertPpeAccess(context, before.staffProfileId);
+
+        const [row] = await db
+          .update(ppeIssuances)
+          .set({
+            status: "damaged",
+            notes: input.notes ?? before.notes,
+            updatedAt: new Date(),
+          })
+          .where(eq(ppeIssuances.id, input.id))
+          .returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          actorRole: context.userRole ?? undefined,
+          action: "ppe_issuance.mark_damaged",
+          module: "compliance",
+          resourceType: "ppe_issuance",
+          resourceId: input.id,
+          beforeValue: before as Record<string, unknown>,
+          afterValue: row as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+          correlationId: context.requestId,
+        });
+
+        return row;
+      }),
+
+    markLost: requireRole("ppe", "update")
+      .input(z.object({ id: z.string(), notes: z.string().optional() }))
+      .handler(async ({ input, context }) => {
+        const before = await db.query.ppeIssuances.findFirst({
+          where: eq(ppeIssuances.id, input.id),
+        });
+        if (!before) throw new ORPCError("NOT_FOUND");
+        if (before.status === "returned") {
+          throw new ORPCError("CONFLICT", {
+            message: "Returned PPE cannot be marked as lost.",
+          });
+        }
+
+        await assertPpeAccess(context, before.staffProfileId);
+
+        const [row] = await db
+          .update(ppeIssuances)
+          .set({
+            status: "lost",
+            notes: input.notes ?? before.notes,
+            updatedAt: new Date(),
+          })
+          .where(eq(ppeIssuances.id, input.id))
+          .returning();
+
+        await logAudit({
+          actorId: context.session.user.id,
+          actorName: context.session.user.name,
+          actorRole: context.userRole ?? undefined,
+          action: "ppe_issuance.mark_lost",
+          module: "compliance",
+          resourceType: "ppe_issuance",
+          resourceId: input.id,
+          beforeValue: before as Record<string, unknown>,
+          afterValue: row as Record<string, unknown>,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+          correlationId: context.requestId,
+        });
+
+        return row;
+      }),
   },
 };

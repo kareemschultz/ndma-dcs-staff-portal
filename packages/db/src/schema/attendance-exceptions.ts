@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import {
   date,
   index,
+  integer,
   pgEnum,
   pgTable,
   text,
@@ -13,13 +14,13 @@ import { staffProfiles } from "./staff";
 import { user } from "./auth";
 
 export const attendanceExceptionTypeEnum = pgEnum("attendance_exception_type", [
-  "sick",
+  "reported_sick",
   "medical",
-  "lateness",
-  "early_leave",
-  "wfh",
   "absent",
-  "time_off",
+  "lateness",
+  "wfh",
+  "early_leave",
+  "other",
 ]);
 
 export const attendanceExceptionStatusEnum = pgEnum(
@@ -44,9 +45,10 @@ export const attendanceExceptions = pgTable(
     hours: text("hours"),
     reason: text("reason"),
     notes: text("notes"),
+    minutesLate: integer("minutes_late"),
     status: attendanceExceptionStatusEnum("status")
       .notNull()
-      .default("submitted"),
+      .default("draft"),
     reviewedById: text("reviewed_by_id").references(() => user.id, {
       onDelete: "set null",
     }),
@@ -62,6 +64,7 @@ export const attendanceExceptions = pgTable(
     index("attendance_exceptions_leaveRequestId_idx").on(table.leaveRequestId),
     index("attendance_exceptions_exceptionDate_idx").on(table.exceptionDate),
     index("attendance_exceptions_status_idx").on(table.status),
+    index("attendance_exceptions_staff_date_idx").on(table.staffProfileId, table.exceptionDate),
   ],
 );
 

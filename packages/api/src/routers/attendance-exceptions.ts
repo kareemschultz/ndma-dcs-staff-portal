@@ -19,13 +19,13 @@ import { createNotification } from "../lib/notify";
 
 const statusSchema = z.enum(["draft", "submitted", "approved", "rejected", "cancelled"]);
 const typeSchema = z.enum([
-  "sick",
+  "reported_sick",
   "medical",
-  "lateness",
-  "early_leave",
-  "wfh",
   "absent",
-  "time_off",
+  "lateness",
+  "wfh",
+  "early_leave",
+  "other",
 ]);
 
 async function assertAttendanceAccess(context: Parameters<typeof canAccessStaffPrivate>[0], staffProfileId: string) {
@@ -344,6 +344,43 @@ export const attendanceExceptionsRouter = {
       });
 
       return row;
+    }),
+
+  delete: requireRole("attendance", "delete")
+    .input(z.object({ id: z.string() }))
+    .handler(async ({ input, context }) => {
+      const record = await db.query.attendanceExceptions.findFirst({
+        where: eq(attendanceExceptions.id, input.id),
+      });
+      if (!record) throw new ORPCError("NOT_FOUND");
+
+      if (!["draft", "cancelled"].includes(record.status)) {
+        throw new ORPCError("CONFLICT", {
+          message: "Only draft or cancelled attendance exceptions can be deleted.",
+        });
+      }
+
+      await assertAttendanceAccess(context, record.staffProfileId);
+
+      await db
+        .delete(attendanceExceptions)
+        .where(eq(attendanceExceptions.id, input.id));
+
+      await logAudit({
+        actorId: context.session.user.id,
+        actorName: context.session.user.name,
+        actorRole: context.userRole ?? undefined,
+        action: "attendance_exception.delete",
+        module: "compliance",
+        resourceType: "attendance_exception",
+        resourceId: input.id,
+        beforeValue: record as Record<string, unknown>,
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+        correlationId: context.requestId,
+      });
+
+      return { success: true };
     }),
 
   stats: requireRole("attendance", "read").handler(async ({ context }) => {
