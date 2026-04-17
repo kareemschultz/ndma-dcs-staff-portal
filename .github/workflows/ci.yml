@@ -130,8 +130,8 @@ jobs:
             docker compose pull app docs
             docker compose up -d --no-build app docs
 
-            # Run DB migrations non-interactively
-            docker compose exec -T app bun run db:push
+            # Run DB migrations non-interactively (bypass turbo to avoid cache permission issues)
+            docker compose exec -T app bun --cwd packages/db run drizzle-kit push --force
 
             # Cleanup dangling images
             docker image prune -f
