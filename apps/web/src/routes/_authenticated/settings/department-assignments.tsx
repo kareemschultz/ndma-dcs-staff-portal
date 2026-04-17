@@ -120,9 +120,9 @@ function DepartmentAssignmentsPage() {
     }),
   );
 
-  const staffRows = (staff ?? []) as StaffRow[];
-  const departmentRows = (departments ?? []) as DepartmentRow[];
-  const assignmentRows = (assignments ?? []) as AssignmentRow[];
+  const staffRows = (staff ?? []) as unknown as StaffRow[];
+  const departmentRows = (departments ?? []) as unknown as DepartmentRow[];
+  const assignmentRows = (assignments ?? []) as unknown as AssignmentRow[];
 
   if (!canRead) {
     return (
