@@ -47,6 +47,12 @@
   - Timesheets remain draft-editable only until submission.
 - **For next session:** continue with Phase 4 NOC shift scheduling and remaining operational-HR polish.
 
+### 2026-04-17 â€” Session E (Phase 4 roster batch)
+- **Who:** Codex (current session)
+- **What:** Added the new roster domain using `roster` naming: roster schedules/assignments/swap requests/maintenance schema, a new `packages/api/src/routers/roster.ts` router, auth resource permissions for `roster`, roster navigation, roster staff quick links, and new web routes under `/roster` for overview, today, planner, swaps, maintenance, calendar, and my roster.
+- **Files touched:** `packages/db/src/schema/roster.ts`, `packages/api/src/routers/roster.ts`, `packages/api/src/routers/index.ts`, `packages/auth/src/index.ts`, `apps/web/src/components/layout/data/sidebar-data.ts`, `apps/web/src/routes/_authenticated/staff/$staffId.tsx`, `apps/web/src/routes/_authenticated/roster/*`, `apps/web/src/routeTree.gen.ts`, `IMPLEMENTATION_PLAN.md`.
+- **For next session:** continue with remaining Phase 4 polish if desired, then move to the remaining plan phases.
+
 <!-- NEXT SESSION: add your entry here. Use ISO date + a short session ID. Keep it scannable. -->
 
 ---
@@ -56,6 +62,16 @@
 > **Rule:** After every meaningful change, add a dated bullet under today's entry. Include the absolute file path and a one-line "why".
 
 ### 2026-04-17
+
+**Phase 4 roster batch:**
+- `packages/db/src/schema/roster.ts` â€” new roster schedules, assignments, swap requests, and maintenance tables.
+- `packages/api/src/routers/roster.ts` â€” new roster router for schedule CRUD, assignment management, swaps, maintenance, and current/upcoming/today views.
+- `packages/api/src/routers/index.ts` â€” registered `roster` in the app router.
+- `packages/auth/src/index.ts` â€” added `roster` RBAC resource and role grants.
+- `apps/web/src/components/layout/data/sidebar-data.ts` â€” switched navigation to the new `/roster` screens.
+- `apps/web/src/routes/_authenticated/staff/$staffId.tsx` â€” updated staff quick link to roster.
+- `apps/web/src/routes/_authenticated/roster/*` â€” new roster overview, today, planner, swaps, maintenance, calendar, and self-roster screens.
+- `apps/web/src/routeTree.gen.ts` â€” regenerated router tree to include the new roster routes.
 
 **Phase 0 hardening:**
 - `packages/api/src/routers/audit.ts` â€” `list`, `getByResource` gated to `requireRole("audit", "read")`.
@@ -127,7 +143,7 @@ These must survive across sessions â€” same list as `CLAUDE.md` but filtere
 - **TanStack Router `<Link to=>`** â€” strictly typed; route file must exist BEFORE linking. Use disabled Button until route lands.
 - **RBAC rule (project mandate):** EVERY mutation uses `requireRole(resource, action)`, not `protectedProcedure`. Every mutation calls `logAudit()` with `actorRole: context.userRole ?? undefined` and `correlationId: context.requestId`.
 - **Local admin fallback:** `emailAndPassword: { enabled: true }` in Better Auth MUST remain enabled even after LDAP is added.
-- **Naming:** "Roster" in user-facing text; `rota` in code/URLs (back-compat).
+- **Naming:** "Roster" in user-facing text and all new phase 4 code/URLs; the legacy on-call module stays untouched for back-compat.
 - **Login route:** `/login`, not `/sign-in`.
 - **Git commit:** pre-commit hook runs `bat` â€” use `git commit -m "msg"` (NOT heredoc syntax).
 
@@ -152,6 +168,7 @@ Maintained by the coding session's `TodoWrite` tool â€” copy here when mark
 - [x] Phase 3a â€” operational HR foundation landed
 - [x] Phase 3b â€” operational HR create/edit forms + staff detail tabbed layout
 - [ ] Phase 3c â€” import script for DCS OPS spreadsheets
+- [x] Phase 4a â€” roster foundation landed
 - [ ] Phase 4+ â€” see phase sections below
 
 ---
@@ -304,24 +321,24 @@ Maintained by the coding session's `TodoWrite` tool â€” copy here when mark
 
 ---
 
-## Phase 4 â€” NOC shift schedule
+## Phase 4 â€” NOC roster schedule
 
-**Goal:** separate 24/7 D/S/N shift model for NOC, independent from existing DCS on-call rota.
+**Goal:** separate 24/7 D/S/N shift model for NOC, independent from the legacy on-call module.
 
 ### Schema
-- [ ] `packages/db/src/schema/shifts.ts` â€” `shift_schedules`, `shift_assignments`, `shift_swap_requests`
+- [ ] `packages/db/src/schema/roster.ts` â€” `roster_schedules`, `roster_assignments`, `roster_swap_requests`
 - [ ] `packages/db/src/schema/maintenance-assignments.ts` â€” quarterly maintenance grid (Cleaning Server Room, Routine Maintenance DCS, Fire Detection Test)
 
 ### API
-- [ ] `packages/api/src/routers/shifts.ts` â€” schedules CRUD, assignments bulkSet/update, swaps, getCurrentShifts
+- [ ] `packages/api/src/routers/roster.ts` â€” schedules CRUD, assignments bulkSet/update, swaps, getCurrentRoster
 - [ ] `packages/api/src/routers/maintenance-assignments.ts`
 - [ ] Publish validator: every day has â‰¥1 Day + â‰¥1 Swing + â‰¥1 Night; leave overlaps block
 
 ### Frontend
-- [ ] `/shifts/index.tsx` â€” month grid matching Excel
-- [ ] `/shifts/today.tsx` â€” live coverage widget
-- [ ] `/shifts/my-shifts.tsx`
-- [ ] `/shifts/calendar.tsx`
+- [ ] `/roster/index.tsx` â€” month grid matching Excel
+- [ ] `/roster/today.tsx` â€” live coverage widget
+- [ ] `/roster/my-roster.tsx`
+- [ ] `/roster/calendar.tsx`
 
 ### Import
 - [ ] Extend import script to ingest `DCS OPS/NOC/SHIFT SCHEDULE 2026/` monthly xlsx files
