@@ -426,3 +426,26 @@ bun run packages/db/scripts/import-dcs-ops.ts
 - SMTP email delivery (notifications ready in `notifications` table)
 - Full 360° peer reviews
 - Succession org-chart visualisation
+
+---
+
+## Phase 1 Completion Note
+
+Implemented in the current session:
+
+- `packages/db/src/schema/department-assignments.ts`
+- `packages/db/src/schema/index.ts`
+- `packages/auth/src/index.ts`
+- `packages/api/src/lib/scope.ts`
+- `packages/api/src/routers/department-assignments.ts`
+- `packages/api/src/routers/staff.ts`
+- `packages/api/src/routers/index.ts`
+- `packages/api/src/index.ts`
+- `packages/db/src/seed.ts`
+- `apps/web/src/routes/_authenticated/settings/department-assignments.tsx`
+- `apps/web/src/components/layout/data/sidebar-data.ts`
+- `apps/web/src/routes/_authenticated/settings/roles.tsx`
+- `apps/web/src/routeTree.gen.ts`
+
+Validation note:
+- Bun is not installed in this shell, so I could not run the repo's Bun-based typecheck/build.

@@ -5,6 +5,11 @@ import { and, desc, eq } from "drizzle-orm";
 
 import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
+import {
+  canAccessStaffPrivate,
+  getDirectReports,
+  getCallerStaffProfile,
+} from "../lib/scope";
 
 export const staffRouter = {
   list: requireRole("staff", "read")
@@ -166,6 +171,94 @@ export const staffRouter = {
 
       return updated;
     }),
+
+  setTeamLead: requireRole("staff", "update")
+    .input(
+      z.object({
+        id: z.string(),
+        teamLeadId: z.string().nullable(),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      if (
+        !["manager", "hrAdminOps", "admin"].includes(
+          context.userRole ?? "",
+        )
+      ) {
+        throw new ORPCError("FORBIDDEN", {
+          message: "Only managers and HR/admin can reassign team leads.",
+        });
+      }
+
+      const before = await db.query.staffProfiles.findFirst({
+        where: eq(staffProfiles.id, input.id),
+      });
+      if (!before) throw new ORPCError("NOT_FOUND");
+
+      if (input.teamLeadId === before.id) {
+        throw new ORPCError("CONFLICT", {
+          message: "A staff member cannot be their own team lead.",
+        });
+      }
+
+      if (input.teamLeadId) {
+        const teamLead = await db.query.staffProfiles.findFirst({
+          where: eq(staffProfiles.id, input.teamLeadId),
+        });
+        if (!teamLead) {
+          throw new ORPCError("NOT_FOUND", {
+            message: "Team lead staff profile not found.",
+          });
+        }
+      }
+
+      const [updated] = await db
+        .update(staffProfiles)
+        .set({
+          teamLeadId: input.teamLeadId,
+          updatedAt: new Date(),
+        })
+        .where(eq(staffProfiles.id, input.id))
+        .returning();
+
+      if (!updated) {
+        throw new ORPCError("INTERNAL_SERVER_ERROR");
+      }
+
+      await logAudit({
+        actorId: context.session.user.id,
+        actorName: context.session.user.name,
+        action: "staff.team_lead.update",
+        module: "staff",
+        resourceType: "staff_profile",
+        resourceId: input.id,
+        beforeValue: before as Record<string, unknown>,
+        afterValue: updated as Record<string, unknown>,
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
+      });
+
+      return updated;
+    }),
+
+  canAccessPrivate: requireRole("staff", "read")
+    .input(z.object({ staffProfileId: z.string().min(1) }))
+    .handler(async ({ input, context }) => {
+      return {
+        allowed: await canAccessStaffPrivate(context, input.staffProfileId),
+      };
+    }),
+
+  getMyDirectReports: requireRole("staff", "read").handler(async ({ context }) => {
+    const caller = await getCallerStaffProfile(context);
+    if (!caller) {
+      return [];
+    }
+
+    return getDirectReports(context);
+  }),
 
   getDepartments: protectedProcedure.handler(async () => {
     return db.query.departments.findMany({

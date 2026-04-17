@@ -13,7 +13,7 @@ const statement = {
   rota: ["create", "read", "update", "delete", "swap"] as const,
   compliance: ["create", "read", "update", "assign"] as const,
   contract: ["create", "read", "update"] as const,
-  appraisal: ["create", "read", "update"] as const,
+  appraisal: ["create", "read", "update", "submit", "approve", "reject"] as const,
   report: ["read", "export"] as const,
   audit: ["read"] as const,
   settings: ["read", "update"] as const,
@@ -28,6 +28,15 @@ const statement = {
   ] as const,
   notification: ["read", "update"] as const,
   access: ["create", "read", "update", "delete"] as const,
+  department_assignment: ["create", "read", "update", "delete"] as const,
+  promotion_letter: ["create", "read", "update", "delete"] as const,
+  performance_journal: ["create", "read", "update", "delete"] as const,
+  career_path: ["create", "read", "update", "delete"] as const,
+  ppe: ["create", "read", "update", "delete", "assign"] as const,
+  callout: ["create", "read", "update", "delete"] as const,
+  timesheet: ["create", "read", "update", "delete", "submit", "approve", "reject"] as const,
+  shift: ["create", "read", "update", "delete", "publish"] as const,
+  feedback: ["create", "read", "update", "delete", "submit", "approve", "reject"] as const,
 } as const;
 
 export const ac = createAccessControl(statement);
@@ -47,6 +56,11 @@ export const readOnlyRole = ac.newRole({
   procurement: ["read"],
   notification: ["read"],
   access: ["read"],
+  career_path: ["read"],
+  timesheet: ["read"],
+  shift: ["read"],
+  callout: ["read"],
+  ppe: ["read"],
 });
 
 // Staff — own profile, self-service leave, submit PRs, view rota
@@ -61,6 +75,12 @@ export const staffRole = ac.newRole({
   procurement: ["create", "read"],
   notification: ["read", "update"],
   access: ["read"],
+  career_path: ["read"],
+  feedback: ["create", "read", "submit"],
+  callout: ["create", "read"],
+  shift: ["read"],
+  timesheet: ["create", "read", "submit"],
+  ppe: ["read"],
 });
 
 // Manager — approve leave, manage rota, view reports, create appraisals
@@ -71,12 +91,61 @@ export const managerRole = ac.newRole({
   rota: ["create", "read", "update", "swap"],
   compliance: ["read", "assign"],
   contract: ["read"],
-  appraisal: ["create", "read", "update"],
+  appraisal: ["create", "read", "update", "submit", "approve", "reject"],
   report: ["read"],
   audit: ["read"],
+  settings: ["read"],
   procurement: ["create", "read", "approve", "reject"],
   notification: ["read", "update"],
   access: ["read"],
+  department_assignment: ["read"],
+  career_path: ["read", "update"],
+  promotion_letter: ["create", "read", "update"],
+  performance_journal: ["create", "read", "update"],
+  feedback: ["read", "approve", "reject"],
+});
+
+// Team Lead — direct report appraisals, operational support, limited team scoping
+export const teamLeadRole = ac.newRole({
+  staff: ["read", "update"],
+  work: ["create", "read", "update", "assign"],
+  leave: ["read", "create", "cancel"],
+  rota: ["read", "swap"],
+  compliance: ["read"],
+  contract: ["read"],
+  appraisal: ["create", "read", "update", "submit"],
+  report: ["read"],
+  notification: ["read", "update"],
+  access: ["read"],
+  department_assignment: ["read"],
+  career_path: ["read"],
+  feedback: ["create", "read", "submit"],
+});
+
+// Personal Assistant — cross-scope coordination across DCS + NOC
+export const personalAssistantRole = ac.newRole({
+  staff: ["read", "update"],
+  work: ["read", "update"],
+  leave: ["read", "create", "update", "cancel"],
+  rota: ["read"],
+  compliance: ["read"],
+  contract: ["read", "update"],
+  appraisal: ["create", "read", "update", "submit"],
+  report: ["read"],
+  audit: ["read"],
+  settings: ["read"],
+  procurement: ["read", "create"],
+  notification: ["read", "update"],
+  access: ["read"],
+  department_assignment: ["read"],
+  promotion_letter: ["create", "read", "update"],
+  performance_journal: ["create", "read", "update"],
+  career_path: ["read", "update"],
+  feedback: ["create", "read", "submit"],
+  callout: ["read"],
+  timesheet: ["read"],
+  shift: ["read"],
+  ppe: ["read"],
 });
 
 // HR/Admin Ops — full staff + compliance + procurement management
@@ -87,13 +156,22 @@ export const hrAdminOpsRole = ac.newRole({
   rota: ["create", "read", "update", "delete", "swap"],
   compliance: ["create", "read", "update", "assign"],
   contract: ["create", "read", "update"],
-  appraisal: ["create", "read", "update"],
+  appraisal: ["create", "read", "update", "submit", "approve", "reject"],
   report: ["read", "export"],
   audit: ["read"],
   settings: ["read", "update"],
   procurement: ["create", "read", "update", "delete", "approve", "reject", "export"],
   notification: ["read", "update"],
   access: ["create", "read", "update", "delete"],
+  department_assignment: ["create", "read", "update", "delete"],
+  promotion_letter: ["create", "read", "update", "delete"],
+  performance_journal: ["create", "read", "update", "delete"],
+  career_path: ["create", "read", "update", "delete"],
+  ppe: ["create", "read", "update", "delete", "assign"],
+  callout: ["create", "read", "update", "delete"],
+  timesheet: ["create", "read", "update", "delete", "submit", "approve", "reject"],
+  shift: ["create", "read", "update", "delete", "publish"],
+  feedback: ["create", "read", "update", "delete", "submit", "approve", "reject"],
 });
 
 // Admin — everything (inherits from hrAdminOps + settings + audit export)
@@ -104,13 +182,22 @@ export const adminRole = ac.newRole({
   rota: ["create", "read", "update", "delete", "swap"],
   compliance: ["create", "read", "update", "assign"],
   contract: ["create", "read", "update"],
-  appraisal: ["create", "read", "update"],
+  appraisal: ["create", "read", "update", "submit", "approve", "reject"],
   report: ["read", "export"],
   audit: ["read"],
   settings: ["read", "update"],
   procurement: ["create", "read", "update", "delete", "approve", "reject", "export"],
   notification: ["read", "update"],
   access: ["create", "read", "update", "delete"],
+  department_assignment: ["create", "read", "update", "delete"],
+  promotion_letter: ["create", "read", "update", "delete"],
+  performance_journal: ["create", "read", "update", "delete"],
+  career_path: ["create", "read", "update", "delete"],
+  ppe: ["create", "read", "update", "delete", "assign"],
+  callout: ["create", "read", "update", "delete"],
+  timesheet: ["create", "read", "update", "delete", "submit", "approve", "reject"],
+  shift: ["create", "read", "update", "delete", "publish"],
+  feedback: ["create", "read", "update", "delete", "submit", "approve", "reject"],
 });
 
 // ─── Auth factory ─────────────────────────────────────────────────────────────
@@ -147,6 +234,8 @@ export function createAuth() {
           readOnly: readOnlyRole,
           staff: staffRole,
           manager: managerRole,
+          teamLead: teamLeadRole,
+          personalAssistant: personalAssistantRole,
           hrAdminOps: hrAdminOpsRole,
           admin: adminRole,
         },
@@ -160,4 +249,11 @@ export function createAuth() {
 export const auth = createAuth();
 
 // Export role type for client-side usage
-export type AppRole = "readOnly" | "staff" | "manager" | "hrAdminOps" | "admin";
+export type AppRole =
+  | "readOnly"
+  | "staff"
+  | "manager"
+  | "teamLead"
+  | "personalAssistant"
+  | "hrAdminOps"
+  | "admin";

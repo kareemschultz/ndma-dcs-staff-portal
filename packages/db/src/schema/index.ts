@@ -5,6 +5,7 @@ export * from "./appraisals";
 export * from "./audit";
 export * from "./compliance";
 export * from "./contracts";
+export * from "./department-assignments";
 export * from "./departments";
 export * from "./escalation";
 export * from "./incidents";

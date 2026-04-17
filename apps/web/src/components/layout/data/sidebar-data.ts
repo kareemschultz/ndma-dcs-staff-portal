@@ -216,6 +216,11 @@ export const sidebarData: Omit<SidebarData, "user"> = {
               icon: Building2,
             },
             {
+              title: "Department Assignments",
+              url: "/settings/department-assignments",
+              icon: Users,
+            },
+            {
               title: "Leave Types",
               url: "/settings/leave-types",
               icon: CalendarOff,

@@ -40,6 +40,7 @@ import { Route as AuthenticatedSettingsLeaveTypesRouteImport } from './routes/_a
 import { Route as AuthenticatedSettingsGeneralRouteImport } from './routes/_authenticated/settings/general'
 import { Route as AuthenticatedSettingsEscalationRouteImport } from './routes/_authenticated/settings/escalation'
 import { Route as AuthenticatedSettingsDepartmentsRouteImport } from './routes/_authenticated/settings/departments'
+import { Route as AuthenticatedSettingsDepartmentAssignmentsRouteImport } from './routes/_authenticated/settings/department-assignments'
 import { Route as AuthenticatedSettingsAutomationRouteImport } from './routes/_authenticated/settings/automation'
 import { Route as AuthenticatedRotaSwapsRouteImport } from './routes/_authenticated/rota/swaps'
 import { Route as AuthenticatedRotaPlannerRouteImport } from './routes/_authenticated/rota/planner'
@@ -235,6 +236,12 @@ const AuthenticatedSettingsDepartmentsRoute =
     path: '/settings/departments',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSettingsDepartmentAssignmentsRoute =
+  AuthenticatedSettingsDepartmentAssignmentsRouteImport.update({
+    id: '/settings/department-assignments',
+    path: '/settings/department-assignments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsAutomationRoute =
   AuthenticatedSettingsAutomationRouteImport.update({
     id: '/settings/automation',
@@ -367,6 +374,7 @@ export interface FileRoutesByFullPath {
   '/rota/planner': typeof AuthenticatedRotaPlannerRoute
   '/rota/swaps': typeof AuthenticatedRotaSwapsRoute
   '/settings/automation': typeof AuthenticatedSettingsAutomationRoute
+  '/settings/department-assignments': typeof AuthenticatedSettingsDepartmentAssignmentsRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/escalation': typeof AuthenticatedSettingsEscalationRoute
   '/settings/general': typeof AuthenticatedSettingsGeneralRoute
@@ -418,6 +426,7 @@ export interface FileRoutesByTo {
   '/rota/planner': typeof AuthenticatedRotaPlannerRoute
   '/rota/swaps': typeof AuthenticatedRotaSwapsRoute
   '/settings/automation': typeof AuthenticatedSettingsAutomationRoute
+  '/settings/department-assignments': typeof AuthenticatedSettingsDepartmentAssignmentsRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/escalation': typeof AuthenticatedSettingsEscalationRoute
   '/settings/general': typeof AuthenticatedSettingsGeneralRoute
@@ -471,6 +480,7 @@ export interface FileRoutesById {
   '/_authenticated/rota/planner': typeof AuthenticatedRotaPlannerRoute
   '/_authenticated/rota/swaps': typeof AuthenticatedRotaSwapsRoute
   '/_authenticated/settings/automation': typeof AuthenticatedSettingsAutomationRoute
+  '/_authenticated/settings/department-assignments': typeof AuthenticatedSettingsDepartmentAssignmentsRoute
   '/_authenticated/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/_authenticated/settings/escalation': typeof AuthenticatedSettingsEscalationRoute
   '/_authenticated/settings/general': typeof AuthenticatedSettingsGeneralRoute
@@ -524,6 +534,7 @@ export interface FileRouteTypes {
     | '/rota/planner'
     | '/rota/swaps'
     | '/settings/automation'
+    | '/settings/department-assignments'
     | '/settings/departments'
     | '/settings/escalation'
     | '/settings/general'
@@ -575,6 +586,7 @@ export interface FileRouteTypes {
     | '/rota/planner'
     | '/rota/swaps'
     | '/settings/automation'
+    | '/settings/department-assignments'
     | '/settings/departments'
     | '/settings/escalation'
     | '/settings/general'
@@ -627,6 +639,7 @@ export interface FileRouteTypes {
     | '/_authenticated/rota/planner'
     | '/_authenticated/rota/swaps'
     | '/_authenticated/settings/automation'
+    | '/_authenticated/settings/department-assignments'
     | '/_authenticated/settings/departments'
     | '/_authenticated/settings/escalation'
     | '/_authenticated/settings/general'
@@ -888,6 +901,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/automation'
       fullPath: '/settings/automation'
       preLoaderRoute: typeof AuthenticatedSettingsAutomationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings/department-assignments': {
+      id: '/_authenticated/settings/department-assignments'
+      path: '/settings/department-assignments'
+      fullPath: '/settings/department-assignments'
+      preLoaderRoute: typeof AuthenticatedSettingsDepartmentAssignmentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/rota/swaps': {

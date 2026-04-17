@@ -25,7 +25,7 @@ export const departmentsRouter = {
       return dept;
     }),
 
-  create: requireRole("staff", "create")
+  create: requireRole("settings", "update")
     .input(
       z.object({
         name: z.string().min(1).max(100),
@@ -69,7 +69,7 @@ export const departmentsRouter = {
       return dept;
     }),
 
-  update: requireRole("staff", "update")
+  update: requireRole("settings", "update")
     .input(
       z.object({
         id: z.string(),
@@ -110,7 +110,7 @@ export const departmentsRouter = {
       return updated;
     }),
 
-  deactivate: requireRole("staff", "delete")
+  deactivate: requireRole("settings", "update")
     .input(z.object({ id: z.string() }))
     .handler(async ({ input, context }) => {
       const before = await db.query.departments.findFirst({
