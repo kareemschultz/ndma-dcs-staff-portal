@@ -33,6 +33,7 @@ const statement = {
   performance_journal: ["create", "read", "update", "delete"] as const,
   career_path: ["create", "read", "update", "delete"] as const,
   ppe: ["create", "read", "update", "delete", "assign"] as const,
+  attendance: ["create", "read", "update", "delete", "submit", "approve", "reject"] as const,
   callout: ["create", "read", "update", "delete"] as const,
   timesheet: ["create", "read", "update", "delete", "submit", "approve", "reject"] as const,
   shift: ["create", "read", "update", "delete", "publish"] as const,
@@ -81,6 +82,7 @@ export const staffRole = ac.newRole({
   shift: ["read"],
   timesheet: ["create", "read", "submit"],
   ppe: ["read"],
+  attendance: ["read"],
 });
 
 // Manager — approve leave, manage rota, view reports, create appraisals
@@ -103,6 +105,10 @@ export const managerRole = ac.newRole({
   promotion_letter: ["create", "read", "update"],
   performance_journal: ["create", "read", "update"],
   feedback: ["read", "approve", "reject"],
+  attendance: ["create", "read", "submit", "approve", "reject"],
+  callout: ["create", "read", "update"],
+  ppe: ["create", "read", "update", "assign"],
+  timesheet: ["create", "read", "update", "submit", "approve", "reject"],
 });
 
 // Team Lead — direct report appraisals, operational support, limited team scoping
@@ -120,6 +126,7 @@ export const teamLeadRole = ac.newRole({
   department_assignment: ["read"],
   career_path: ["read"],
   feedback: ["create", "read", "submit"],
+  attendance: ["create", "read", "submit"],
 });
 
 // Personal Assistant — cross-scope coordination across DCS + NOC
@@ -142,10 +149,11 @@ export const personalAssistantRole = ac.newRole({
   performance_journal: ["create", "read", "update"],
   career_path: ["read", "update"],
   feedback: ["create", "read", "submit"],
-  callout: ["read"],
-  timesheet: ["read"],
+  attendance: ["create", "read", "submit"],
+  callout: ["create", "read", "update"],
+  timesheet: ["create", "read", "update", "submit"],
   shift: ["read"],
-  ppe: ["read"],
+  ppe: ["create", "read", "update", "assign"],
 });
 
 // HR/Admin Ops — full staff + compliance + procurement management
@@ -168,6 +176,7 @@ export const hrAdminOpsRole = ac.newRole({
   performance_journal: ["create", "read", "update", "delete"],
   career_path: ["create", "read", "update", "delete"],
   ppe: ["create", "read", "update", "delete", "assign"],
+  attendance: ["create", "read", "update", "delete", "submit", "approve", "reject"],
   callout: ["create", "read", "update", "delete"],
   timesheet: ["create", "read", "update", "delete", "submit", "approve", "reject"],
   shift: ["create", "read", "update", "delete", "publish"],
@@ -194,6 +203,7 @@ export const adminRole = ac.newRole({
   performance_journal: ["create", "read", "update", "delete"],
   career_path: ["create", "read", "update", "delete"],
   ppe: ["create", "read", "update", "delete", "assign"],
+  attendance: ["create", "read", "update", "delete", "submit", "approve", "reject"],
   callout: ["create", "read", "update", "delete"],
   timesheet: ["create", "read", "update", "delete", "submit", "approve", "reject"],
   shift: ["create", "read", "update", "delete", "publish"],

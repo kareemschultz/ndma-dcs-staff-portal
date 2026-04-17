@@ -46,6 +46,7 @@ import { Route as AuthenticatedSettingsAutomationRouteImport } from './routes/_a
 import { Route as AuthenticatedRotaSwapsRouteImport } from './routes/_authenticated/rota/swaps'
 import { Route as AuthenticatedRotaPlannerRouteImport } from './routes/_authenticated/rota/planner'
 import { Route as AuthenticatedRotaHistoryRouteImport } from './routes/_authenticated/rota/history'
+import { Route as AuthenticatedTimesheetsIndexRouteImport } from './routes/_authenticated/timesheets/index'
 import { Route as AuthenticatedProcurementNewRouteImport } from './routes/_authenticated/procurement/new'
 import { Route as AuthenticatedLeaveNewRouteImport } from './routes/_authenticated/leave/new'
 import { Route as AuthenticatedLeaveCalendarRouteImport } from './routes/_authenticated/leave/calendar'
@@ -55,6 +56,9 @@ import { Route as AuthenticatedCyclesCycleIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedComplianceTrainingRouteImport } from './routes/_authenticated/compliance/training'
 import { Route as AuthenticatedCompliancePpeRouteImport } from './routes/_authenticated/compliance/ppe'
 import { Route as AuthenticatedComplianceItemsRouteImport } from './routes/_authenticated/compliance/items'
+import { Route as AuthenticatedHrAttendanceRouteImport } from './routes/_authenticated/hr/attendance'
+import { Route as AuthenticatedHrCalloutsRouteImport } from './routes/_authenticated/hr/callouts'
+import { Route as AuthenticatedHrPpeRouteImport } from './routes/_authenticated/hr/ppe'
 import { Route as AuthenticatedChangesNewRouteImport } from './routes/_authenticated/changes/new'
 import { Route as AuthenticatedChangesChangeIdRouteImport } from './routes/_authenticated/changes/$changeId'
 import { Route as AuthenticatedAccessAccountIdRouteImport } from './routes/_authenticated/access/$accountId'
@@ -325,6 +329,23 @@ const AuthenticatedComplianceItemsRoute =
     path: '/compliance/items',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHrAttendanceRoute =
+  AuthenticatedHrAttendanceRouteImport.update({
+    id: '/hr/attendance',
+    path: '/hr/attendance',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHrCalloutsRoute =
+  AuthenticatedHrCalloutsRouteImport.update({
+    id: '/hr/callouts',
+    path: '/hr/callouts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHrPpeRoute = AuthenticatedHrPpeRouteImport.update({
+  id: '/hr/ppe',
+  path: '/hr/ppe',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedChangesNewRoute = AuthenticatedChangesNewRouteImport.update({
   id: '/changes/new',
   path: '/changes/new',
@@ -360,6 +381,12 @@ const AuthenticatedRotaCalendarIndexRoute =
     path: '/rota/calendar/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTimesheetsIndexRoute =
+  AuthenticatedTimesheetsIndexRouteImport.update({
+    id: '/timesheets/',
+    path: '/timesheets/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -371,6 +398,9 @@ export interface FileRoutesByFullPath {
   '/compliance/items': typeof AuthenticatedComplianceItemsRoute
   '/compliance/ppe': typeof AuthenticatedCompliancePpeRoute
   '/compliance/training': typeof AuthenticatedComplianceTrainingRoute
+  '/hr/attendance': typeof AuthenticatedHrAttendanceRoute
+  '/hr/callouts': typeof AuthenticatedHrCalloutsRoute
+  '/hr/ppe': typeof AuthenticatedHrPpeRoute
   '/cycles/$cycleId': typeof AuthenticatedCyclesCycleIdRoute
   '/incidents/$incidentId': typeof AuthenticatedIncidentsIncidentIdRoute
   '/incidents/new': typeof AuthenticatedIncidentsNewRoute
@@ -413,6 +443,7 @@ export interface FileRoutesByFullPath {
   '/rota/calendar/': typeof AuthenticatedRotaCalendarIndexRoute
   '/rota/fairness/': typeof AuthenticatedRotaFairnessIndexRoute
   '/rota/warnings/': typeof AuthenticatedRotaWarningsIndexRoute
+  '/timesheets/': typeof AuthenticatedTimesheetsIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -424,6 +455,9 @@ export interface FileRoutesByTo {
   '/compliance/items': typeof AuthenticatedComplianceItemsRoute
   '/compliance/ppe': typeof AuthenticatedCompliancePpeRoute
   '/compliance/training': typeof AuthenticatedComplianceTrainingRoute
+  '/hr/attendance': typeof AuthenticatedHrAttendanceRoute
+  '/hr/callouts': typeof AuthenticatedHrCalloutsRoute
+  '/hr/ppe': typeof AuthenticatedHrPpeRoute
   '/cycles/$cycleId': typeof AuthenticatedCyclesCycleIdRoute
   '/incidents/$incidentId': typeof AuthenticatedIncidentsIncidentIdRoute
   '/incidents/new': typeof AuthenticatedIncidentsNewRoute
@@ -466,6 +500,7 @@ export interface FileRoutesByTo {
   '/rota/calendar': typeof AuthenticatedRotaCalendarIndexRoute
   '/rota/fairness': typeof AuthenticatedRotaFairnessIndexRoute
   '/rota/warnings': typeof AuthenticatedRotaWarningsIndexRoute
+  '/timesheets': typeof AuthenticatedTimesheetsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -479,6 +514,9 @@ export interface FileRoutesById {
   '/_authenticated/compliance/items': typeof AuthenticatedComplianceItemsRoute
   '/_authenticated/compliance/ppe': typeof AuthenticatedCompliancePpeRoute
   '/_authenticated/compliance/training': typeof AuthenticatedComplianceTrainingRoute
+  '/_authenticated/hr/attendance': typeof AuthenticatedHrAttendanceRoute
+  '/_authenticated/hr/callouts': typeof AuthenticatedHrCalloutsRoute
+  '/_authenticated/hr/ppe': typeof AuthenticatedHrPpeRoute
   '/_authenticated/cycles/$cycleId': typeof AuthenticatedCyclesCycleIdRoute
   '/_authenticated/incidents/$incidentId': typeof AuthenticatedIncidentsIncidentIdRoute
   '/_authenticated/incidents/new': typeof AuthenticatedIncidentsNewRoute
@@ -521,6 +559,7 @@ export interface FileRoutesById {
   '/_authenticated/rota/calendar/': typeof AuthenticatedRotaCalendarIndexRoute
   '/_authenticated/rota/fairness/': typeof AuthenticatedRotaFairnessIndexRoute
   '/_authenticated/rota/warnings/': typeof AuthenticatedRotaWarningsIndexRoute
+  '/_authenticated/timesheets/': typeof AuthenticatedTimesheetsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -534,6 +573,9 @@ export interface FileRouteTypes {
     | '/compliance/items'
     | '/compliance/ppe'
     | '/compliance/training'
+    | '/hr/attendance'
+    | '/hr/callouts'
+    | '/hr/ppe'
     | '/cycles/$cycleId'
     | '/incidents/$incidentId'
     | '/incidents/new'
@@ -575,6 +617,7 @@ export interface FileRouteTypes {
     | '/rota/calendar/'
     | '/rota/fairness/'
     | '/rota/warnings/'
+    | '/timesheets/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -586,6 +629,9 @@ export interface FileRouteTypes {
     | '/compliance/items'
     | '/compliance/ppe'
     | '/compliance/training'
+    | '/hr/attendance'
+    | '/hr/callouts'
+    | '/hr/ppe'
     | '/cycles/$cycleId'
     | '/incidents/$incidentId'
     | '/incidents/new'
@@ -627,6 +673,7 @@ export interface FileRouteTypes {
     | '/rota/calendar'
     | '/rota/fairness'
     | '/rota/warnings'
+    | '/timesheets'
   id:
     | '__root__'
     | '/_authenticated'
@@ -639,6 +686,9 @@ export interface FileRouteTypes {
     | '/_authenticated/compliance/items'
     | '/_authenticated/compliance/ppe'
     | '/_authenticated/compliance/training'
+    | '/_authenticated/hr/attendance'
+    | '/_authenticated/hr/callouts'
+    | '/_authenticated/hr/ppe'
     | '/_authenticated/cycles/$cycleId'
     | '/_authenticated/incidents/$incidentId'
     | '/_authenticated/incidents/new'
@@ -648,6 +698,7 @@ export interface FileRouteTypes {
     | '/_authenticated/rota/history'
     | '/_authenticated/rota/planner'
     | '/_authenticated/rota/swaps'
+    | '/_authenticated/timesheets/'
     | '/_authenticated/settings/automation'
     | '/_authenticated/settings/department-assignments'
     | '/_authenticated/settings/departments'
@@ -1011,6 +1062,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedComplianceItemsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hr/attendance': {
+      id: '/_authenticated/hr/attendance'
+      path: '/hr/attendance'
+      fullPath: '/hr/attendance'
+      preLoaderRoute: typeof AuthenticatedHrAttendanceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr/callouts': {
+      id: '/_authenticated/hr/callouts'
+      path: '/hr/callouts'
+      fullPath: '/hr/callouts'
+      preLoaderRoute: typeof AuthenticatedHrCalloutsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr/ppe': {
+      id: '/_authenticated/hr/ppe'
+      path: '/hr/ppe'
+      fullPath: '/hr/ppe'
+      preLoaderRoute: typeof AuthenticatedHrPpeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/changes/new': {
       id: '/_authenticated/changes/new'
       path: '/changes/new'
@@ -1039,6 +1111,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRotaWarningsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/timesheets/': {
+      id: '/_authenticated/timesheets/'
+      path: '/timesheets'
+      fullPath: '/timesheets/'
+      preLoaderRoute: typeof AuthenticatedTimesheetsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/rota/fairness/': {
       id: '/_authenticated/rota/fairness/'
       path: '/rota/fairness'
@@ -1065,6 +1144,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedComplianceItemsRoute: typeof AuthenticatedComplianceItemsRoute
   AuthenticatedCompliancePpeRoute: typeof AuthenticatedCompliancePpeRoute
   AuthenticatedComplianceTrainingRoute: typeof AuthenticatedComplianceTrainingRoute
+  AuthenticatedHrAttendanceRoute: typeof AuthenticatedHrAttendanceRoute
+  AuthenticatedHrCalloutsRoute: typeof AuthenticatedHrCalloutsRoute
+  AuthenticatedHrPpeRoute: typeof AuthenticatedHrPpeRoute
   AuthenticatedCyclesCycleIdRoute: typeof AuthenticatedCyclesCycleIdRoute
   AuthenticatedIncidentsIncidentIdRoute: typeof AuthenticatedIncidentsIncidentIdRoute
   AuthenticatedIncidentsNewRoute: typeof AuthenticatedIncidentsNewRoute
@@ -1106,6 +1188,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRotaCalendarIndexRoute: typeof AuthenticatedRotaCalendarIndexRoute
   AuthenticatedRotaFairnessIndexRoute: typeof AuthenticatedRotaFairnessIndexRoute
   AuthenticatedRotaWarningsIndexRoute: typeof AuthenticatedRotaWarningsIndexRoute
+  AuthenticatedTimesheetsIndexRoute: typeof AuthenticatedTimesheetsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -1117,6 +1200,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedComplianceItemsRoute: AuthenticatedComplianceItemsRoute,
   AuthenticatedCompliancePpeRoute: AuthenticatedCompliancePpeRoute,
   AuthenticatedComplianceTrainingRoute: AuthenticatedComplianceTrainingRoute,
+  AuthenticatedHrAttendanceRoute: AuthenticatedHrAttendanceRoute,
+  AuthenticatedHrCalloutsRoute: AuthenticatedHrCalloutsRoute,
+  AuthenticatedHrPpeRoute: AuthenticatedHrPpeRoute,
   AuthenticatedCyclesCycleIdRoute: AuthenticatedCyclesCycleIdRoute,
   AuthenticatedIncidentsIncidentIdRoute: AuthenticatedIncidentsIncidentIdRoute,
   AuthenticatedIncidentsNewRoute: AuthenticatedIncidentsNewRoute,
@@ -1158,6 +1244,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRotaCalendarIndexRoute: AuthenticatedRotaCalendarIndexRoute,
   AuthenticatedRotaFairnessIndexRoute: AuthenticatedRotaFairnessIndexRoute,
   AuthenticatedRotaWarningsIndexRoute: AuthenticatedRotaWarningsIndexRoute,
+  AuthenticatedTimesheetsIndexRoute: AuthenticatedTimesheetsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

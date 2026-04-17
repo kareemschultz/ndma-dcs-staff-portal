@@ -1,39 +1,34 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useState } from "react";
 import {
   ArrowLeft,
   Building2,
   Calendar,
+  Clock3,
+  HardHat,
+  ListChecks,
   Mail,
   Pencil,
+  PhoneCall,
   ShieldCheck,
   Users,
 } from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@ndma-dcs-staff-portal/ui/components/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@ndma-dcs-staff-portal/ui/components/dialog";
 import { Input } from "@ndma-dcs-staff-portal/ui/components/input";
 import { Label } from "@ndma-dcs-staff-portal/ui/components/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@ndma-dcs-staff-portal/ui/components/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@ndma-dcs-staff-portal/ui/components/dialog";
-import { Skeleton } from "@ndma-dcs-staff-portal/ui/components/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@ndma-dcs-staff-portal/ui/components/select";
 import { Separator } from "@ndma-dcs-staff-portal/ui/components/separator";
+import { Skeleton } from "@ndma-dcs-staff-portal/ui/components/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ndma-dcs-staff-portal/ui/components/tabs";
+
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
 import { orpc } from "@/utils/orpc";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/staff/$staffId")({
   component: StaffProfilePage,
@@ -53,11 +48,7 @@ function StaffStatusBadge({ status }: { status: string }) {
     terminated: { label: "Terminated", className: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" },
   };
   const cfg = map[status] ?? { label: status, className: "bg-muted text-muted-foreground" };
-  return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.className}`}>
-      {cfg.label}
-    </span>
-  );
+  return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.className}`}>{cfg.label}</span>;
 }
 
 function EmploymentTypeBadge({ type }: { type: string }) {
@@ -68,7 +59,7 @@ function EmploymentTypeBadge({ type }: { type: string }) {
     temporary: "Temporary",
   };
   return (
-    <span className="inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+    <span className="inline-flex items-center rounded-lg bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
       {labels[type] ?? type}
     </span>
   );
@@ -98,7 +89,7 @@ function EditProfileDialog({
       onError: (err: Error) => {
         toast.error(err.message ?? "Failed to update profile");
       },
-    })
+    }),
   );
 
   function handleSave() {
@@ -132,9 +123,7 @@ function EditProfileDialog({
             <Label htmlFor="ep-employmentType">Employment Type</Label>
             <Select
               value={form.employmentType}
-              onValueChange={(v) =>
-                setForm((f) => ({ ...f, employmentType: v as EditProfileForm["employmentType"] }))
-              }
+              onValueChange={(v) => setForm((f) => ({ ...f, employmentType: v as EditProfileForm["employmentType"] }))}
             >
               <SelectTrigger id="ep-employmentType">
                 <SelectValue placeholder="Select type" />
@@ -152,9 +141,7 @@ function EditProfileDialog({
             <Label htmlFor="ep-status">Status</Label>
             <Select
               value={form.status}
-              onValueChange={(v) =>
-                setForm((f) => ({ ...f, status: v as EditProfileForm["status"] }))
-              }
+              onValueChange={(v) => setForm((f) => ({ ...f, status: v as EditProfileForm["status"] }))}
             >
               <SelectTrigger id="ep-status">
                 <SelectValue placeholder="Select status" />
@@ -167,7 +154,6 @@ function EditProfileDialog({
               </SelectContent>
             </Select>
           </div>
-
         </div>
 
         <DialogFooter>
@@ -175,7 +161,7 @@ function EditProfileDialog({
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={mutation.isPending}>
-            {mutation.isPending ? "Saving…" : "Save"}
+            {mutation.isPending ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -188,7 +174,7 @@ function StaffProfilePage() {
   const [editOpen, setEditOpen] = useState(false);
 
   const { data: profile, isLoading, error } = useQuery(
-    orpc.staff.get.queryOptions({ input: { id: staffId } })
+    orpc.staff.get.queryOptions({ input: { id: staffId } }),
   );
 
   if (isLoading) {
@@ -201,8 +187,8 @@ function StaffProfilePage() {
           </div>
         </Header>
         <Main>
-          <Skeleton className="h-8 w-48 mb-4" />
-          <Skeleton className="h-4 w-64 mb-2" />
+          <Skeleton className="mb-4 h-8 w-48" />
+          <Skeleton className="mb-2 h-4 w-64" />
           <Skeleton className="h-4 w-48" />
         </Main>
       </>
@@ -214,7 +200,9 @@ function StaffProfilePage() {
       <Main>
         <p className="text-muted-foreground">Staff profile not found.</p>
         <Link to="/staff">
-          <Button variant="outline" className="mt-4">Back to Directory</Button>
+          <Button variant="outline" className="mt-4">
+            Back to Directory
+          </Button>
         </Link>
       </Main>
     );
@@ -241,7 +229,7 @@ function StaffProfilePage() {
             </Button>
           </Link>
           <div className="flex items-center gap-4">
-            <div className="size-16 rounded-full bg-muted flex items-center justify-center text-2xl font-bold">
+            <div className="flex size-16 items-center justify-center rounded-full bg-muted text-2xl font-bold">
               {profile.user?.name?.[0] ?? "?"}
             </div>
             <div>
@@ -263,97 +251,234 @@ function StaffProfilePage() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Main info */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="rounded-xl border p-5 space-y-4">
-              <h2 className="font-semibold">Employment Details</h2>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="flex flex-wrap gap-1">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="career">Career Path</TabsTrigger>
+            <TabsTrigger value="appraisals">Appraisals</TabsTrigger>
+            <TabsTrigger value="operational">Operational HR</TabsTrigger>
+            <TabsTrigger value="policy">Policy & Compliance</TabsTrigger>
+          </TabsList>
 
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground text-xs mb-1">Employee ID</p>
-                  <p className="font-mono font-medium">{profile.employeeId}</p>
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-2 space-y-6">
+                <div className="rounded-xl border p-5 space-y-4">
+                  <h2 className="font-semibold">Employment Details</h2>
+
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="mb-1 text-xs text-muted-foreground">Employee ID</p>
+                      <p className="font-mono font-medium">{profile.employeeId}</p>
+                    </div>
+                    <div>
+                      <p className="mb-1 text-xs text-muted-foreground">Employment Type</p>
+                      <EmploymentTypeBadge type={profile.employmentType} />
+                    </div>
+                    <div>
+                      <p className="mb-1 text-xs text-muted-foreground">Start Date</p>
+                      <p>{profile.startDate ? format(new Date(profile.startDate), "dd MMM yyyy") : "—"}</p>
+                    </div>
+                    <div>
+                      <p className="mb-1 text-xs text-muted-foreground">Department</p>
+                      <p className="flex items-center gap-1">
+                        <Building2 className="size-3.5 text-muted-foreground" />
+                        {profile.department?.name ?? "—"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex flex-wrap gap-3 text-sm">
+                    {profile.isTeamLead && (
+                      <span className="flex items-center gap-1 rounded-full border px-3 py-1 text-xs">
+                        <ShieldCheck className="size-3.5 text-amber-500" />
+                        Team Lead
+                      </span>
+                    )}
+                    {profile.isLeadEngineerEligible && (
+                      <span className="flex items-center gap-1 rounded-full border px-3 py-1 text-xs">
+                        <ShieldCheck className="size-3.5 text-indigo-500" />
+                        Lead Engineer Eligible
+                      </span>
+                    )}
+                    {profile.isOnCallEligible && (
+                      <span className="flex items-center gap-1 rounded-full border px-3 py-1 text-xs">
+                        <Calendar className="size-3.5 text-green-500" />
+                        On-Call Eligible
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <p className="text-muted-foreground text-xs mb-1">Employment Type</p>
-                  <EmploymentTypeBadge type={profile.employmentType} />
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs mb-1">Start Date</p>
-                  <p>
-                    {profile.startDate
-                      ? format(new Date(profile.startDate), "dd MMM yyyy")
-                      : "—"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs mb-1">Department</p>
-                  <p className="flex items-center gap-1">
-                    <Building2 className="size-3.5 text-muted-foreground" />
-                    {profile.department?.name ?? "—"}
-                  </p>
+
+                <div className="rounded-xl border p-5">
+                  <h2 className="mb-4 font-semibold">Operational HR</h2>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Link
+                      to="/hr/ppe"
+                      className="flex items-center gap-3 rounded-xl border px-3 py-2 text-sm hover:bg-accent"
+                    >
+                      <HardHat className="size-4 text-muted-foreground" />
+                      PPE & Tools
+                    </Link>
+                    <Link
+                      to="/hr/attendance"
+                      className="flex items-center gap-3 rounded-xl border px-3 py-2 text-sm hover:bg-accent"
+                    >
+                      <Clock3 className="size-4 text-muted-foreground" />
+                      Attendance Exceptions
+                    </Link>
+                    <Link
+                      to="/hr/callouts"
+                      className="flex items-center gap-3 rounded-xl border px-3 py-2 text-sm hover:bg-accent"
+                    >
+                      <PhoneCall className="size-4 text-muted-foreground" />
+                      Callouts
+                    </Link>
+                    <Link
+                      to="/timesheets"
+                      className="flex items-center gap-3 rounded-xl border px-3 py-2 text-sm hover:bg-accent"
+                    >
+                      <ListChecks className="size-4 text-muted-foreground" />
+                      Timesheets
+                    </Link>
+                  </div>
                 </div>
               </div>
 
-              <Separator />
+              <div className="space-y-4">
+                <div className="rounded-xl border p-4 space-y-3 text-sm">
+                  <h3 className="font-semibold">Account</h3>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Mail className="size-3.5 shrink-0" />
+                    <span>{profile.user?.email ?? "—"}</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Role:{" "}
+                    <span className="capitalize">
+                      {(profile.user as Record<string, unknown>)?.role as string ?? "—"}
+                    </span>
+                  </div>
+                </div>
 
-              <div className="flex flex-wrap gap-3 text-sm">
-                {profile.isTeamLead && (
-                  <span className="flex items-center gap-1 rounded-full border px-3 py-1 text-xs">
-                    <ShieldCheck className="size-3.5 text-amber-500" />
-                    Team Lead
-                  </span>
-                )}
-                {profile.isLeadEngineerEligible && (
-                  <span className="flex items-center gap-1 rounded-full border px-3 py-1 text-xs">
-                    <ShieldCheck className="size-3.5 text-indigo-500" />
-                    Lead Engineer Eligible
-                  </span>
-                )}
-                {profile.isOnCallEligible && (
-                  <span className="flex items-center gap-1 rounded-full border px-3 py-1 text-xs">
-                    <Calendar className="size-3.5 text-green-500" />
-                    On-Call Eligible
-                  </span>
-                )}
+                <div className="rounded-xl border p-4 text-sm">
+                  <h3 className="font-semibold mb-2">Quick Links</h3>
+                  <div className="space-y-1.5">
+                    <Link to="/rota" className="block text-muted-foreground hover:text-foreground">
+                      → On-Call Schedule
+                    </Link>
+                    <Link to="/leave" className="block text-muted-foreground hover:text-foreground">
+                      → Leave Records
+                    </Link>
+                    <Link to="/access" className="block text-muted-foreground hover:text-foreground">
+                      → Platform Accounts
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
+          </TabsContent>
 
-            {/* Placeholder for future tabs */}
-            <div className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
-              Additional tabs for Leave, Contracts, Training, PPE, and Appraisals coming in a later phase.
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-4">
-            <div className="rounded-xl border p-4 space-y-3 text-sm">
-              <h3 className="font-semibold">Account</h3>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Mail className="size-3.5 shrink-0" />
-                <span>{profile.user?.email ?? "—"}</span>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Role: <span className="capitalize">{(profile.user as Record<string, unknown>)?.role as string ?? "—"}</span>
-              </div>
-            </div>
-
-            <div className="rounded-xl border p-4 text-sm">
-              <h3 className="font-semibold mb-2">Quick Links</h3>
-              <div className="space-y-1.5">
-                <Link to="/rota" className="block text-muted-foreground hover:text-foreground">
-                  → On-Call Schedule
+          <TabsContent value="career" className="space-y-4">
+            <div className="rounded-xl border p-5">
+              <h2 className="font-semibold">Career Path</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Use appraisal cycles, promotion letters, and performance journals to define
+                readiness for progression and promotion.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link to="/appraisals">
+                  <Button variant="outline" size="sm">
+                    Appraisal History
+                  </Button>
                 </Link>
-                <Link to="/leave" className="block text-muted-foreground hover:text-foreground">
-                  → Leave Records
-                </Link>
-                <Link to="/access" className="block text-muted-foreground hover:text-foreground">
-                  → Platform Accounts
+                <Link to="/appraisals/inbox">
+                  <Button variant="outline" size="sm">
+                    Reviewer Inbox
+                  </Button>
                 </Link>
               </div>
             </div>
-          </div>
-        </div>
+          </TabsContent>
+
+          <TabsContent value="appraisals" className="space-y-4">
+            <div className="rounded-xl border p-5">
+              <h2 className="font-semibold">Appraisals</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Review appraisal history, scheduled cycles, and approval status here.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link to="/appraisals">
+                  <Button variant="outline" size="sm">
+                    Open Appraisals
+                  </Button>
+                </Link>
+                <Link to="/appraisals/inbox">
+                  <Button variant="outline" size="sm">
+                    Reviewer Inbox
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="operational" className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <Link to="/hr/ppe" className="rounded-xl border p-4 hover:bg-accent">
+                <h3 className="font-semibold">PPE & Tools</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Issuance, due dates, and replacements.
+                </p>
+              </Link>
+              <Link to="/hr/attendance" className="rounded-xl border p-4 hover:bg-accent">
+                <h3 className="font-semibold">Attendance</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Sick leave, lateness, WFH, and other exceptions.
+                </p>
+              </Link>
+              <Link to="/hr/callouts" className="rounded-xl border p-4 hover:bg-accent">
+                <h3 className="font-semibold">Callouts</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Emergency callout activity and outcomes.
+                </p>
+              </Link>
+              <Link to="/timesheets" className="rounded-xl border p-4 hover:bg-accent">
+                <h3 className="font-semibold">Timesheets</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Work periods, entries, and approval status.
+                </p>
+              </Link>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="policy" className="space-y-4">
+            <div className="rounded-xl border p-5">
+              <h2 className="font-semibold">Policy & Compliance</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Published policies, acknowledgements, leave records, and training compliance
+                remain the primary controls for internal governance.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link to="/leave">
+                  <Button variant="outline" size="sm">
+                    Leave Records
+                  </Button>
+                </Link>
+                <Link to="/compliance/items">
+                  <Button variant="outline" size="sm">
+                    Compliance Items
+                  </Button>
+                </Link>
+                <Link to="/compliance/training">
+                  <Button variant="outline" size="sm">
+                    Training Records
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </Main>
 
       <EditProfileDialog
