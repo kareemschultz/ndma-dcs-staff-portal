@@ -259,7 +259,7 @@ export const tempChangesRouter = {
       return updated;
     }),
 
-  getOverdue: requireRole("work", "read").handler(async ({ context }) => {
+  getOverdue: requireRole("work", "read").handler(async () => {
     const today = new Date().toISOString().slice(0, 10);
 
     // Auto-flag items that are past their removeByDate but not yet marked overdue
