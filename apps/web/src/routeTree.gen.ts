@@ -18,6 +18,7 @@ import { Route as AuthenticatedTimesheetsIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff/index'
 import { Route as AuthenticatedServicesIndexRouteImport } from './routes/_authenticated/services/index'
 import { Route as AuthenticatedRotaIndexRouteImport } from './routes/_authenticated/rota/index'
+import { Route as AuthenticatedRosterIndexRouteImport } from './routes/_authenticated/roster/index'
 import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated/reports/index'
 import { Route as AuthenticatedProcurementIndexRouteImport } from './routes/_authenticated/procurement/index'
 import { Route as AuthenticatedOpsReadinessIndexRouteImport } from './routes/_authenticated/ops-readiness/index'
@@ -46,6 +47,11 @@ import { Route as AuthenticatedSettingsAutomationRouteImport } from './routes/_a
 import { Route as AuthenticatedRotaSwapsRouteImport } from './routes/_authenticated/rota/swaps'
 import { Route as AuthenticatedRotaPlannerRouteImport } from './routes/_authenticated/rota/planner'
 import { Route as AuthenticatedRotaHistoryRouteImport } from './routes/_authenticated/rota/history'
+import { Route as AuthenticatedRosterTodayRouteImport } from './routes/_authenticated/roster/today'
+import { Route as AuthenticatedRosterSwapsRouteImport } from './routes/_authenticated/roster/swaps'
+import { Route as AuthenticatedRosterPlannerRouteImport } from './routes/_authenticated/roster/planner'
+import { Route as AuthenticatedRosterMyRosterRouteImport } from './routes/_authenticated/roster/my-roster'
+import { Route as AuthenticatedRosterMaintenanceRouteImport } from './routes/_authenticated/roster/maintenance'
 import { Route as AuthenticatedProcurementNewRouteImport } from './routes/_authenticated/procurement/new'
 import { Route as AuthenticatedLeaveNewRouteImport } from './routes/_authenticated/leave/new'
 import { Route as AuthenticatedLeaveCalendarRouteImport } from './routes/_authenticated/leave/calendar'
@@ -65,6 +71,7 @@ import { Route as AuthenticatedAccessAccountIdRouteImport } from './routes/_auth
 import { Route as AuthenticatedRotaWarningsIndexRouteImport } from './routes/_authenticated/rota/warnings/index'
 import { Route as AuthenticatedRotaFairnessIndexRouteImport } from './routes/_authenticated/rota/fairness/index'
 import { Route as AuthenticatedRotaCalendarIndexRouteImport } from './routes/_authenticated/rota/calendar/index'
+import { Route as AuthenticatedRosterCalendarIndexRouteImport } from './routes/_authenticated/roster/calendar/index'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -112,6 +119,12 @@ const AuthenticatedRotaIndexRoute = AuthenticatedRotaIndexRouteImport.update({
   path: '/rota/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRosterIndexRoute =
+  AuthenticatedRosterIndexRouteImport.update({
+    id: '/roster/',
+    path: '/roster/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedReportsIndexRoute =
   AuthenticatedReportsIndexRouteImport.update({
     id: '/reports/',
@@ -276,6 +289,36 @@ const AuthenticatedRotaHistoryRoute =
     path: '/rota/history',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedRosterTodayRoute =
+  AuthenticatedRosterTodayRouteImport.update({
+    id: '/roster/today',
+    path: '/roster/today',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRosterSwapsRoute =
+  AuthenticatedRosterSwapsRouteImport.update({
+    id: '/roster/swaps',
+    path: '/roster/swaps',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRosterPlannerRoute =
+  AuthenticatedRosterPlannerRouteImport.update({
+    id: '/roster/planner',
+    path: '/roster/planner',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRosterMyRosterRoute =
+  AuthenticatedRosterMyRosterRouteImport.update({
+    id: '/roster/my-roster',
+    path: '/roster/my-roster',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRosterMaintenanceRoute =
+  AuthenticatedRosterMaintenanceRouteImport.update({
+    id: '/roster/maintenance',
+    path: '/roster/maintenance',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProcurementNewRoute =
   AuthenticatedProcurementNewRouteImport.update({
     id: '/procurement/new',
@@ -386,6 +429,12 @@ const AuthenticatedRotaCalendarIndexRoute =
     path: '/rota/calendar/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedRosterCalendarIndexRoute =
+  AuthenticatedRosterCalendarIndexRouteImport.update({
+    id: '/roster/calendar/',
+    path: '/roster/calendar/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -407,6 +456,11 @@ export interface FileRoutesByFullPath {
   '/leave/calendar': typeof AuthenticatedLeaveCalendarRoute
   '/leave/new': typeof AuthenticatedLeaveNewRoute
   '/procurement/new': typeof AuthenticatedProcurementNewRoute
+  '/roster/maintenance': typeof AuthenticatedRosterMaintenanceRoute
+  '/roster/my-roster': typeof AuthenticatedRosterMyRosterRoute
+  '/roster/planner': typeof AuthenticatedRosterPlannerRoute
+  '/roster/swaps': typeof AuthenticatedRosterSwapsRoute
+  '/roster/today': typeof AuthenticatedRosterTodayRoute
   '/rota/history': typeof AuthenticatedRotaHistoryRoute
   '/rota/planner': typeof AuthenticatedRotaPlannerRoute
   '/rota/swaps': typeof AuthenticatedRotaSwapsRoute
@@ -435,11 +489,13 @@ export interface FileRoutesByFullPath {
   '/ops-readiness/': typeof AuthenticatedOpsReadinessIndexRoute
   '/procurement/': typeof AuthenticatedProcurementIndexRoute
   '/reports/': typeof AuthenticatedReportsIndexRoute
+  '/roster/': typeof AuthenticatedRosterIndexRoute
   '/rota/': typeof AuthenticatedRotaIndexRoute
   '/services/': typeof AuthenticatedServicesIndexRoute
   '/staff/': typeof AuthenticatedStaffIndexRoute
   '/timesheets/': typeof AuthenticatedTimesheetsIndexRoute
   '/work/': typeof AuthenticatedWorkIndexRoute
+  '/roster/calendar/': typeof AuthenticatedRosterCalendarIndexRoute
   '/rota/calendar/': typeof AuthenticatedRotaCalendarIndexRoute
   '/rota/fairness/': typeof AuthenticatedRotaFairnessIndexRoute
   '/rota/warnings/': typeof AuthenticatedRotaWarningsIndexRoute
@@ -464,6 +520,11 @@ export interface FileRoutesByTo {
   '/leave/calendar': typeof AuthenticatedLeaveCalendarRoute
   '/leave/new': typeof AuthenticatedLeaveNewRoute
   '/procurement/new': typeof AuthenticatedProcurementNewRoute
+  '/roster/maintenance': typeof AuthenticatedRosterMaintenanceRoute
+  '/roster/my-roster': typeof AuthenticatedRosterMyRosterRoute
+  '/roster/planner': typeof AuthenticatedRosterPlannerRoute
+  '/roster/swaps': typeof AuthenticatedRosterSwapsRoute
+  '/roster/today': typeof AuthenticatedRosterTodayRoute
   '/rota/history': typeof AuthenticatedRotaHistoryRoute
   '/rota/planner': typeof AuthenticatedRotaPlannerRoute
   '/rota/swaps': typeof AuthenticatedRotaSwapsRoute
@@ -492,11 +553,13 @@ export interface FileRoutesByTo {
   '/ops-readiness': typeof AuthenticatedOpsReadinessIndexRoute
   '/procurement': typeof AuthenticatedProcurementIndexRoute
   '/reports': typeof AuthenticatedReportsIndexRoute
+  '/roster': typeof AuthenticatedRosterIndexRoute
   '/rota': typeof AuthenticatedRotaIndexRoute
   '/services': typeof AuthenticatedServicesIndexRoute
   '/staff': typeof AuthenticatedStaffIndexRoute
   '/timesheets': typeof AuthenticatedTimesheetsIndexRoute
   '/work': typeof AuthenticatedWorkIndexRoute
+  '/roster/calendar': typeof AuthenticatedRosterCalendarIndexRoute
   '/rota/calendar': typeof AuthenticatedRotaCalendarIndexRoute
   '/rota/fairness': typeof AuthenticatedRotaFairnessIndexRoute
   '/rota/warnings': typeof AuthenticatedRotaWarningsIndexRoute
@@ -523,6 +586,11 @@ export interface FileRoutesById {
   '/_authenticated/leave/calendar': typeof AuthenticatedLeaveCalendarRoute
   '/_authenticated/leave/new': typeof AuthenticatedLeaveNewRoute
   '/_authenticated/procurement/new': typeof AuthenticatedProcurementNewRoute
+  '/_authenticated/roster/maintenance': typeof AuthenticatedRosterMaintenanceRoute
+  '/_authenticated/roster/my-roster': typeof AuthenticatedRosterMyRosterRoute
+  '/_authenticated/roster/planner': typeof AuthenticatedRosterPlannerRoute
+  '/_authenticated/roster/swaps': typeof AuthenticatedRosterSwapsRoute
+  '/_authenticated/roster/today': typeof AuthenticatedRosterTodayRoute
   '/_authenticated/rota/history': typeof AuthenticatedRotaHistoryRoute
   '/_authenticated/rota/planner': typeof AuthenticatedRotaPlannerRoute
   '/_authenticated/rota/swaps': typeof AuthenticatedRotaSwapsRoute
@@ -551,11 +619,13 @@ export interface FileRoutesById {
   '/_authenticated/ops-readiness/': typeof AuthenticatedOpsReadinessIndexRoute
   '/_authenticated/procurement/': typeof AuthenticatedProcurementIndexRoute
   '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
+  '/_authenticated/roster/': typeof AuthenticatedRosterIndexRoute
   '/_authenticated/rota/': typeof AuthenticatedRotaIndexRoute
   '/_authenticated/services/': typeof AuthenticatedServicesIndexRoute
   '/_authenticated/staff/': typeof AuthenticatedStaffIndexRoute
   '/_authenticated/timesheets/': typeof AuthenticatedTimesheetsIndexRoute
   '/_authenticated/work/': typeof AuthenticatedWorkIndexRoute
+  '/_authenticated/roster/calendar/': typeof AuthenticatedRosterCalendarIndexRoute
   '/_authenticated/rota/calendar/': typeof AuthenticatedRotaCalendarIndexRoute
   '/_authenticated/rota/fairness/': typeof AuthenticatedRotaFairnessIndexRoute
   '/_authenticated/rota/warnings/': typeof AuthenticatedRotaWarningsIndexRoute
@@ -582,6 +652,11 @@ export interface FileRouteTypes {
     | '/leave/calendar'
     | '/leave/new'
     | '/procurement/new'
+    | '/roster/maintenance'
+    | '/roster/my-roster'
+    | '/roster/planner'
+    | '/roster/swaps'
+    | '/roster/today'
     | '/rota/history'
     | '/rota/planner'
     | '/rota/swaps'
@@ -610,11 +685,13 @@ export interface FileRouteTypes {
     | '/ops-readiness/'
     | '/procurement/'
     | '/reports/'
+    | '/roster/'
     | '/rota/'
     | '/services/'
     | '/staff/'
     | '/timesheets/'
     | '/work/'
+    | '/roster/calendar/'
     | '/rota/calendar/'
     | '/rota/fairness/'
     | '/rota/warnings/'
@@ -639,6 +716,11 @@ export interface FileRouteTypes {
     | '/leave/calendar'
     | '/leave/new'
     | '/procurement/new'
+    | '/roster/maintenance'
+    | '/roster/my-roster'
+    | '/roster/planner'
+    | '/roster/swaps'
+    | '/roster/today'
     | '/rota/history'
     | '/rota/planner'
     | '/rota/swaps'
@@ -667,11 +749,13 @@ export interface FileRouteTypes {
     | '/ops-readiness'
     | '/procurement'
     | '/reports'
+    | '/roster'
     | '/rota'
     | '/services'
     | '/staff'
     | '/timesheets'
     | '/work'
+    | '/roster/calendar'
     | '/rota/calendar'
     | '/rota/fairness'
     | '/rota/warnings'
@@ -697,6 +781,11 @@ export interface FileRouteTypes {
     | '/_authenticated/leave/calendar'
     | '/_authenticated/leave/new'
     | '/_authenticated/procurement/new'
+    | '/_authenticated/roster/maintenance'
+    | '/_authenticated/roster/my-roster'
+    | '/_authenticated/roster/planner'
+    | '/_authenticated/roster/swaps'
+    | '/_authenticated/roster/today'
     | '/_authenticated/rota/history'
     | '/_authenticated/rota/planner'
     | '/_authenticated/rota/swaps'
@@ -725,11 +814,13 @@ export interface FileRouteTypes {
     | '/_authenticated/ops-readiness/'
     | '/_authenticated/procurement/'
     | '/_authenticated/reports/'
+    | '/_authenticated/roster/'
     | '/_authenticated/rota/'
     | '/_authenticated/services/'
     | '/_authenticated/staff/'
     | '/_authenticated/timesheets/'
     | '/_authenticated/work/'
+    | '/_authenticated/roster/calendar/'
     | '/_authenticated/rota/calendar/'
     | '/_authenticated/rota/fairness/'
     | '/_authenticated/rota/warnings/'
@@ -803,6 +894,13 @@ declare module '@tanstack/react-router' {
       path: '/rota'
       fullPath: '/rota/'
       preLoaderRoute: typeof AuthenticatedRotaIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/roster/': {
+      id: '/_authenticated/roster/'
+      path: '/roster'
+      fullPath: '/roster/'
+      preLoaderRoute: typeof AuthenticatedRosterIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/reports/': {
@@ -1001,6 +1099,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRotaHistoryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/roster/today': {
+      id: '/_authenticated/roster/today'
+      path: '/roster/today'
+      fullPath: '/roster/today'
+      preLoaderRoute: typeof AuthenticatedRosterTodayRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/roster/swaps': {
+      id: '/_authenticated/roster/swaps'
+      path: '/roster/swaps'
+      fullPath: '/roster/swaps'
+      preLoaderRoute: typeof AuthenticatedRosterSwapsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/roster/planner': {
+      id: '/_authenticated/roster/planner'
+      path: '/roster/planner'
+      fullPath: '/roster/planner'
+      preLoaderRoute: typeof AuthenticatedRosterPlannerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/roster/my-roster': {
+      id: '/_authenticated/roster/my-roster'
+      path: '/roster/my-roster'
+      fullPath: '/roster/my-roster'
+      preLoaderRoute: typeof AuthenticatedRosterMyRosterRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/roster/maintenance': {
+      id: '/_authenticated/roster/maintenance'
+      path: '/roster/maintenance'
+      fullPath: '/roster/maintenance'
+      preLoaderRoute: typeof AuthenticatedRosterMaintenanceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/procurement/new': {
       id: '/_authenticated/procurement/new'
       path: '/procurement/new'
@@ -1134,6 +1267,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRotaCalendarIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/roster/calendar/': {
+      id: '/_authenticated/roster/calendar/'
+      path: '/roster/calendar'
+      fullPath: '/roster/calendar/'
+      preLoaderRoute: typeof AuthenticatedRosterCalendarIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -1156,6 +1296,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLeaveCalendarRoute: typeof AuthenticatedLeaveCalendarRoute
   AuthenticatedLeaveNewRoute: typeof AuthenticatedLeaveNewRoute
   AuthenticatedProcurementNewRoute: typeof AuthenticatedProcurementNewRoute
+  AuthenticatedRosterMaintenanceRoute: typeof AuthenticatedRosterMaintenanceRoute
+  AuthenticatedRosterMyRosterRoute: typeof AuthenticatedRosterMyRosterRoute
+  AuthenticatedRosterPlannerRoute: typeof AuthenticatedRosterPlannerRoute
+  AuthenticatedRosterSwapsRoute: typeof AuthenticatedRosterSwapsRoute
+  AuthenticatedRosterTodayRoute: typeof AuthenticatedRosterTodayRoute
   AuthenticatedRotaHistoryRoute: typeof AuthenticatedRotaHistoryRoute
   AuthenticatedRotaPlannerRoute: typeof AuthenticatedRotaPlannerRoute
   AuthenticatedRotaSwapsRoute: typeof AuthenticatedRotaSwapsRoute
@@ -1184,11 +1329,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOpsReadinessIndexRoute: typeof AuthenticatedOpsReadinessIndexRoute
   AuthenticatedProcurementIndexRoute: typeof AuthenticatedProcurementIndexRoute
   AuthenticatedReportsIndexRoute: typeof AuthenticatedReportsIndexRoute
+  AuthenticatedRosterIndexRoute: typeof AuthenticatedRosterIndexRoute
   AuthenticatedRotaIndexRoute: typeof AuthenticatedRotaIndexRoute
   AuthenticatedServicesIndexRoute: typeof AuthenticatedServicesIndexRoute
   AuthenticatedStaffIndexRoute: typeof AuthenticatedStaffIndexRoute
   AuthenticatedTimesheetsIndexRoute: typeof AuthenticatedTimesheetsIndexRoute
   AuthenticatedWorkIndexRoute: typeof AuthenticatedWorkIndexRoute
+  AuthenticatedRosterCalendarIndexRoute: typeof AuthenticatedRosterCalendarIndexRoute
   AuthenticatedRotaCalendarIndexRoute: typeof AuthenticatedRotaCalendarIndexRoute
   AuthenticatedRotaFairnessIndexRoute: typeof AuthenticatedRotaFairnessIndexRoute
   AuthenticatedRotaWarningsIndexRoute: typeof AuthenticatedRotaWarningsIndexRoute
@@ -1213,6 +1360,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLeaveCalendarRoute: AuthenticatedLeaveCalendarRoute,
   AuthenticatedLeaveNewRoute: AuthenticatedLeaveNewRoute,
   AuthenticatedProcurementNewRoute: AuthenticatedProcurementNewRoute,
+  AuthenticatedRosterMaintenanceRoute: AuthenticatedRosterMaintenanceRoute,
+  AuthenticatedRosterMyRosterRoute: AuthenticatedRosterMyRosterRoute,
+  AuthenticatedRosterPlannerRoute: AuthenticatedRosterPlannerRoute,
+  AuthenticatedRosterSwapsRoute: AuthenticatedRosterSwapsRoute,
+  AuthenticatedRosterTodayRoute: AuthenticatedRosterTodayRoute,
   AuthenticatedRotaHistoryRoute: AuthenticatedRotaHistoryRoute,
   AuthenticatedRotaPlannerRoute: AuthenticatedRotaPlannerRoute,
   AuthenticatedRotaSwapsRoute: AuthenticatedRotaSwapsRoute,
@@ -1242,11 +1394,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOpsReadinessIndexRoute: AuthenticatedOpsReadinessIndexRoute,
   AuthenticatedProcurementIndexRoute: AuthenticatedProcurementIndexRoute,
   AuthenticatedReportsIndexRoute: AuthenticatedReportsIndexRoute,
+  AuthenticatedRosterIndexRoute: AuthenticatedRosterIndexRoute,
   AuthenticatedRotaIndexRoute: AuthenticatedRotaIndexRoute,
   AuthenticatedServicesIndexRoute: AuthenticatedServicesIndexRoute,
   AuthenticatedStaffIndexRoute: AuthenticatedStaffIndexRoute,
   AuthenticatedTimesheetsIndexRoute: AuthenticatedTimesheetsIndexRoute,
   AuthenticatedWorkIndexRoute: AuthenticatedWorkIndexRoute,
+  AuthenticatedRosterCalendarIndexRoute: AuthenticatedRosterCalendarIndexRoute,
   AuthenticatedRotaCalendarIndexRoute: AuthenticatedRotaCalendarIndexRoute,
   AuthenticatedRotaFairnessIndexRoute: AuthenticatedRotaFairnessIndexRoute,
   AuthenticatedRotaWarningsIndexRoute: AuthenticatedRotaWarningsIndexRoute,

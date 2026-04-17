@@ -365,8 +365,8 @@ function StaffProfilePage() {
                 <div className="rounded-xl border p-4 text-sm">
                   <h3 className="font-semibold mb-2">Quick Links</h3>
                   <div className="space-y-1.5">
-                    <Link to="/rota" className="block text-muted-foreground hover:text-foreground">
-                      → On-Call Schedule
+                    <Link to="/roster" className="block text-muted-foreground hover:text-foreground">
+                      → Roster Schedule
                     </Link>
                     <Link to="/leave" className="block text-muted-foreground hover:text-foreground">
                       → Leave Records

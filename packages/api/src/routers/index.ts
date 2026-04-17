@@ -19,6 +19,7 @@ import { leaveRouter } from "./leave";
 import { notificationsRouter } from "./notifications";
 import { ppeRouter } from "./ppe";
 import { procurementRouter } from "./procurement";
+import { rosterRouter } from "./roster";
 import { rotaRouter } from "./rota";
 import { servicesRouter } from "./services";
 import { staffRouter } from "./staff";
@@ -55,6 +56,7 @@ export const appRouter = {
   notifications: notificationsRouter,
   ppe: ppeRouter,
   procurement: procurementRouter,
+  roster: rosterRouter,
   rota: rotaRouter,
   services: servicesRouter,
   staff: staffRouter,
