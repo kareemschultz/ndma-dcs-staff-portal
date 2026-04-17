@@ -11,6 +11,7 @@ export * from "./ppe";
 export * from "./attendance-exceptions";
 export * from "./callouts";
 export * from "./timesheets";
+export * from "./roster";
 export * from "./contracts";
 export * from "./department-assignments";
 export * from "./departments";

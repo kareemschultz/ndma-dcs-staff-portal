@@ -8,6 +8,7 @@ import {
   Bot,
   Building2,
   CalendarClock,
+  CalendarDays,
   CalendarOff,
   CalendarRange,
   ClipboardCheck,
@@ -21,14 +22,13 @@ import {
   Clock3,
   PhoneCall,
   ListChecks,
-  ScrollText,
   Settings,
   Shield,
   ShoppingCart,
   Shuffle,
   Upload,
   Users,
-  Inbox,
+  Wrench,
   Zap,
 } from "lucide-react";
 import { type SidebarData } from "../types";
@@ -44,6 +44,7 @@ export const sidebarData: Omit<SidebarData, "user"> = {
     },
   ],
   navGroups: [
+    // ── Overview ──────────────────────────────────────────────
     {
       title: "Overview",
       items: [
@@ -59,6 +60,8 @@ export const sidebarData: Omit<SidebarData, "user"> = {
         },
       ],
     },
+
+    // ── Core Operations ───────────────────────────────────────
     {
       title: "Operations",
       items: [
@@ -66,12 +69,12 @@ export const sidebarData: Omit<SidebarData, "user"> = {
           title: "Work Register",
           icon: ListTodo,
           items: [
-            { title: "All Items", url: "/work" },
+            { title: "All Work Items", url: "/work" },
             { title: "Workload View", url: "/work/workload" },
           ],
         },
         {
-          title: "Cycles",
+          title: "Sprint Cycles",
           url: "/cycles",
           icon: CalendarRange,
         },
@@ -81,33 +84,14 @@ export const sidebarData: Omit<SidebarData, "user"> = {
           icon: AlertTriangle,
         },
         {
-          title: "On-Call Roster",
-          icon: CalendarClock,
-          items: [
-            { title: "Current Roster", url: "/rota" },
-            { title: "Planner", url: "/rota/planner" },
-            { title: "Swap Requests", url: "/rota/swaps" },
-            { title: "History", url: "/rota/history" },
-            { title: "Monthly Calendar", url: "/rota/calendar" },
-            { title: "Fairness Report", url: "/rota/fairness" },
-            { title: "Import Warnings", url: "/rota/warnings" },
-          ],
-        },
-        {
           title: "Temp Changes",
+          url: "/changes",
           icon: Shuffle,
-          items: [
-            { title: "All Changes", url: "/changes" },
-            { title: "New Change", url: "/changes/new" },
-          ],
         },
         {
           title: "Procurement",
+          url: "/procurement",
           icon: ShoppingCart,
-          items: [
-            { title: "Requisitions", url: "/procurement" },
-            { title: "New PR", url: "/procurement/new" },
-          ],
         },
         {
           title: "Service Registry",
@@ -115,14 +99,55 @@ export const sidebarData: Omit<SidebarData, "user"> = {
           icon: Zap,
         },
         {
-          title: "Platform Accounts",
+          title: "Access Management",
           url: "/access",
           icon: Key,
         },
       ],
     },
+
+    // ── Scheduling ────────────────────────────────────────────
+    // DCS uses an on-call rotation; NOC works 24/7 shifts (Day/Swing/Night).
+    // Both are listed here so managers and PAs have one place for scheduling.
     {
-      title: "People & Compliance",
+      title: "Scheduling",
+      items: [
+        {
+          title: "DCS On-Call Roster",
+          icon: CalendarClock,
+          items: [
+            { title: "Current Roster", url: "/rota" },
+            { title: "Roster Planner", url: "/rota/planner" },
+            { title: "Swap Requests", url: "/rota/swaps" },
+            { title: "Roster History", url: "/rota/history" },
+            { title: "Monthly Calendar", url: "/rota/calendar" },
+            { title: "Fairness Report", url: "/rota/fairness" },
+            { title: "Import Warnings", url: "/rota/warnings" },
+          ],
+        },
+        {
+          title: "NOC Shift Schedule",
+          icon: CalendarDays,
+          items: [
+            { title: "Schedule Overview", url: "/roster" },
+            { title: "Today's Coverage", url: "/roster/today" },
+            { title: "Shift Planner", url: "/roster/planner" },
+            { title: "My Shifts", url: "/roster/my-roster" },
+            { title: "Swap Requests", url: "/roster/swaps" },
+            { title: "Monthly Calendar", url: "/roster/calendar" },
+          ],
+        },
+        {
+          title: "Maintenance Planning",
+          url: "/roster/maintenance",
+          icon: Wrench,
+        },
+      ],
+    },
+
+    // ── HR & People ───────────────────────────────────────────
+    {
+      title: "HR & People",
       items: [
         {
           title: "Staff Directory",
@@ -130,12 +155,11 @@ export const sidebarData: Omit<SidebarData, "user"> = {
           icon: Users,
         },
         {
-          title: "Leave",
+          title: "Leave Management",
           icon: CalendarOff,
           items: [
-            { title: "Leave Requests", url: "/leave" },
+            { title: "All Requests", url: "/leave" },
             { title: "Team Calendar", url: "/leave/calendar" },
-            { title: "New Request", url: "/leave/new" },
           ],
         },
         {
@@ -145,48 +169,20 @@ export const sidebarData: Omit<SidebarData, "user"> = {
         },
         {
           title: "Appraisals",
-          url: "/appraisals",
           icon: ClipboardCheck,
           requiredResource: "appraisal",
+          items: [
+            { title: "All Appraisals", url: "/appraisals" },
+            { title: "My Inbox", url: "/appraisals/inbox" },
+          ],
         },
         {
-          title: "Appraisal Inbox",
-          url: "/appraisals/inbox",
-          icon: Inbox,
-          requiredResource: "appraisal",
-        },
-        {
-          title: "Training",
-          url: "/compliance/training",
-          icon: GraduationCap,
-        },
-        {
-          title: "PPE",
-          url: "/compliance/ppe",
-          icon: HardHat,
-        },
-        {
-          title: "Policy Items",
-          url: "/compliance/items",
-          icon: Shield,
-        },
-      ],
-    },
-    {
-      title: "Operational HR",
-      items: [
-        {
-          title: "PPE & Tools",
-          url: "/hr/ppe",
-          icon: HardHat,
-        },
-        {
-          title: "Attendance",
+          title: "Attendance Exceptions",
           url: "/hr/attendance",
           icon: Clock3,
         },
         {
-          title: "Callouts",
+          title: "Callout Register",
           url: "/hr/callouts",
           icon: PhoneCall,
         },
@@ -197,6 +193,30 @@ export const sidebarData: Omit<SidebarData, "user"> = {
         },
       ],
     },
+
+    // ── Equipment & Compliance ────────────────────────────────
+    {
+      title: "Equipment & Compliance",
+      items: [
+        {
+          title: "PPE & Tools",
+          url: "/hr/ppe",
+          icon: HardHat,
+        },
+        {
+          title: "Training Records",
+          url: "/compliance/training",
+          icon: GraduationCap,
+        },
+        {
+          title: "Policy Compliance",
+          url: "/compliance/items",
+          icon: Shield,
+        },
+      ],
+    },
+
+    // ── System ────────────────────────────────────────────────
     {
       title: "System",
       items: [
@@ -204,12 +224,6 @@ export const sidebarData: Omit<SidebarData, "user"> = {
           title: "Analytics",
           url: "/analytics",
           icon: BarChart3,
-          requiredResource: "report",
-        },
-        {
-          title: "Reports",
-          url: "/reports",
-          icon: ScrollText,
           requiredResource: "report",
         },
         {
@@ -241,40 +255,13 @@ export const sidebarData: Omit<SidebarData, "user"> = {
           icon: Settings,
           requiredResource: "settings",
           items: [
-            {
-              title: "General",
-              url: "/settings/general",
-            },
-            {
-              title: "Departments",
-              url: "/settings/departments",
-              icon: Building2,
-            },
-            {
-              title: "Department Assignments",
-              url: "/settings/department-assignments",
-              icon: Users,
-            },
-            {
-              title: "Leave Types",
-              url: "/settings/leave-types",
-              icon: CalendarOff,
-            },
-            {
-              title: "Escalation",
-              url: "/settings/escalation",
-              icon: AlertTriangle,
-            },
-            {
-              title: "Roles & Permissions",
-              url: "/settings/roles",
-              icon: Shield,
-            },
-            {
-              title: "Automation",
-              url: "/settings/automation",
-              icon: Bot,
-            },
+            { title: "General", url: "/settings/general" },
+            { title: "Departments", url: "/settings/departments", icon: Building2 },
+            { title: "Dept. Assignments", url: "/settings/department-assignments", icon: Users },
+            { title: "Leave Types", url: "/settings/leave-types", icon: CalendarOff },
+            { title: "Escalation Policies", url: "/settings/escalation", icon: AlertTriangle },
+            { title: "Roles & Permissions", url: "/settings/roles", icon: Shield },
+            { title: "Automation Rules", url: "/settings/automation", icon: Bot },
           ],
         },
       ],

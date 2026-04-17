@@ -1,1 +1,45 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+.next/
+out/
+build/
+.output/
+
+# Env files — NEVER commit secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Turbo cache
+.turbo/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+.idea/
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test artifacts
 e2e/.auth/
+playwright-report/
+test-results/
+
+# Local data files (xlsx, csv — not committed to git)
+DCS\ OPS/
+*.xlsx
+*.csv
+AccountManagement*.xlsx
+
+# Claude local settings
+.claude/settings.local.json
