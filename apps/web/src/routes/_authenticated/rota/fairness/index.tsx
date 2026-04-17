@@ -22,6 +22,7 @@ import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { orpc } from "@/utils/orpc";
+import { chartTheme } from "@/lib/chart-theme";
 
 export const Route = createFileRoute("/_authenticated/rota/fairness/")({
   component: FairnessPage,
@@ -116,7 +117,7 @@ function StackedChart({ data }: { data: EngineerStats[] }) {
       >
         <XAxis
           type="number"
-          tick={{ fontSize: 11 }}
+          tick={chartTheme.axisTick}
           tickLine={false}
           axisLine={false}
           allowDecimals={false}
@@ -125,7 +126,7 @@ function StackedChart({ data }: { data: EngineerStats[] }) {
           type="category"
           dataKey="name"
           width={72}
-          tick={{ fontSize: 12 }}
+          tick={chartTheme.axisTickMedium}
           tickLine={false}
           axisLine={false}
         />
@@ -140,13 +141,7 @@ function StackedChart({ data }: { data: EngineerStats[] }) {
             const key = String(name ?? "");
             return [value ?? 0, labelMap[key] ?? key] as [typeof value, string];
           }}
-          contentStyle={{
-            borderRadius: "6px",
-            border: "1px solid hsl(var(--border))",
-            backgroundColor: "hsl(var(--card))",
-            color: "hsl(var(--card-foreground))",
-            fontSize: 12,
-          }}
+          contentStyle={chartTheme.tooltipContent}
         />
         <Legend
           formatter={(value: string) => {
@@ -158,7 +153,7 @@ function StackedChart({ data }: { data: EngineerStats[] }) {
             };
             return labelMap[value] ?? value;
           }}
-          wrapperStyle={{ fontSize: 12, paddingTop: 4 }}
+          wrapperStyle={{ ...chartTheme.legendStyle, paddingTop: 4 }}
         />
         <Bar dataKey="leadCount" stackId="a" fill={ROLE_COLORS.lead} radius={[0, 0, 0, 0]} />
         <Bar dataKey="asnCount" stackId="a" fill={ROLE_COLORS.asn} />

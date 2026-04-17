@@ -18,7 +18,7 @@ COPY packages/config/package.json packages/config/
 COPY turbo.json ./
 
 # Install all workspace dependencies (dev + prod — needed for build steps)
-RUN bun install
+RUN bun install --frozen-lockfile
 
 # ── Stage 2: Build web app (static assets) ───────────────────────────────────
 FROM deps AS web-builder

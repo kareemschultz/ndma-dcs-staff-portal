@@ -37,6 +37,7 @@ import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { orpc } from "@/utils/orpc";
+import { chartTheme } from "@/lib/chart-theme";
 
 export const Route = createFileRoute("/_authenticated/analytics/")({
   component: AnalyticsPage,
@@ -65,16 +66,6 @@ const C = {
   sky: "#0ea5e9",
   violet: "#7c3aed",
   emerald: "#10b981",
-} as const;
-
-// ── Shared tooltip style ────────────────────────────────────────────────────
-
-const TOOLTIP_STYLE = {
-  fontSize: 12,
-  borderRadius: 6,
-  border: "1px solid hsl(var(--border))",
-  background: "hsl(var(--card))",
-  color: "hsl(var(--foreground))",
 } as const;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -300,15 +291,13 @@ function WorkTab({
                 />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
                 <YAxis
                   allowDecimals={false}
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={chartTheme.tooltipContent} />
                 <Bar dataKey="count" name="Items" radius={[4, 4, 0, 0]}>
                   {statusData.map((entry) => (
                     <Cell key={entry.name} fill={entry.fill} />
@@ -343,17 +332,15 @@ function WorkTab({
                 <XAxis
                   type="number"
                   allowDecimals={false}
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
                 <YAxis
                   type="category"
                   dataKey="name"
                   width={120}
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={chartTheme.tooltipContent} />
                 <Bar
                   dataKey="count"
                   name="Items"
@@ -390,7 +377,7 @@ function WorkTab({
                     <Cell key={entry.name} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={chartTheme.tooltipContent} />
                 <Legend
                   iconType="circle"
                   iconSize={8}
@@ -422,15 +409,13 @@ function WorkTab({
                 />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
                 <YAxis
                   allowDecimals={false}
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={chartTheme.tooltipContent} />
                 <Bar dataKey="count" name="Items" radius={[4, 4, 0, 0]}>
                   {priorityData.map((entry) => (
                     <Cell key={entry.name} fill={entry.fill} />
@@ -498,7 +483,7 @@ function IncidentsTab({
                     <Cell key={entry.name} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={chartTheme.tooltipContent} />
                 <Legend
                   iconType="circle"
                   iconSize={8}
@@ -530,15 +515,13 @@ function IncidentsTab({
                 />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
                 <YAxis
                   allowDecimals={false}
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={chartTheme.tooltipContent} />
                 <Bar
                   dataKey="count"
                   name="Incidents"
@@ -575,7 +558,7 @@ function IncidentsTab({
                     <Cell key={entry.name} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={chartTheme.tooltipContent} />
                 <Legend
                   iconType="circle"
                   iconSize={8}
@@ -645,18 +628,16 @@ function LeaveTab({
                 <XAxis
                   type="number"
                   allowDecimals={false}
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
                 <YAxis
                   type="category"
                   dataKey="name"
                   width={120}
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
                 <Tooltip
-                  contentStyle={TOOLTIP_STYLE}
+                  contentStyle={chartTheme.tooltipContent}
                   formatter={(v) => [`${v} days`, "Total Days"]}
                 />
                 <Bar
@@ -695,7 +676,7 @@ function LeaveTab({
                     <Cell key={entry.name} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={chartTheme.tooltipContent} />
                 <Legend
                   iconType="circle"
                   iconSize={8}
@@ -803,15 +784,13 @@ function RosterTab({
                 />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
                 <YAxis
                   allowDecimals={false}
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={chartTheme.tooltipContent} />
                 <Legend
                   iconType="circle"
                   iconSize={8}
@@ -863,17 +842,15 @@ function RosterTab({
                 <XAxis
                   type="number"
                   allowDecimals={false}
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
                 <YAxis
                   type="category"
                   dataKey="name"
                   width={120}
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={chartTheme.tooltipContent} />
                 <Bar
                   dataKey="total"
                   name="Total Assignments"
@@ -937,7 +914,7 @@ function ProcurementTab({
                     <Cell key={entry.name} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={chartTheme.tooltipContent} />
                 <Legend
                   iconType="circle"
                   iconSize={8}
@@ -969,15 +946,13 @@ function ProcurementTab({
                 />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
                 <YAxis
                   allowDecimals={false}
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={chartTheme.tooltipContent} />
                 <Bar dataKey="count" name="PRs" radius={[4, 4, 0, 0]}>
                   {priorityData.map((entry) => (
                     <Cell key={entry.name} fill={entry.fill} />
@@ -1040,7 +1015,7 @@ function ComplianceTab({
                     <Cell key={entry.name} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={chartTheme.tooltipContent} />
                 <Legend
                   iconType="circle"
                   iconSize={8}
@@ -1076,7 +1051,7 @@ function ComplianceTab({
                     <Cell key={entry.name} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={chartTheme.tooltipContent} />
                 <Legend
                   iconType="circle"
                   iconSize={8}

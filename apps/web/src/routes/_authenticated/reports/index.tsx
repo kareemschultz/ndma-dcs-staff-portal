@@ -26,6 +26,7 @@ import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { orpc } from "@/utils/orpc";
+import { chartTheme } from "@/lib/chart-theme";
 
 export const Route = createFileRoute("/_authenticated/reports/")({
   component: ReportsPage,
@@ -152,23 +153,15 @@ function WorkOverviewSection() {
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 11 }}
-                className="fill-muted-foreground"
+                tick={chartTheme.axisTick}
               />
               <YAxis
                 allowDecimals={false}
-                tick={{ fontSize: 11 }}
-                className="fill-muted-foreground"
+                tick={chartTheme.axisTick}
               />
               <Tooltip
-                contentStyle={{
-                  fontSize: 12,
-                  borderRadius: 6,
-                  border: "1px solid hsl(var(--border))",
-                  background: "hsl(var(--card))",
-                  color: "hsl(var(--foreground))",
-                }}
-                cursor={{ fill: "hsl(var(--muted))", opacity: 0.5 }}
+                contentStyle={chartTheme.tooltipContent}
+                cursor={chartTheme.tooltipCursor}
               />
               <Bar dataKey="count" name="Items" radius={[4, 4, 0, 0]}>
                 {chartData.map((entry) => (
@@ -273,25 +266,17 @@ function ProcurementPipelineSection() {
               <XAxis
                 type="number"
                 allowDecimals={false}
-                tick={{ fontSize: 11 }}
-                className="fill-muted-foreground"
+                tick={chartTheme.axisTick}
               />
               <YAxis
                 type="category"
                 dataKey="name"
                 width={80}
-                tick={{ fontSize: 11 }}
-                className="fill-muted-foreground"
+                tick={chartTheme.axisTick}
               />
               <Tooltip
-                contentStyle={{
-                  fontSize: 12,
-                  borderRadius: 6,
-                  border: "1px solid hsl(var(--border))",
-                  background: "hsl(var(--card))",
-                  color: "hsl(var(--foreground))",
-                }}
-                cursor={{ fill: "hsl(var(--muted))", opacity: 0.5 }}
+                contentStyle={chartTheme.tooltipContent}
+                cursor={chartTheme.tooltipCursor}
               />
               <Bar dataKey="count" name="PRs" radius={[0, 4, 4, 0]}>
                 {chartData.map((entry) => (
@@ -558,13 +543,7 @@ function IncidentSummarySection() {
                 ))}
               </Pie>
               <Tooltip
-                contentStyle={{
-                  fontSize: 12,
-                  borderRadius: 6,
-                  border: "1px solid hsl(var(--border))",
-                  background: "hsl(var(--card))",
-                  color: "hsl(var(--foreground))",
-                }}
+                contentStyle={chartTheme.tooltipContent}
               />
               <Legend
                 iconType="circle"
@@ -919,25 +898,17 @@ function AccountManagementSection() {
                 <XAxis
                   type="number"
                   allowDecimals={false}
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
                 <YAxis
                   type="category"
                   dataKey="name"
                   width={92}
-                  tick={{ fontSize: 11 }}
-                  className="fill-muted-foreground"
+                  tick={chartTheme.axisTick}
                 />
                 <Tooltip
-                  contentStyle={{
-                    fontSize: 12,
-                    borderRadius: 6,
-                    border: "1px solid hsl(var(--border))",
-                    background: "hsl(var(--card))",
-                    color: "hsl(var(--foreground))",
-                  }}
-                  cursor={{ fill: "hsl(var(--muted))", opacity: 0.5 }}
+                  contentStyle={chartTheme.tooltipContent}
+                  cursor={chartTheme.tooltipCursor}
                 />
                 <Bar dataKey="count" name="Accounts" radius={[0, 4, 4, 0]}>
                   {platformChartData.map((entry) => (
