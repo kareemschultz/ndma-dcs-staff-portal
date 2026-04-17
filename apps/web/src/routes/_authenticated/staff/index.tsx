@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Users, Search, Plus } from "lucide-react";
+import { Users, Search, Plus, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@ndma-dcs-staff-portal/ui/components/input";
 import { Skeleton } from "@ndma-dcs-staff-portal/ui/components/skeleton";
@@ -186,6 +186,7 @@ function NewStaffDialog({ onClose }: { onClose: () => void }) {
 }
 
 function StaffPage() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [deptId, setDeptId] = useState("");
@@ -233,8 +234,8 @@ function StaffPage() {
           </p>
         </div>
 
-        {/* Filters */}
-        <div className="mb-4 flex flex-wrap gap-3">
+        {/* Search + Status Filter */}
+        <div className="mb-3 flex flex-wrap gap-3">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
             <Input
@@ -254,17 +255,35 @@ function StaffPage() {
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
+        </div>
 
-          <select
-            value={deptId}
-            onChange={(e) => setDeptId(e.target.value)}
-            className="rounded-xl border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        {/* Department filter pills */}
+        <div className="mb-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setDeptId("")}
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              deptId === ""
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-background text-muted-foreground hover:border-primary hover:text-foreground"
+            }`}
           >
-            <option value="">All Departments</option>
-            {departments?.map((d) => (
-              <option key={d.id} value={d.id}>{d.name}</option>
-            ))}
-          </select>
+            All
+          </button>
+          {departments?.map((d) => (
+            <button
+              key={d.id}
+              type="button"
+              onClick={() => setDeptId(d.id === deptId ? "" : d.id)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                deptId === d.id
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-background text-muted-foreground hover:border-primary hover:text-foreground"
+              }`}
+            >
+              {d.name}
+            </button>
+          ))}
         </div>
 
         {/* Table */}
@@ -279,20 +298,21 @@ function StaffPage() {
                 <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>On-Call Eligible</TableHead>
+                <TableHead className="w-16" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 Array.from({ length: 6 }).map((_, i) => (
                   <TableRow key={i}>
-                    {Array.from({ length: 7 }).map((_, j) => (
+                    {Array.from({ length: 8 }).map((_, j) => (
                       <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : !filtered?.length ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
                     {search ? "No staff matching your search." : "No staff found."}
                   </TableCell>
                 </TableRow>
@@ -334,6 +354,19 @@ function StaffPage() {
                       ) : (
                         <span className="text-muted-foreground text-xs">No</span>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        title="View profile"
+                        onClick={() =>
+                          navigate({ to: "/staff/$staffId", params: { staffId: s.id } })
+                        }
+                      >
+                        <Eye className="size-3.5" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
