@@ -10,6 +10,7 @@
     }
   },
   "scripts": {
+    "db:import-dcs-ops": "bun --env-file=../../apps/server/.env scripts/import-dcs-ops.ts",
     "db:seed": "bun --env-file=../../apps/server/.env src/seed.ts",
     "db:seed:demo": "bun --env-file=../../apps/server/.env src/seed-demo.ts",
     "db:seed:clear": "bun --env-file=../../apps/server/.env src/seed-demo.ts --clear",

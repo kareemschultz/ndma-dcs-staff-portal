@@ -27,6 +27,9 @@ export const importTypeEnum = pgEnum("import_type", [
   "work",
   "platform_accounts",
   "leave",
+  "ppe",
+  "attendance",
+  "callouts",
 ]);
 
 // ── Import Jobs ────────────────────────────────────────────────────────────

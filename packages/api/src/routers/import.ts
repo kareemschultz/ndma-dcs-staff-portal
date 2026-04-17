@@ -1,11 +1,15 @@
 import { z } from "zod";
 import {
   db,
+  attendanceExceptions,
+  callouts,
   contracts,
   departments,
   importJobs,
   leaveRequests,
   leaveTypes,
+  ppeIssuances,
+  ppeItems,
   staffProfiles,
   trainingRecords,
   user,
@@ -316,6 +320,162 @@ async function processLeaveRow(
   return { success: true };
 }
 
+// ── PPE + Attendance + Callout row schemas ────────────────────────────────
+
+const ppeRowSchema = z.object({
+  staffEmail: z.string().email(),
+  ppeItemCode: z.string().min(1),
+  status: z.enum(["issued", "returned", "lost", "damaged", "replaced"]),
+  issuedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  serialNumber: z.string().optional(),
+  size: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const attendanceRowSchema = z.object({
+  staffEmail: z.string().email(),
+  exceptionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  exceptionType: z.enum(["reported_sick", "medical", "absent", "lateness", "wfh", "early_leave", "other"]),
+  reason: z.string().optional(),
+  hours: z.string().optional(),
+  minutesLate: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const calloutRowSchema = z.object({
+  staffEmail: z.string().email(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+  hours: z.string().regex(/^\d+(\.\d+)?$/, "hours must be a number"),
+  comments: z.string().optional(),
+  relatedIncidentRef: z.string().optional(),
+});
+
+async function processPpeRow(
+  rawRow: Record<string, string>,
+  rowIdx: number,
+  actorUserId: string,
+): Promise<{ success: boolean; error?: { row: number; field?: string; message: string } }> {
+  const parse = ppeRowSchema.safeParse({
+    staffEmail: rawRow.staffEmail,
+    ppeItemCode: rawRow.ppeItemCode,
+    status: rawRow.status,
+    issuedDate: rawRow.issuedDate,
+    serialNumber: rawRow.serialNumber || undefined,
+    size: rawRow.size || undefined,
+    notes: rawRow.notes || undefined,
+  });
+  if (!parse.success) {
+    return { success: false, error: { row: rowIdx, message: parse.error.issues[0]?.message ?? "Validation failed" } };
+  }
+  const data = parse.data;
+
+  const staffProfileId = await findStaffByEmail(data.staffEmail);
+  if (!staffProfileId) {
+    return { success: false, error: { row: rowIdx, field: "staffEmail", message: `Staff not found: ${data.staffEmail}` } };
+  }
+
+  const item = await db.query.ppeItems.findFirst({ where: eq(ppeItems.code, data.ppeItemCode) });
+  if (!item) {
+    return { success: false, error: { row: rowIdx, field: "ppeItemCode", message: `PPE item not found: ${data.ppeItemCode}` } };
+  }
+
+  await db
+    .insert(ppeIssuances)
+    .values({
+      staffProfileId,
+      ppeItemId: item.id,
+      issuedById: actorUserId,
+      issuedDate: data.issuedDate,
+      status: data.status,
+      serialNumber: data.serialNumber ?? null,
+      size: data.size ?? null,
+      notes: data.notes ?? null,
+    })
+    .onConflictDoNothing();
+
+  return { success: true };
+}
+
+async function processAttendanceRow(
+  rawRow: Record<string, string>,
+  rowIdx: number,
+  _actorUserId: string,
+): Promise<{ success: boolean; error?: { row: number; field?: string; message: string } }> {
+  const parse = attendanceRowSchema.safeParse({
+    staffEmail: rawRow.staffEmail,
+    exceptionDate: rawRow.exceptionDate ?? rawRow.date,
+    exceptionType: rawRow.exceptionType ?? rawRow.type,
+    reason: rawRow.reason || undefined,
+    hours: rawRow.hours || undefined,
+    minutesLate: rawRow.minutesLate || undefined,
+    notes: rawRow.notes || undefined,
+  });
+  if (!parse.success) {
+    return { success: false, error: { row: rowIdx, message: parse.error.issues[0]?.message ?? "Validation failed" } };
+  }
+  const data = parse.data;
+
+  const staffProfileId = await findStaffByEmail(data.staffEmail);
+  if (!staffProfileId) {
+    return { success: false, error: { row: rowIdx, field: "staffEmail", message: `Staff not found: ${data.staffEmail}` } };
+  }
+
+  await db
+    .insert(attendanceExceptions)
+    .values({
+      staffProfileId,
+      exceptionDate: data.exceptionDate,
+      exceptionType: data.exceptionType,
+      reason: data.reason ?? null,
+      hours: data.hours ?? null,
+      minutesLate: data.minutesLate ? parseInt(data.minutesLate, 10) : null,
+      notes: data.notes ?? null,
+    })
+    .onConflictDoNothing();
+
+  return { success: true };
+}
+
+async function processCalloutRow(
+  rawRow: Record<string, string>,
+  rowIdx: number,
+  actorUserId: string,
+): Promise<{ success: boolean; error?: { row: number; field?: string; message: string } }> {
+  const parse = calloutRowSchema.safeParse({
+    staffEmail: rawRow.staffEmail,
+    date: rawRow.date,
+    startTime: rawRow.startTime || undefined,
+    endTime: rawRow.endTime || undefined,
+    hours: rawRow.hours,
+    comments: rawRow.comments || undefined,
+    relatedIncidentRef: rawRow.relatedIncidentRef || undefined,
+  });
+  if (!parse.success) {
+    return { success: false, error: { row: rowIdx, message: parse.error.issues[0]?.message ?? "Validation failed" } };
+  }
+  const data = parse.data;
+
+  const staffProfileId = await findStaffByEmail(data.staffEmail);
+  if (!staffProfileId) {
+    return { success: false, error: { row: rowIdx, field: "staffEmail", message: `Staff not found: ${data.staffEmail}` } };
+  }
+
+  await db
+    .insert(callouts)
+    .values({
+      staffProfileId,
+      calloutAt: new Date(`${data.date}T${data.startTime ?? "00:00"}:00`),
+      calloutType: "manual",
+      reason: data.comments ?? "Imported callout",
+      outcome: data.endTime ? `End: ${data.endTime}, Hours: ${data.hours}` : `Hours: ${data.hours}`,
+    })
+    .onConflictDoNothing();
+
+  return { success: true };
+}
+
 // ── Router ────────────────────────────────────────────────────────────────
 
 export const importRouter = {
@@ -324,7 +484,7 @@ export const importRouter = {
   execute: requireRole("staff", "import")
     .input(
       z.object({
-        importType: z.enum(["staff", "training", "contracts", "work", "leave"]),
+        importType: z.enum(["staff", "training", "contracts", "work", "leave", "ppe", "attendance", "callouts"]),
         fileName: z.string().optional(),
         rows: z.array(z.record(z.string(), z.string())).max(500),
       }),
@@ -336,7 +496,7 @@ export const importRouter = {
       const [job] = await db
         .insert(importJobs)
         .values({
-          importType: importType as "staff" | "training" | "contracts" | "work" | "leave",
+          importType: importType as "staff" | "training" | "contracts" | "work" | "leave" | "ppe" | "attendance" | "callouts",
           fileName: fileName ?? null,
           status: "running",
           totalRows: rows.length,
@@ -368,6 +528,15 @@ export const importRouter = {
               break;
             case "leave":
               result = await processLeaveRow(row, i + 1);
+              break;
+            case "ppe":
+              result = await processPpeRow(row, i + 1, context.session.user.id);
+              break;
+            case "attendance":
+              result = await processAttendanceRow(row, i + 1, context.session.user.id);
+              break;
+            case "callouts":
+              result = await processCalloutRow(row, i + 1, context.session.user.id);
               break;
             default:
               result = { success: false, error: { row: i + 1, message: "Unknown import type" } };

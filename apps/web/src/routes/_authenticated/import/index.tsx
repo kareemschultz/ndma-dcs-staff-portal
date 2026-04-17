@@ -15,6 +15,10 @@ import {
   FileSpreadsheet,
   History,
   XCircle,
+  HardHat,
+  Clock,
+  PhoneCall,
+  Download,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@ndma-dcs-staff-portal/ui/components/button";
@@ -50,7 +54,15 @@ export const Route = createFileRoute("/_authenticated/import/")({
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-type ImportType = "staff" | "training" | "contracts" | "work" | "leave";
+type ImportType =
+  | "staff"
+  | "training"
+  | "contracts"
+  | "work"
+  | "leave"
+  | "ppe"
+  | "attendance"
+  | "callouts";
 
 interface ImportTarget {
   id: ImportType;
@@ -142,7 +154,68 @@ const IMPORT_TARGETS: ImportTarget[] = [
       ["bob.asante@ndma.gov.gh", "SL", "2026-02-10", "2026-02-12", "3", ""],
     ],
   },
+  {
+    id: "ppe",
+    title: "PPE & Tools",
+    description: "Import PPE issuance records for staff.",
+    icon: HardHat,
+    columns: ["staffEmail", "ppeItemCode", "status", "issuedDate", "serialNumber", "size", "notes"],
+    requiredColumns: ["staffEmail", "ppeItemCode", "issuedDate"],
+    sampleRows: [
+      ["joel@ndma.gov.gh", "laptop", "issued", "2024-01-15", "", "", ""],
+      ["timothy@ndma.gov.gh", "mifi", "issued", "2024-01-15", "SN-2299", "", ""],
+      ["richie@ndma.gov.gh", "safety_boots", "issued", "2024-02-01", "", "42", ""],
+    ],
+    notes:
+      "ppeItemCode: long_boots, overalls, mousepad, safety_boots, bag, screwdriver, db9_rj45, db9_usb, monitor, hdmi_cable, laptop, mifi, cug_phone, cug_sim, ndma_shirts, usb_ethernet, umbrella. status: issued|returned|damaged|lost|replaced",
+  },
+  {
+    id: "attendance",
+    title: "Attendance Exceptions",
+    description: "Import sick days, lateness, WFH, and other attendance exceptions.",
+    icon: Clock,
+    columns: ["staffEmail", "exceptionDate", "exceptionType", "reason", "hours", "minutesLate", "notes"],
+    requiredColumns: ["staffEmail", "exceptionDate", "exceptionType"],
+    sampleRows: [
+      ["joel@ndma.gov.gh", "2025-01-06", "reported_sick", "", "8", "", ""],
+      ["timothy@ndma.gov.gh", "2025-02-14", "lateness", "Traffic", "", "45", ""],
+      ["richie@ndma.gov.gh", "2025-03-01", "wfh", "Remote work approved", "8", "", ""],
+    ],
+    notes:
+      "exceptionType: reported_sick, medical, absent, lateness, wfh, early_leave, other. minutesLate only for lateness type.",
+  },
+  {
+    id: "callouts",
+    title: "Callout Register",
+    description: "Import emergency callout records.",
+    icon: PhoneCall,
+    columns: ["staffEmail", "date", "startTime", "endTime", "hours", "comments", "relatedIncidentRef"],
+    requiredColumns: ["staffEmail", "date", "hours"],
+    sampleRows: [
+      ["sachin@ndma.gov.gh", "2023-11-13", "06:00", "09:00", "3", "Livestreaming Cenotaph", ""],
+      ["kevin@ndma.gov.gh", "2023-12-03", "18:00", "19:00", "1", "Timehri Fibre Cut", ""],
+    ],
+    notes:
+      "startTime/endTime in HH:MM 24h format. hours is the total duration worked. relatedIncidentRef is optional.",
+  },
 ];
+
+// ── CSV template download ──────────────────────────────────────────────────
+
+function downloadTemplate(target: ImportTarget) {
+  const header = target.columns.join(",");
+  const rows = target.sampleRows
+    .map((row) => row.map((cell) => (cell.includes(",") ? `"${cell}"` : cell)).join(","))
+    .join("\n");
+  const csv = `${header}\n${rows}`;
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${target.id}_template.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 // ── Step indicator ──────────────────────────────────────────────────────────
 
@@ -545,6 +618,20 @@ function ImportPage() {
                         <p className="text-[10px] text-muted-foreground mt-2 italic">
                           {target.notes}
                         </p>
+                        {/* Download template link — stopPropagation prevents card selection */}
+                        <div className="mt-3 pt-3 border-t border-dashed">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              downloadTemplate(target);
+                            }}
+                            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <Download className="size-3" />
+                            Download CSV Template
+                          </button>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
@@ -609,13 +696,22 @@ function ImportPage() {
                   />
                 </div>
 
-                <div className="text-center">
+                <div className="flex items-center justify-center gap-4 text-xs">
                   <button
                     onClick={loadSampleData}
-                    className="text-xs text-primary underline-offset-2 hover:underline"
+                    className="text-primary underline-offset-2 hover:underline"
                     type="button"
                   >
                     Use sample data (2 example rows)
+                  </button>
+                  <span className="text-muted-foreground">·</span>
+                  <button
+                    type="button"
+                    onClick={() => downloadTemplate(selectedType)}
+                    className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Download className="size-3" />
+                    Need the template? Download it
                   </button>
                 </div>
 
