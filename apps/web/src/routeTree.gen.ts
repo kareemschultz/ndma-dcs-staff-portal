@@ -29,6 +29,7 @@ import { Route as AuthenticatedContractsIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedChangesIndexRouteImport } from './routes/_authenticated/changes/index'
 import { Route as AuthenticatedAuditIndexRouteImport } from './routes/_authenticated/audit/index'
 import { Route as AuthenticatedAppraisalsIndexRouteImport } from './routes/_authenticated/appraisals/index'
+import { Route as AuthenticatedAppraisalsInboxRouteImport } from './routes/_authenticated/appraisals/inbox'
 import { Route as AuthenticatedAnalyticsIndexRouteImport } from './routes/_authenticated/analytics/index'
 import { Route as AuthenticatedAccessIndexRouteImport } from './routes/_authenticated/access/index'
 import { Route as AuthenticatedWorkWorkloadRouteImport } from './routes/_authenticated/work/workload'
@@ -169,6 +170,12 @@ const AuthenticatedAppraisalsIndexRoute =
   AuthenticatedAppraisalsIndexRouteImport.update({
     id: '/appraisals/',
     path: '/appraisals/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAppraisalsInboxRoute =
+  AuthenticatedAppraisalsInboxRouteImport.update({
+    id: '/appraisals/inbox',
+    path: '/appraisals/inbox',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAnalyticsIndexRoute =
@@ -387,6 +394,7 @@ export interface FileRoutesByFullPath {
   '/access/': typeof AuthenticatedAccessIndexRoute
   '/analytics/': typeof AuthenticatedAnalyticsIndexRoute
   '/appraisals/': typeof AuthenticatedAppraisalsIndexRoute
+  '/appraisals/inbox': typeof AuthenticatedAppraisalsInboxRoute
   '/audit/': typeof AuthenticatedAuditIndexRoute
   '/changes/': typeof AuthenticatedChangesIndexRoute
   '/contracts/': typeof AuthenticatedContractsIndexRoute
@@ -439,6 +447,7 @@ export interface FileRoutesByTo {
   '/access': typeof AuthenticatedAccessIndexRoute
   '/analytics': typeof AuthenticatedAnalyticsIndexRoute
   '/appraisals': typeof AuthenticatedAppraisalsIndexRoute
+  '/appraisals/inbox': typeof AuthenticatedAppraisalsInboxRoute
   '/audit': typeof AuthenticatedAuditIndexRoute
   '/changes': typeof AuthenticatedChangesIndexRoute
   '/contracts': typeof AuthenticatedContractsIndexRoute
@@ -493,6 +502,7 @@ export interface FileRoutesById {
   '/_authenticated/access/': typeof AuthenticatedAccessIndexRoute
   '/_authenticated/analytics/': typeof AuthenticatedAnalyticsIndexRoute
   '/_authenticated/appraisals/': typeof AuthenticatedAppraisalsIndexRoute
+  '/_authenticated/appraisals/inbox': typeof AuthenticatedAppraisalsInboxRoute
   '/_authenticated/audit/': typeof AuthenticatedAuditIndexRoute
   '/_authenticated/changes/': typeof AuthenticatedChangesIndexRoute
   '/_authenticated/contracts/': typeof AuthenticatedContractsIndexRoute
@@ -819,6 +829,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppraisalsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/appraisals/inbox': {
+      id: '/_authenticated/appraisals/inbox'
+      path: '/appraisals/inbox'
+      fullPath: '/appraisals/inbox'
+      preLoaderRoute: typeof AuthenticatedAppraisalsInboxRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/analytics/': {
       id: '/_authenticated/analytics/'
       path: '/analytics'
@@ -1070,6 +1087,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccessIndexRoute: typeof AuthenticatedAccessIndexRoute
   AuthenticatedAnalyticsIndexRoute: typeof AuthenticatedAnalyticsIndexRoute
   AuthenticatedAppraisalsIndexRoute: typeof AuthenticatedAppraisalsIndexRoute
+  AuthenticatedAppraisalsInboxRoute: typeof AuthenticatedAppraisalsInboxRoute
   AuthenticatedAuditIndexRoute: typeof AuthenticatedAuditIndexRoute
   AuthenticatedChangesIndexRoute: typeof AuthenticatedChangesIndexRoute
   AuthenticatedContractsIndexRoute: typeof AuthenticatedContractsIndexRoute
@@ -1121,6 +1139,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccessIndexRoute: AuthenticatedAccessIndexRoute,
   AuthenticatedAnalyticsIndexRoute: AuthenticatedAnalyticsIndexRoute,
   AuthenticatedAppraisalsIndexRoute: AuthenticatedAppraisalsIndexRoute,
+  AuthenticatedAppraisalsInboxRoute: AuthenticatedAppraisalsInboxRoute,
   AuthenticatedAuditIndexRoute: AuthenticatedAuditIndexRoute,
   AuthenticatedChangesIndexRoute: AuthenticatedChangesIndexRoute,
   AuthenticatedContractsIndexRoute: AuthenticatedContractsIndexRoute,

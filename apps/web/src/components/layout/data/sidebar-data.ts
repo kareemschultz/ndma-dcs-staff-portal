@@ -25,6 +25,7 @@ import {
   Shuffle,
   Upload,
   Users,
+  Inbox,
   Zap,
 } from "lucide-react";
 import { type SidebarData } from "../types";
@@ -143,6 +144,12 @@ export const sidebarData: Omit<SidebarData, "user"> = {
           title: "Appraisals",
           url: "/appraisals",
           icon: ClipboardCheck,
+          requiredResource: "appraisal",
+        },
+        {
+          title: "Appraisal Inbox",
+          url: "/appraisals/inbox",
+          icon: Inbox,
           requiredResource: "appraisal",
         },
         {
