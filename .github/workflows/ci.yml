@@ -120,8 +120,8 @@ jobs:
             set -e
             cd /home/karetech/projects/ndma-dcs-staff-portal
 
-            # Authenticate with GHCR using PAT
-            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.DEPLOY_USER }} --password-stdin
+            # Authenticate with GHCR using the workflow's GITHUB_TOKEN
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
             # Pull new images and restart services
             docker compose -f docker-compose.prod.yml pull app docs
