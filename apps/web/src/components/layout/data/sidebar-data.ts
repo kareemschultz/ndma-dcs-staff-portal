@@ -18,6 +18,9 @@ import {
   LayoutDashboard,
   ListTodo,
   MonitorDot,
+  Clock3,
+  PhoneCall,
+  ListChecks,
   ScrollText,
   Settings,
   Shield,
@@ -166,6 +169,31 @@ export const sidebarData: Omit<SidebarData, "user"> = {
           title: "Policy Items",
           url: "/compliance/items",
           icon: Shield,
+        },
+      ],
+    },
+    {
+      title: "Operational HR",
+      items: [
+        {
+          title: "PPE & Tools",
+          url: "/hr/ppe",
+          icon: HardHat,
+        },
+        {
+          title: "Attendance",
+          url: "/hr/attendance",
+          icon: Clock3,
+        },
+        {
+          title: "Callouts",
+          url: "/hr/callouts",
+          icon: PhoneCall,
+        },
+        {
+          title: "Timesheets",
+          url: "/timesheets",
+          icon: ListChecks,
         },
       ],
     },
