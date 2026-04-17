@@ -22,10 +22,7 @@ services:
 
   # ── DCS Ops Center API + Web (combined) ─────────────────────────────────────
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: runner
+    image: ghcr.io/kareemschultz/ndma-dcs-ops-center/app:latest
     restart: unless-stopped
     depends_on:
       postgres:
@@ -48,10 +45,7 @@ services:
 
   # ── DCS Ops Center Docs (Fumadocs static — nginx) ───────────────────────────
   docs:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: docs-runner
+    image: ghcr.io/kareemschultz/ndma-dcs-ops-center/docs:latest
     restart: unless-stopped
     ports:
       - "${DOCS_PORT:-4000}:4000"
