@@ -1,6 +1,6 @@
 # ── Stage 1: Install dependencies ────────────────────────────────────────────
 # Use Bun's slim image to keep layers small
-FROM oven/bun:1.3-slim AS deps
+FROM oven/bun:1.3.12-slim AS deps
 
 WORKDIR /app
 
@@ -8,6 +8,7 @@ WORKDIR /app
 COPY package.json bun.lock ./
 COPY apps/web/package.json apps/web/
 COPY apps/server/package.json apps/server/
+COPY apps/docs/package.json apps/docs/
 COPY packages/api/package.json packages/api/
 COPY packages/auth/package.json packages/auth/
 COPY packages/db/package.json packages/db/
@@ -41,7 +42,7 @@ COPY . .
 
 # ── Stage 4: Production runtime ──────────────────────────────────────────────
 # Distroless-style minimal image using bun:slim and hardened below.
-FROM oven/bun:1.3-slim AS runner
+FROM oven/bun:1.3.12-slim AS runner
 
 WORKDIR /app
 
@@ -83,7 +84,7 @@ CMD ["bun", "run", "--cwd", "apps/server", "src/index.ts"]
 # ── Stage 5: Build docs (Fumadocs / Next.js static export) ───────────────────
 # Uses bun with the workspace lockfile so versions exactly match dev.
 # output: "export" generates plain HTML/CSS/JS — no Node server needed.
-FROM oven/bun:1.3-slim AS docs-builder
+FROM oven/bun:1.3.12-slim AS docs-builder
 
 WORKDIR /app
 

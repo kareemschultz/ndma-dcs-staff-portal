@@ -8,7 +8,7 @@ import {
 } from "@ndma-dcs-staff-portal/db";
 import { and, desc, eq } from "drizzle-orm";
 
-import { requireRole } from "../index";
+import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 import { createNotification } from "../lib/notify";
 
