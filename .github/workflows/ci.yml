@@ -109,6 +109,9 @@ jobs:
     timeout-minutes: 10
     needs: [docker]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: read
     steps:
       - name: Deploy to production server
         uses: appleboy/ssh-action@v1
@@ -120,8 +123,8 @@ jobs:
             set -e
             cd /opt/docker/client-portals/ndma-dcs
 
-            # Authenticate with GHCR using the workflow's GITHUB_TOKEN
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            # Authenticate with GHCR using stored PAT (GHCR_TOKEN)
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u kareemschultz --password-stdin
 
             # Pull new images and restart services
             docker compose pull app docs
