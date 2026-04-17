@@ -14,7 +14,7 @@ import {
 } from "@ndma-dcs-staff-portal/db";
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 
-import { protectedProcedure } from "../index";
+import { protectedProcedure, requireRole } from "../index";
 
 export const dashboardRouter = {
   main: protectedProcedure.handler(async () => {
@@ -162,7 +162,7 @@ export const dashboardRouter = {
     };
   }),
 
-  opsReadiness: protectedProcedure.handler(async () => {
+  opsReadiness: requireRole("report", "read").handler(async () => {
     const today = new Date().toISOString().slice(0, 10);
 
     const [onCallCoverage, unresolvedIncidents, overdueWork, overdueChanges] =
@@ -244,7 +244,7 @@ export const dashboardRouter = {
     };
   }),
 
-  recentActivity: protectedProcedure
+  recentActivity: requireRole("audit", "read")
     .input(z.object({ limit: z.number().min(1).max(50).default(20) }))
     .handler(async ({ input }) => {
       return db

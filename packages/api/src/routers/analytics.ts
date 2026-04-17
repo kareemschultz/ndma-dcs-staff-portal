@@ -16,11 +16,11 @@ import {
   trainingRecords,
 } from "@ndma-dcs-staff-portal/db";
 
-import { protectedProcedure } from "../index";
+import { requireRole } from "../index";
 
 export const analyticsRouter = {
   /** Cross-module analytics summary for the analytics dashboard page. */
-  overview: protectedProcedure
+  overview: requireRole("report", "read")
     .input(
       z.object({
         year: z.number().default(2026),

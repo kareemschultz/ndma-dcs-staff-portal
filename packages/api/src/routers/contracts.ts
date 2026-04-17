@@ -3,11 +3,11 @@ import { z } from "zod";
 import { db, contracts } from "@ndma-dcs-staff-portal/db";
 import { and, eq, lte, sql } from "drizzle-orm";
 
-import { protectedProcedure, requireRole } from "../index";
+import { requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 export const contractsRouter = {
-  list: protectedProcedure
+  list: requireRole("contract", "read")
     .input(
       z.object({
         staffProfileId: z.string().optional(),
@@ -32,7 +32,7 @@ export const contractsRouter = {
       });
     }),
 
-  get: protectedProcedure
+  get: requireRole("contract", "read")
     .input(z.object({ id: z.string() }))
     .handler(async ({ input }) => {
       const contract = await db.query.contracts.findFirst({
@@ -128,7 +128,7 @@ export const contractsRouter = {
       return updated;
     }),
 
-  getExpiringSoon: protectedProcedure
+  getExpiringSoon: requireRole("contract", "read")
     .input(z.object({ withinDays: z.number().default(60) }))
     .handler(async ({ input }) => {
       const cutoff = new Date();

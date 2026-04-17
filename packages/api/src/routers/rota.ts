@@ -139,7 +139,7 @@ export const rotaRouter = {
   }),
 
   // Get all schedules (drafts + published) for the planner view
-  list: protectedProcedure.handler(async () => {
+  list: requireRole("rota", "read").handler(async () => {
     return db.query.onCallSchedules.findMany({
       orderBy: desc(onCallSchedules.weekStart),
       limit: 12,
@@ -466,7 +466,7 @@ export const rotaRouter = {
     }),
 
   // Get eligible staff for a role (used by assign modal + rotation engine)
-  getEligibleStaff: protectedProcedure
+  getEligibleStaff: requireRole("rota", "update")
     .input(z.object({ role: OnCallRoleSchema }))
     .handler(async ({ input }) => {
       const departmentCodeMap: Record<string, string> = {
@@ -501,7 +501,7 @@ export const rotaRouter = {
     }),
 
   // Assignment counts per person — used by workload cards + rotation engine
-  getAssignmentCounts: protectedProcedure.handler(async () => {
+  getAssignmentCounts: requireRole("rota", "read").handler(async () => {
     const all = await db.query.onCallAssignments.findMany({
       with: { staffProfile: { with: { user: true } } },
     });
@@ -544,6 +544,13 @@ export const rotaRouter = {
         });
         if (!requesterProfile) {
           throw new ORPCError("NOT_FOUND", { message: "Staff profile not found" });
+        }
+
+        // Verify the requester owns the assignment they are trying to swap
+        if (assignment.staffProfileId !== requesterProfile.id) {
+          throw new ORPCError("FORBIDDEN", {
+            message: "You can only request a swap for your own assignment.",
+          });
         }
 
         const [swap] = await db
@@ -706,7 +713,7 @@ export const rotaRouter = {
     }),
 
   // Assignment history with optional filters
-  history: protectedProcedure
+  history: requireRole("rota", "read")
     .input(HistoryFilterInput)
     .handler(async ({ input }) => {
       return db.query.assignmentHistory.findMany({

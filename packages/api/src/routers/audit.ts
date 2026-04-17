@@ -2,7 +2,7 @@ import { z } from "zod";
 import { db, auditLogs } from "@ndma-dcs-staff-portal/db";
 import { and, desc, eq, gte, lte } from "drizzle-orm";
 
-import { protectedProcedure } from "../index";
+import { requireRole } from "../index";
 
 const ListAuditInput = z.object({
   module: z.string().optional(),
@@ -16,7 +16,7 @@ const ListAuditInput = z.object({
 });
 
 export const auditRouter = {
-  list: protectedProcedure
+  list: requireRole("audit", "read")
     .input(ListAuditInput)
     .handler(async ({ input }) => {
       const conditions = [];
@@ -43,7 +43,7 @@ export const auditRouter = {
       return rows;
     }),
 
-  getByResource: protectedProcedure
+  getByResource: requireRole("audit", "read")
     .input(
       z.object({
         resourceType: z.string(),

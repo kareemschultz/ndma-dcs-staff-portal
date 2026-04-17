@@ -1,12 +1,14 @@
 import { Bell } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@ndma-dcs-staff-portal/ui/components/button";
+import { orpc } from "../utils/orpc";
 
-// Notification bell shown in the header.
-// Badge count will be wired to orpc.notifications.list in Phase J.
 export function NotificationBell() {
-  // TODO (Phase J): replace with real unread count from orpc query
-  const unreadCount = 0;
+  const { data } = useQuery(
+    orpc.notifications.list.queryOptions({ input: { includeRead: false, limit: 1 } }),
+  );
+  const unreadCount = data?.unreadCount ?? 0;
 
   return (
     <Link to="/notifications">

@@ -3,11 +3,11 @@ import { z } from "zod";
 import { db, services } from "@ndma-dcs-staff-portal/db";
 import { eq } from "drizzle-orm";
 
-import { protectedProcedure, requireRole } from "../index";
+import { requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 export const servicesRouter = {
-  list: protectedProcedure.handler(async () => {
+  list: requireRole("work", "read").handler(async () => {
     return db.query.services.findMany({
       where: eq(services.isActive, true),
       with: {
@@ -17,7 +17,7 @@ export const servicesRouter = {
     });
   }),
 
-  get: protectedProcedure
+  get: requireRole("work", "read")
     .input(z.object({ id: z.string() }))
     .handler(async ({ input }) => {
       const service = await db.query.services.findFirst({

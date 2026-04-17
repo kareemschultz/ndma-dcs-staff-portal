@@ -31,6 +31,7 @@ import { Main } from "@/components/layout/main";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { NotificationBell } from "@/components/notification-bell";
 import { orpc } from "@/utils/orpc";
+import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/_authenticated/")({
   component: DashboardPage,
@@ -93,13 +94,20 @@ function isoWeekBounds() {
 }
 
 function DashboardPage() {
+  const { data: session } = authClient.useSession();
+  const userRole = (session?.user as Record<string, unknown> | undefined)?.role as string | undefined;
+  const canSeeOpsReadiness = !!userRole && userRole !== "staff";
+  const canSeeAuditActivity = !!userRole && ["admin", "hrAdminOps", "readOnly"].includes(userRole);
+
   const { data, isLoading } = useQuery(orpc.dashboard.main.queryOptions());
-  const { data: readiness, isLoading: readinessLoading } = useQuery(
-    orpc.dashboard.opsReadiness.queryOptions()
-  );
-  const { data: activity, isLoading: activityLoading } = useQuery(
-    orpc.dashboard.recentActivity.queryOptions({ input: { limit: 10 } })
-  );
+  const { data: readiness, isLoading: readinessLoading } = useQuery({
+    ...orpc.dashboard.opsReadiness.queryOptions(),
+    enabled: canSeeOpsReadiness,
+  });
+  const { data: activity, isLoading: activityLoading } = useQuery({
+    ...orpc.dashboard.recentActivity.queryOptions({ input: { limit: 10 } }),
+    enabled: canSeeAuditActivity,
+  });
 
   const { weekStart, weekEnd } = isoWeekBounds();
 

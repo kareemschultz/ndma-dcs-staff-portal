@@ -7,7 +7,7 @@ import {
   automationRuleLogs,
 } from "@ndma-dcs-staff-portal/db";
 
-import { protectedProcedure, requireRole } from "../index";
+import { requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 
 // ── Input Schemas ──────────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ const UpdateRuleInput = z.object({
 // ── Router ─────────────────────────────────────────────────────────────────
 
 export const automationRouter = {
-  list: protectedProcedure
+  list: requireRole("settings", "read")
     .input(
       z.object({
         module: TriggerModuleSchema.optional(),
@@ -85,7 +85,7 @@ export const automationRouter = {
       });
     }),
 
-  get: protectedProcedure
+  get: requireRole("settings", "read")
     .input(z.object({ id: z.string() }))
     .handler(async ({ input }) => {
       const rule = await db.query.automationRules.findFirst({
@@ -228,7 +228,7 @@ export const automationRouter = {
       return { success: true };
     }),
 
-  getLogs: protectedProcedure
+  getLogs: requireRole("settings", "read")
     .input(
       z.object({
         ruleId: z.string(),
@@ -245,7 +245,7 @@ export const automationRouter = {
       });
     }),
 
-  stats: protectedProcedure.handler(async () => {
+  stats: requireRole("settings", "read").handler(async () => {
     const [allRules, recentLogs] = await Promise.all([
       db.query.automationRules.findMany({
         columns: { id: true, enabled: true, triggerModule: true, fireCount: true },

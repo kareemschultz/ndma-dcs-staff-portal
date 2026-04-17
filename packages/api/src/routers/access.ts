@@ -14,7 +14,7 @@ import {
 } from "@ndma-dcs-staff-portal/db";
 import { and, eq, isNull, isNotNull, lte } from "drizzle-orm";
 
-import { protectedProcedure, requireRole } from "../index";
+import { requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 import { runSyncJob } from "../lib/sync";
 
@@ -83,7 +83,7 @@ export const accessRouter = {
   // ── Platform Accounts ───────────────────────────────────────────────────
 
   accounts: {
-    list: protectedProcedure
+    list: requireRole("access", "read")
       .input(
         z.object({
           staffProfileId: z.string().optional(),
@@ -145,7 +145,7 @@ export const accessRouter = {
         });
       }),
 
-    get: protectedProcedure
+    get: requireRole("access", "read")
       .input(z.object({ id: z.string() }))
       .handler(async ({ input }) => {
         const account = await db.query.platformAccounts.findFirst({
@@ -168,7 +168,7 @@ export const accessRouter = {
         return account;
       }),
 
-    getByStaff: protectedProcedure
+    getByStaff: requireRole("access", "read")
       .input(z.object({ staffProfileId: z.string() }))
       .handler(async ({ input }) => {
         return db.query.platformAccounts.findMany({
@@ -177,7 +177,7 @@ export const accessRouter = {
         });
       }),
 
-    getByPlatform: protectedProcedure
+    getByPlatform: requireRole("access", "read")
       .input(z.object({ platform: z.enum(PLATFORM_VALUES) }))
       .handler(async ({ input }) => {
         return db.query.platformAccounts.findMany({
@@ -189,7 +189,7 @@ export const accessRouter = {
         });
       }),
 
-    getExpiring: protectedProcedure
+    getExpiring: requireRole("access", "read")
       .input(z.object({ withinDays: z.number().default(30) }))
       .handler(async ({ input }) => {
         const cutoff = new Date();
@@ -209,7 +209,7 @@ export const accessRouter = {
         });
       }),
 
-    getOrphaned: protectedProcedure.handler(async () => {
+    getOrphaned: requireRole("access", "read").handler(async () => {
       return db.query.platformAccounts.findMany({
         where: eq(platformAccounts.isOrphaned, true),
         with: {
@@ -219,7 +219,7 @@ export const accessRouter = {
       });
     }),
 
-    getStale: protectedProcedure.handler(async () => {
+    getStale: requireRole("access", "read").handler(async () => {
       return db.query.platformAccounts.findMany({
         where: eq(platformAccounts.isStale, true),
         with: {
@@ -229,7 +229,7 @@ export const accessRouter = {
       });
     }),
 
-    getVpnEnabled: protectedProcedure.handler(async () => {
+    getVpnEnabled: requireRole("access", "read").handler(async () => {
       return db.query.platformAccounts.findMany({
         where: eq(platformAccounts.vpnEnabled, true),
         with: {
@@ -439,7 +439,7 @@ export const accessRouter = {
   // ── External Contacts ───────────────────────────────────────────────────
 
   externalContacts: {
-    list: protectedProcedure
+    list: requireRole("access", "read")
       .input(
         z.object({
           affiliationType: z.enum(AFFILIATION_VALUES).optional(),
@@ -463,7 +463,7 @@ export const accessRouter = {
         });
       }),
 
-    get: protectedProcedure
+    get: requireRole("access", "read")
       .input(z.object({ id: z.string() }))
       .handler(async ({ input }) => {
         const contact = await db.query.externalContacts.findFirst({
@@ -563,7 +563,7 @@ export const accessRouter = {
   // ── Access Groups ───────────────────────────────────────────────────────
 
   groups: {
-    list: protectedProcedure
+    list: requireRole("access", "read")
       .input(
         z.object({
           platform: z.enum(PLATFORM_VALUES).optional(),
@@ -584,7 +584,7 @@ export const accessRouter = {
         });
       }),
 
-    get: protectedProcedure
+    get: requireRole("access", "read")
       .input(z.object({ id: z.string() }))
       .handler(async ({ input }) => {
         const group = await db.query.accessGroups.findFirst({
@@ -709,7 +709,7 @@ export const accessRouter = {
         return { success: true };
       }),
 
-    listMembers: protectedProcedure
+    listMembers: requireRole("access", "read")
       .input(z.object({ groupId: z.string(), includeRemoved: z.boolean().default(false) }))
       .handler(async ({ input }) => {
         return db.query.accountGroupMemberships.findMany({
@@ -817,7 +817,7 @@ export const accessRouter = {
   // ── Access Reviews ──────────────────────────────────────────────────────
 
   reviews: {
-    list: protectedProcedure
+    list: requireRole("access", "read")
       .input(
         z.object({
           status: z.enum(ACCESS_REVIEW_STATUS_VALUES).optional(),
@@ -849,7 +849,7 @@ export const accessRouter = {
         });
       }),
 
-    getPending: protectedProcedure.handler(async () => {
+    getPending: requireRole("access", "read").handler(async () => {
       return db.query.accessReviews.findMany({
         where: eq(accessReviews.status, "pending"),
         with: {
@@ -865,7 +865,7 @@ export const accessRouter = {
       });
     }),
 
-    getOverdue: protectedProcedure.handler(async () => {
+    getOverdue: requireRole("access", "read").handler(async () => {
       const today = new Date().toISOString().slice(0, 10);
       return db.query.accessReviews.findMany({
         where: and(
@@ -979,7 +979,7 @@ export const accessRouter = {
   // ── Platform Integrations ───────────────────────────────────────────────
 
   integrations: {
-    list: protectedProcedure.handler(async () => {
+    list: requireRole("access", "read").handler(async () => {
       return db.query.platformIntegrations.findMany({
         with: {
           ownerStaff: { with: { user: true } },
@@ -989,7 +989,7 @@ export const accessRouter = {
       });
     }),
 
-    get: protectedProcedure
+    get: requireRole("access", "read")
       .input(z.object({ id: z.string() }))
       .handler(async ({ input }) => {
         const integration = await db.query.platformIntegrations.findFirst({
@@ -1146,7 +1146,7 @@ export const accessRouter = {
   // ── Sync Jobs ───────────────────────────────────────────────────────────
 
   syncJobs: {
-    list: protectedProcedure
+    list: requireRole("access", "read")
       .input(
         z.object({
           integrationId: z.string().optional(),
@@ -1173,7 +1173,7 @@ export const accessRouter = {
   // ── Reconciliation Issues ───────────────────────────────────────────────
 
   reconciliation: {
-    list: protectedProcedure
+    list: requireRole("access", "read")
       .input(
         z.object({
           integrationId: z.string().optional(),
@@ -1259,7 +1259,7 @@ export const accessRouter = {
   // ── Service Owners ──────────────────────────────────────────────────────
 
   serviceOwners: {
-    list: protectedProcedure
+    list: requireRole("access", "read")
       .input(z.object({ serviceId: z.string().optional() }))
       .handler(async ({ input }) => {
         return db.query.serviceOwners.findMany({
@@ -1336,7 +1336,7 @@ export const accessRouter = {
         return { success: true };
       }),
 
-    getByService: protectedProcedure
+    getByService: requireRole("access", "read")
       .input(z.object({ serviceId: z.string() }))
       .handler(async ({ input }) => {
         return db.query.serviceOwners.findMany({

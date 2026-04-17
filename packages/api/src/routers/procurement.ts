@@ -8,7 +8,7 @@ import {
 } from "@ndma-dcs-staff-portal/db";
 import { and, desc, eq } from "drizzle-orm";
 
-import { protectedProcedure, requireRole } from "../index";
+import { requireRole } from "../index";
 import { logAudit } from "../lib/audit";
 import { createNotification } from "../lib/notify";
 
@@ -31,7 +31,7 @@ const LineItemSchema = z.object({
 });
 
 export const procurementRouter = {
-  list: protectedProcedure
+  list: requireRole("procurement", "read")
     .input(
       z.object({
         status: StatusSchema.optional(),
@@ -65,7 +65,7 @@ export const procurementRouter = {
       });
     }),
 
-  get: protectedProcedure
+  get: requireRole("procurement", "read")
     .input(z.object({ id: z.string() }))
     .handler(async ({ input }) => {
       const pr = await db.query.purchaseRequisitions.findFirst({
@@ -236,6 +236,10 @@ export const procurementRouter = {
         where: eq(purchaseRequisitions.id, input.id),
       });
       if (!before) throw new ORPCError("NOT_FOUND");
+      if (!["submitted", "under_review"].includes(before.status))
+        throw new ORPCError("CONFLICT", {
+          message: `Cannot approve a PR in '${before.status}' status. Must be submitted or under_review.`,
+        });
 
       const [updated] = await db
         .update(purchaseRequisitions)
@@ -292,6 +296,10 @@ export const procurementRouter = {
         where: eq(purchaseRequisitions.id, input.id),
       });
       if (!before) throw new ORPCError("NOT_FOUND");
+      if (!["submitted", "under_review", "approved"].includes(before.status))
+        throw new ORPCError("CONFLICT", {
+          message: `Cannot reject a PR in '${before.status}' status.`,
+        });
 
       const [updated] = await db
         .update(purchaseRequisitions)
@@ -338,6 +346,15 @@ export const procurementRouter = {
     )
     .handler(async ({ input, context }) => {
       const { id, ...updates } = input;
+      const existing = await db.query.purchaseRequisitions.findFirst({
+        where: eq(purchaseRequisitions.id, id),
+      });
+      if (!existing) throw new ORPCError("NOT_FOUND");
+      if (existing.status !== "approved")
+        throw new ORPCError("CONFLICT", {
+          message: `Can only mark as ordered when approved. Current status: '${existing.status}'.`,
+        });
+
       const [updated] = await db
         .update(purchaseRequisitions)
         .set({ status: "ordered", ...updates })
@@ -364,6 +381,15 @@ export const procurementRouter = {
   markReceived: requireRole("procurement", "update")
     .input(z.object({ id: z.string(), notes: z.string().optional() }))
     .handler(async ({ input, context }) => {
+      const existing = await db.query.purchaseRequisitions.findFirst({
+        where: eq(purchaseRequisitions.id, input.id),
+      });
+      if (!existing) throw new ORPCError("NOT_FOUND");
+      if (existing.status !== "ordered")
+        throw new ORPCError("CONFLICT", {
+          message: `Can only mark as received when ordered. Current status: '${existing.status}'.`,
+        });
+
       const today = new Date().toISOString().split("T")[0];
       const [updated] = await db
         .update(purchaseRequisitions)
@@ -400,7 +426,7 @@ export const procurementRouter = {
     });
   }),
 
-  getPendingApprovals: protectedProcedure.handler(async () => {
+  getPendingApprovals: requireRole("procurement", "approve").handler(async () => {
     return db.query.purchaseRequisitions.findMany({
       where: eq(purchaseRequisitions.status, "submitted"),
       orderBy: desc(purchaseRequisitions.createdAt),
@@ -412,7 +438,7 @@ export const procurementRouter = {
     });
   }),
 
-  stats: protectedProcedure.handler(async () => {
+  stats: requireRole("procurement", "read").handler(async () => {
     const all = await db.query.purchaseRequisitions.findMany({
       columns: { id: true, status: true, totalEstimatedCost: true, priority: true },
     });
