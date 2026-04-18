@@ -39,6 +39,7 @@ const statement = {
   timesheet: ["create", "read", "update", "delete", "submit", "approve", "reject"] as const,
   shift: ["create", "read", "update", "delete", "publish"] as const,
   feedback: ["create", "read", "update", "delete", "submit", "approve", "reject"] as const,
+  leave_policy: ["create", "read", "update", "delete"] as const,
 } as const;
 
 export const ac = createAccessControl(statement);
@@ -64,6 +65,7 @@ export const readOnlyRole = ac.newRole({
   shift: ["read"],
   callout: ["read"],
   ppe: ["read"],
+  leave_policy: ["read"],
 });
 
 // Staff — own profile, self-service leave, submit PRs, view rota
@@ -86,6 +88,7 @@ export const staffRole = ac.newRole({
   timesheet: ["create", "read", "submit"],
   ppe: ["read"],
   attendance: ["read"],
+  leave_policy: ["read"],
 });
 
 // Manager — approve leave, manage rota, view reports, create appraisals
@@ -113,6 +116,7 @@ export const managerRole = ac.newRole({
   callout: ["create", "read", "update"],
   ppe: ["create", "read", "update", "assign"],
   timesheet: ["create", "read", "update", "submit", "approve", "reject"],
+  leave_policy: ["read"],
 });
 
 // Team Lead — direct report appraisals, operational support, limited team scoping
@@ -132,6 +136,7 @@ export const teamLeadRole = ac.newRole({
   career_path: ["read"],
   feedback: ["create", "read", "submit"],
   attendance: ["create", "read", "submit"],
+  leave_policy: ["read"],
 });
 
 // Personal Assistant — cross-scope coordination across DCS + NOC
@@ -160,6 +165,7 @@ export const personalAssistantRole = ac.newRole({
   timesheet: ["create", "read", "update", "submit"],
   shift: ["read"],
   ppe: ["create", "read", "update", "assign"],
+  leave_policy: ["read"],
 });
 
 // HR/Admin Ops — full staff + compliance + procurement management
@@ -188,6 +194,7 @@ export const hrAdminOpsRole = ac.newRole({
   timesheet: ["create", "read", "update", "delete", "submit", "approve", "reject"],
   shift: ["create", "read", "update", "delete", "publish"],
   feedback: ["create", "read", "update", "delete", "submit", "approve", "reject"],
+  leave_policy: ["create", "read", "update", "delete"],
 });
 
 // Admin — everything (inherits from hrAdminOps + settings + audit export)
@@ -216,6 +223,7 @@ export const adminRole = ac.newRole({
   timesheet: ["create", "read", "update", "delete", "submit", "approve", "reject"],
   shift: ["create", "read", "update", "delete", "publish"],
   feedback: ["create", "read", "update", "delete", "submit", "approve", "reject"],
+  leave_policy: ["create", "read", "update", "delete"],
 });
 
 // ─── Auth factory ─────────────────────────────────────────────────────────────

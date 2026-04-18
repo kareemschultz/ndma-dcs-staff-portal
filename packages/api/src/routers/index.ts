@@ -16,6 +16,7 @@ import { escalationRouter } from "./escalation";
 import { hrDocsRouter } from "./hr-docs";
 import { incidentsRouter } from "./incidents";
 import { leaveRouter } from "./leave";
+import { leavePoliciesRouter } from "./leave-policies";
 import { notificationsRouter } from "./notifications";
 import { ppeRouter } from "./ppe";
 import { procurementRouter } from "./procurement";
@@ -53,6 +54,7 @@ export const appRouter = {
   hrDocs: hrDocsRouter,
   incidents: incidentsRouter,
   leave: leaveRouter,
+  leavePolicies: leavePoliciesRouter,
   notifications: notificationsRouter,
   ppe: ppeRouter,
   procurement: procurementRouter,
