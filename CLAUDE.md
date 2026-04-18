@@ -285,9 +285,26 @@ correlationId: context.requestId,
 - Auth flow tests (testing unauthenticated behavior) MUST use `test.use({ storageState: { cookies: [], origins: [] } })`
 - Otherwise the stored session auto-redirects `/login` → `/` and the login form never appears
 
-### import type enum — leave added in session 3
-- The `import_type` DB enum now includes `"leave"` (added via `db:push`)
+### import type enum
+- The `import_type` DB enum values: `"staff" | "training" | "contracts" | "work" | "platform_accounts" | "leave" | "ppe" | "attendance" | "callouts"`
 - Leave imports: 2026 dates only (schema validation enforces `^2026-\d{2}-\d{2}$`), existing staff only (never creates new users)
+- PPE imports: `staffEmail` + `ppeItemCode` (must match a code in `ppe_items`), camelCase column names
+- Attendance imports: `staffEmail`, `exceptionDate`, `exceptionType` (camelCase — NOT snake_case)
+- Callout imports: `staffEmail`, `date`, `hours` required; `startTime`/`endTime` optional HH:MM
+
+### appraisals.reject — field is `rejectionReason`, NOT `reason`
+- The `reject` procedure input uses `rejectionReason` (not `reason`).
+- **CORRECT:** `mutate({ id, rejectionReason: "..." })`
+- The DB column is also `rejection_reason`.
+
+### NOC shift schedule vs DCS on-call rota — two separate systems
+- DCS uses **on-call rotation** → `rota.*` router, `/rota` URL prefix, `on_call_schedules` table
+- NOC uses **24/7 shift schedule** (Day/Swing/Night) → `roster.*` router, `/roster` URL prefix, `roster_schedules` table
+- Never mix these up. Sidebar has them as separate items: "DCS On-Call Roster" and "NOC Shift Schedule".
+
+### contracts.getExpiringSoon input field name
+- The input field is `withinDays` (not `daysAhead`).
+- **CORRECT:** `orpc.contracts.getExpiringSoon.queryOptions({ input: { withinDays: 90 } })`
 
 ### git commit — pre-commit hook runs `bat`
 - The pre-commit hook tries to run `bat` (a cat alternative) to show diffs — fails if not installed
@@ -338,8 +355,10 @@ correlationId: context.requestId,
 | `audit.ts` | audit_logs (append-only global audit trail) |
 | `notifications.ts` | notifications + channel/status enums |
 | `departments.ts` | departments |
-| `staff.ts` | staff_profiles + employment_type / staff_status enums |
+| `staff.ts` | staff_profiles (+ `teamLeadId` self-ref FK) + employment_type / staff_status enums |
+| `department-assignments.ts` | department_assignments (staffProfileId, departmentId, role enum[manager|pa|team_lead|supervisor]), department_assignment_history |
 | `rota.ts` | on_call_schedules, on_call_assignments, on_call_swaps, assignment_history + role/status enums |
+| `roster.ts` | roster_schedules, roster_assignments, roster_swap_requests, maintenance_assignments — NOC 24/7 shift model (day/swing/night) |
 | `escalation.ts` | escalation_policies, escalation_steps, on_call_overrides |
 | `incidents.ts` | services, incidents, incident_affected_services, incident_responders, incident_timeline, post_incident_reviews |
 | `work.ts` | work_initiatives, work_items (+ initiativeId/parentId/milestoneDate/estimatedHours/followUpDate), work_item_comments, work_item_weekly_updates, work_item_dependencies, work_item_templates + type/status/priority enums |
@@ -347,10 +366,17 @@ correlationId: context.requestId,
 | `automation.ts` | automation_rules, automation_rule_logs + automation_trigger_module enum |
 | `leave.ts` | leave_types, leave_balances, leave_requests + leave_request_status enum |
 | `procurement.ts` | purchase_requisitions, pr_line_items, pr_approvals + pr_status / pr_priority enums |
-| `temp-changes.ts` | temporary_changes (+ category, riskLevel, environment, systemName, publicIp, internalIp, port, protocol, externalExposure, ownerType, externalAgencyName, externalAgencyType, requestedByType, requestedByExternal, requestedById, departmentId) + tempChangeHistory + tempChangeLinks + enums: tempChangeCategoryEnum, tempChangeRiskEnum, tempChangeOwnerTypeEnum |
-| `access.ts` | external_contacts, platform_accounts (staffProfileId nullable), access_groups, account_group_memberships (soft-delete via removedAt), access_reviews, platform_integrations, sync_jobs, reconciliation_issues, service_owners + enums: platform_type (vpn/fortigate/uportal/biometric/ad/ipam/phpipam/radius/zabbix/esight/ivs_neteco/nce_fan_atp/neteco/lte_grafana/gen_grafana/plum/kibana/other), account_status (+orphaned/pending_review), auth_source, sync_mode, sync_direction, integration_status, sync_job_status, reconciliation_issue_type (+disabled_staff_active_account/expired_contractor/missing_internally/missing_externally), user_affiliation, access_review_status, access_group_type |
+| `temp-changes.ts` | temporary_changes + tempChangeHistory + tempChangeLinks + enums: tempChangeCategoryEnum, tempChangeRiskEnum, tempChangeOwnerTypeEnum |
+| `access.ts` | external_contacts, platform_accounts, access_groups, account_group_memberships, access_reviews, platform_integrations, sync_jobs, reconciliation_issues, service_owners + enums |
 | `contracts.ts` | contracts + contract_status enum |
-| `appraisals.ts` | appraisals + appraisal_status enum |
+| `appraisals.ts` | appraisals (+ ratingMatrix jsonb, percentageScore, achievements jsonb, goals jsonb, staffFeedback, supervisorComments, submittedAt, approvedAt, rejectionReason) + appraisal_status enum |
+| `appraisal-cycles.ts` | appraisal_cycles (year, half, openedAt, closedAt, status) |
+| `appraisal-followups.ts` | appraisal_followups (three_month / six_month, pending/done/skipped) |
+| `hr-docs.ts` | promotion_recommendations, promotion_letters, performance_journal_entries, career_path_plans, career_path_years, staff_feedback |
+| `ppe.ts` | ppe_items (catalog), ppe_issuances (per-staff issuance records) + ppeIssuanceStatusEnum |
+| `attendance-exceptions.ts` | attendance_exceptions (exceptionDate, exceptionType: reported_sick/medical/absent/lateness/wfh/early_leave/other, hours, minutesLate) + enums |
+| `callouts.ts` | callouts (calloutAt, calloutType, reason, outcome, status) + calloutTypeEnum / calloutStatusEnum |
+| `timesheets.ts` | timesheets, timesheet_entries + timesheetStatusEnum |
 | `compliance.ts` | training_records, ppe_records, policy_acknowledgements + compliance_item_status enum |
 | `imports.ts` | import_jobs + import_job_status / import_type enums |
 
@@ -363,24 +389,33 @@ correlationId: context.requestId,
 | `audit.ts` | `audit.list`, `audit.getByResource` |
 | `notifications.ts` | `notifications.list`, `markRead`, `markAllRead`, `dismiss` |
 | `rota.ts` | getCurrent, getUpcoming, list, create, assign, removeAssignment, publish, getEligibleStaff, getAssignmentCounts, getEffectiveOnCall, swap.{request,review,list}, history |
+| `roster.ts` | schedules.{list,get,create,publish,archive}, assignments.{bulkSet,update}, swaps.{request,review,cancel}, getCurrentShifts, maintenance.{list,create,update} |
 | `escalation.ts` | policies.{list,get,create,update,delete}, steps.{add,update,delete}, overrides.{list,create,update,delete} |
 | `work.ts` | list, get, create, update, assign, addComment, addWeeklyUpdate, getOverdue, getWeeklyReport, stats, initiatives.{list,get,create,update}, dependencies.{listForItem,add,remove}, templates.{list,create,generate} |
 | `cycles.ts` | list, get, create, update, addWorkItem, removeWorkItem, stats |
-| `workload.ts` | get (per-engineer load aggregation: openWork + overdueWork + onCall + leave + overdueChanges → loadScore/loadLevel) |
+| `workload.ts` | get (per-engineer load aggregation → loadScore/loadLevel) |
 | `incidents.ts` | list, get, create, update, addTimelineEntry, addResponder, removeResponder, linkService, unlinkService, createPIR, getActive, stats |
 | `services.ts` | list, get, create, update |
 | `leave.ts` | types.{list,create,update}, balances.{getByStaff,adjust}, requests.{list,create,approve,reject,cancel}, getTeamCalendar |
 | `procurement.ts` | list, get, create, update, submit, approve, reject, markOrdered, markReceived, getMyRequests, getPendingApprovals, stats |
 | `temp-changes.ts` | list, get, create, update, markRemoved, getOverdue, getPublicIPs, getExpiringSoon, stats, statsExtended, getHistory, addLink |
-| `analytics.ts` | overview (cross-module analytics: work, incidents, leave, rota, procurement, tempChanges, appraisals, training — filterable by year) |
-| `access.ts` | accounts.{list,get,getByStaff,getByPlatform,getExpiring,getOrphaned,getStale,getVpnEnabled,create,update,disable,markReviewed}, externalContacts.{list,get,create,update}, groups.{list,get,create,update,delete,listMembers,addMember,removeMember}, reviews.{list,getPending,getOverdue,create,complete}, integrations.{list,get,create,update,triggerSync}, syncJobs.list, reconciliation.{list,resolve}, serviceOwners.{list,assign,remove,getByService} |
-| `staff.ts` | list, get, create, update, deactivate, getDepartments |
+| `analytics.ts` | overview (cross-module analytics filterable by year) |
+| `access.ts` | accounts.{list,get,getByStaff,...,create,update,disable,markReviewed}, externalContacts.{list,get,create,update}, groups.{...}, reviews.{...}, integrations.{...}, syncJobs.list, reconciliation.{list,resolve}, serviceOwners.{list,assign,remove,getByService} |
+| `staff.ts` | list, get, create, update, deactivate, getDepartments, setTeamLead, canAccessPrivate, getMyDirectReports, search |
 | `contracts.ts` | list, get, create, update, getExpiringSoon |
-| `appraisals.ts` | list, get, create, update, getOverdue, getByStaff |
+| `appraisals.ts` | list, get, create, update, getOverdue, getByStaff, setRatings, submit, approve, reject, listFollowups |
+| `appraisal-cycles.ts` | list, get, create, close |
+| `department-assignments.ts` | list, create, update, delete |
+| `ppe.ts` | items.{list,create,update}, issuances.{list,upsert,markReturned,markDamaged,markLost} |
+| `attendance-exceptions.ts` | list, create, update, delete |
+| `callouts.ts` | list, create, update, delete |
+| `timesheets.ts` | list, create, approve, reject |
+| `hr-docs.ts` | promotionRecommendations.{list,get,create,update}, promotionLetters.{list,get,create,update}, performanceJournal.{list,create}, careerPath.{get,upsertYear,setPlanNotes}, feedback.{submit,list,updateStatus} |
 | `compliance.ts` | training.{list,create,update,delete}, ppe.{list,create,update,delete}, policyAck.{list,acknowledge}, getExpiringItems |
 | `dashboard.ts` | main, opsReadiness, recentActivity |
-| `import.ts` | execute, getHistory |
-| `automation.ts` | list, get, create, update, toggle, delete, getLogs, stats (RBAC: settings resource) |
+| `import.ts` | execute (types: staff/training/contracts/work/leave/ppe/attendance/callouts), getHistory |
+| `automation.ts` | list, get, create, update, toggle, delete, getLogs, stats |
+| `overlays.ts` | (operational overlays — maintenance windows etc.) |
 
 **Shared API utilities:**
 - `packages/api/src/lib/audit.ts` — `logAudit(params)` — call from EVERY mutation procedure
@@ -397,7 +432,11 @@ correlationId: context.requestId,
 
 ## RBAC Resources (packages/auth/src/index.ts)
 
-13 resources: `staff`, `work`, `leave`, `rota`, `compliance`, `contract`, `appraisal`, `report`, `audit`, `settings`, `procurement`, `notification`, `access`
+Resources: `staff`, `work`, `leave`, `rota`, `compliance`, `contract`, `appraisal`, `report`, `audit`, `settings`, `procurement`, `notification`, `access`, `appraisal_cycle`, `promotion_letter`, `performance_journal`, `career_path`, `ppe`, `callout`, `timesheet`, `shift`, `feedback`
+
+Roles: `admin`, `hrAdminOps`, `manager`, `teamLead`, `personalAssistant`, `staff`, `viewer`
+
+Scope helper: `packages/api/src/lib/scope.ts` — `canAccessStaffPrivate(ctx, staffProfileId)`, `getManagedStaffIds(ctx)`, `getCallerStaffProfile(ctx)`, `getDirectReports(teamLeadStaffProfileId)`
 
 ---
 

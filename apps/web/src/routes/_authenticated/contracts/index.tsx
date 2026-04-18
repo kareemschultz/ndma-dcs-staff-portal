@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { format, parseISO } from "date-fns";
+import { differenceInDays, format, parseISO } from "date-fns";
 import { FileText, AlertCircle, Plus, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@ndma-dcs-staff-portal/ui/components/skeleton";
@@ -40,6 +40,13 @@ export const Route = createFileRoute("/_authenticated/contracts/")({
 });
 
 type ContractStatus = "active" | "expiring_soon" | "expired" | "renewed" | "terminated";
+type RenewalStatus =
+  | "not_due"
+  | "due_soon"
+  | "letter_drafted"
+  | "submitted_to_hr"
+  | "renewed"
+  | "not_renewing";
 
 const STATUS_COLORS: Record<ContractStatus, string> = {
   active: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
@@ -49,6 +56,24 @@ const STATUS_COLORS: Record<ContractStatus, string> = {
   terminated: "bg-muted text-muted-foreground",
 };
 
+const RENEWAL_STATUS_COLORS: Record<RenewalStatus, string> = {
+  not_due: "bg-muted text-muted-foreground",
+  due_soon: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+  letter_drafted: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  submitted_to_hr: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300",
+  renewed: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+  not_renewing: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+};
+
+const RENEWAL_STATUS_LABELS: Record<RenewalStatus, string> = {
+  not_due: "Not Due",
+  due_soon: "Due Soon",
+  letter_drafted: "Letter Drafted",
+  submitted_to_hr: "Submitted to HR",
+  renewed: "Renewed",
+  not_renewing: "Not Renewing",
+};
+
 type ContractRecord = {
   id: string;
   staffProfileId: string;
@@ -56,6 +81,7 @@ type ContractRecord = {
   startDate: string;
   endDate: string | null;
   status: string;
+  renewalStatus: string;
   staffProfile?: { user?: { name?: string | null } | null } | null;
 };
 
@@ -72,6 +98,63 @@ type EditForm = {
   endDate: string;
   status: ContractStatus;
 };
+
+function daysUntilEnd(endDate: string | null): number | null {
+  if (!endDate) return null;
+  return differenceInDays(parseISO(endDate), new Date());
+}
+
+function DaysUntilBadge({ endDate }: { endDate: string | null }) {
+  const days = daysUntilEnd(endDate);
+  if (days === null) return <span className="text-muted-foreground text-xs">—</span>;
+  if (days < 0) return <span className="text-xs font-medium text-red-600">Expired</span>;
+  if (days < 30)
+    return <span className="text-xs font-medium text-red-600">{days}d</span>;
+  if (days <= 60)
+    return <span className="text-xs font-medium text-amber-600">{days}d</span>;
+  return <span className="text-xs text-muted-foreground">{days}d</span>;
+}
+
+function RenewalStatusSelect({
+  contractId,
+  current,
+}: {
+  contractId: string;
+  current: RenewalStatus;
+}) {
+  const queryClient = useQueryClient();
+  const mutation = useMutation(orpc.contracts.updateRenewalStatus.mutationOptions());
+
+  function handleChange(value: RenewalStatus | null) {
+    if (!value) return;
+    mutation.mutate(
+      { id: contractId, renewalStatus: value },
+      {
+        onSuccess: async () => {
+          toast.success("Renewal status updated.");
+          await queryClient.invalidateQueries({ queryKey: orpc.contracts.list.key() });
+        },
+        onError: () => toast.error("Failed to update renewal status."),
+      },
+    );
+  }
+
+  return (
+    <Select value={current} onValueChange={handleChange} disabled={mutation.isPending}>
+      <SelectTrigger className="h-7 w-40 text-xs">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="not_due">Not Due</SelectItem>
+        <SelectItem value="due_soon">Due Soon</SelectItem>
+        <SelectItem value="letter_drafted">Letter Drafted</SelectItem>
+        <SelectItem value="submitted_to_hr">Submitted to HR</SelectItem>
+        <SelectItem value="renewed">Renewed</SelectItem>
+        <SelectItem value="not_renewing">Not Renewing</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
 
 function CreateContractDialog({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient();
@@ -357,7 +440,7 @@ function ContractsPage() {
           </select>
         </div>
 
-        <div className="rounded-xl border">
+        <div className="rounded-xl border overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -365,7 +448,9 @@ function ContractsPage() {
                 <TableHead>Contract Type</TableHead>
                 <TableHead>Start Date</TableHead>
                 <TableHead>End Date</TableHead>
+                <TableHead>Days Until Renewal</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Renewal Status</TableHead>
                 <TableHead className="w-16" />
               </TableRow>
             </TableHeader>
@@ -373,7 +458,7 @@ function ContractsPage() {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    {Array.from({ length: 6 }).map((_, j) => (
+                    {Array.from({ length: 8 }).map((_, j) => (
                       <TableCell key={j}>
                         <Skeleton className="h-4 w-full" />
                       </TableCell>
@@ -382,51 +467,72 @@ function ContractsPage() {
                 ))
               ) : !data?.length ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
                     No contracts found.
                   </TableCell>
                 </TableRow>
               ) : (
-                data.map((contract) => (
-                  <TableRow key={contract.id}>
-                    <TableCell className="font-medium">
-                      {contract.staffProfile?.user?.name ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {contract.contractType}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {contract.startDate
-                        ? format(parseISO(contract.startDate), "dd MMM yyyy")
-                        : "—"}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {contract.endDate
-                        ? format(parseISO(contract.endDate), "dd MMM yyyy")
-                        : "Open-ended"}
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${
-                          STATUS_COLORS[contract.status as ContractStatus] ?? ""
-                        }`}
-                      >
-                        {contract.status.replace("_", " ")}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8"
-                        onClick={() => setEditingContract(contract as ContractRecord)}
-                        title="Edit contract"
-                      >
-                        <Pencil className="size-3.5" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+                data.map((contract) => {
+                  const renewalStatus = (contract.renewalStatus ?? "not_due") as RenewalStatus;
+                  return (
+                    <TableRow key={contract.id}>
+                      <TableCell className="font-medium">
+                        {contract.staffProfile?.user?.name ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {contract.contractType}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {contract.startDate
+                          ? format(parseISO(contract.startDate), "dd MMM yyyy")
+                          : "—"}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {contract.endDate
+                          ? format(parseISO(contract.endDate), "dd MMM yyyy")
+                          : "Open-ended"}
+                      </TableCell>
+                      <TableCell>
+                        <DaysUntilBadge endDate={contract.endDate} />
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-medium ${
+                            STATUS_COLORS[contract.status as ContractStatus] ?? ""
+                          }`}
+                        >
+                          {contract.status.replace(/_/g, " ")}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`inline-flex shrink-0 items-center rounded-lg px-2 py-0.5 text-xs font-medium ${
+                              RENEWAL_STATUS_COLORS[renewalStatus]
+                            }`}
+                          >
+                            {RENEWAL_STATUS_LABELS[renewalStatus]}
+                          </span>
+                          <RenewalStatusSelect
+                            contractId={contract.id}
+                            current={renewalStatus}
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8"
+                          onClick={() => setEditingContract(contract as ContractRecord)}
+                          title="Edit contract"
+                        >
+                          <Pencil className="size-3.5" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>

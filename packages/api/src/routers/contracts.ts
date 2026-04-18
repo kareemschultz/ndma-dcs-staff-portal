@@ -128,6 +128,50 @@ export const contractsRouter = {
       return updated;
     }),
 
+  updateRenewalStatus: requireRole("contract", "update")
+    .input(
+      z.object({
+        id: z.string(),
+        renewalStatus: z.enum([
+          "not_due",
+          "due_soon",
+          "letter_drafted",
+          "submitted_to_hr",
+          "renewed",
+          "not_renewing",
+        ]),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      const before = await db.query.contracts.findFirst({
+        where: eq(contracts.id, input.id),
+      });
+      if (!before) throw new ORPCError("NOT_FOUND", { message: "Contract not found" });
+
+      const [updated] = await db
+        .update(contracts)
+        .set({ renewalStatus: input.renewalStatus, updatedAt: new Date() })
+        .where(eq(contracts.id, input.id))
+        .returning();
+
+      await logAudit({
+        actorId: context.session.user.id,
+        actorName: context.session.user.name,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
+        action: "contract.updateRenewalStatus",
+        module: "contracts",
+        resourceType: "contract",
+        resourceId: input.id,
+        beforeValue: { renewalStatus: before.renewalStatus } as Record<string, unknown>,
+        afterValue: { renewalStatus: input.renewalStatus } as Record<string, unknown>,
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+      });
+
+      return updated;
+    }),
+
   getExpiringSoon: requireRole("contract", "read")
     .input(z.object({ withinDays: z.number().default(60) }))
     .handler(async ({ input }) => {

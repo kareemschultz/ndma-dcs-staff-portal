@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -14,6 +14,9 @@ import {
   PhoneCall,
   ShieldCheck,
   Users,
+  BookOpen,
+  TrendingUp,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -40,6 +43,10 @@ type EditProfileForm = {
   status: "active" | "inactive" | "on_leave" | "terminated";
 };
 
+// ---------------------------------------------------------------------------
+// Badge helpers
+// ---------------------------------------------------------------------------
+
 function StaffStatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; className: string }> = {
     active: { label: "Active", className: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
@@ -64,6 +71,58 @@ function EmploymentTypeBadge({ type }: { type: string }) {
     </span>
   );
 }
+
+function CareerPlanStatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; className: string }> = {
+    active: { label: "Active", className: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
+    paused: { label: "Paused", className: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" },
+    completed: { label: "Completed", className: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" },
+  };
+  const cfg = map[status] ?? { label: status, className: "bg-muted text-muted-foreground" };
+  return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${cfg.className}`}>{cfg.label}</span>;
+}
+
+function JournalEntryTypeBadge({ type }: { type: string }) {
+  const map: Record<string, { label: string; className: string }> = {
+    note: { label: "Note", className: "bg-muted text-muted-foreground" },
+    achievement: { label: "Achievement", className: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
+    concern: { label: "Concern", className: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" },
+    amendment: { label: "Amendment", className: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" },
+  };
+  const cfg = map[type] ?? { label: type, className: "bg-muted text-muted-foreground" };
+  return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${cfg.className}`}>{cfg.label}</span>;
+}
+
+function PromotionRecommendationStatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; className: string }> = {
+    draft: { label: "Draft", className: "bg-muted text-muted-foreground" },
+    submitted: { label: "Submitted", className: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" },
+    approved: { label: "Approved", className: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
+    rejected: { label: "Rejected", className: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" },
+    withdrawn: { label: "Withdrawn", className: "bg-muted text-muted-foreground" },
+  };
+  const cfg = map[status] ?? { label: status, className: "bg-muted text-muted-foreground" };
+  return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${cfg.className}`}>{cfg.label}</span>;
+}
+
+function AppraisalStatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; className: string }> = {
+    draft: { label: "Draft", className: "bg-muted text-muted-foreground" },
+    scheduled: { label: "Scheduled", className: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" },
+    in_progress: { label: "In Progress", className: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300" },
+    submitted: { label: "Submitted", className: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" },
+    approved: { label: "Approved", className: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
+    rejected: { label: "Rejected", className: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" },
+    completed: { label: "Completed", className: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
+    overdue: { label: "Overdue", className: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" },
+  };
+  const cfg = map[status] ?? { label: status, className: "bg-muted text-muted-foreground" };
+  return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${cfg.className}`}>{cfg.label}</span>;
+}
+
+// ---------------------------------------------------------------------------
+// Edit Profile Dialog
+// ---------------------------------------------------------------------------
 
 function EditProfileDialog({
   open,
@@ -169,6 +228,299 @@ function EditProfileDialog({
   );
 }
 
+// ---------------------------------------------------------------------------
+// Career Path Tab
+// ---------------------------------------------------------------------------
+
+function CareerPathTab({ staffProfileId }: { staffProfileId: string }) {
+  // Career plans list — filter client-side to this staff member
+  const { data: allPlans, isLoading: plansLoading } = useQuery(
+    orpc.hrDocs.careerPath.list.queryOptions(),
+  );
+
+  // Performance journal for this staff member
+  const { data: journalEntries, isLoading: journalLoading } = useQuery(
+    orpc.hrDocs.performanceJournal.list.queryOptions({ input: { staffProfileId } }),
+  );
+
+  // Promotion recommendations — filter client-side
+  const { data: allRecommendations, isLoading: recsLoading } = useQuery(
+    orpc.hrDocs.promotionRecommendations.list.queryOptions(),
+  );
+
+  const plan = allPlans?.find((p) => p.staffProfileId === staffProfileId) ?? null;
+  const recommendations = allRecommendations?.filter((r) => r.staffProfileId === staffProfileId) ?? [];
+
+  // Group journal entries by year
+  const journalByYear = (journalEntries ?? []).reduce<Record<string, typeof journalEntries>>((acc, entry) => {
+    if (!entry) return acc;
+    const year = entry.entryDate.slice(0, 4);
+    if (!acc[year]) acc[year] = [];
+    acc[year]!.push(entry);
+    return acc;
+  }, {});
+  const journalYears = Object.keys(journalByYear).sort((a, b) => Number(b) - Number(a));
+
+  if (plansLoading || journalLoading || recsLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-32 w-full rounded-xl" />
+        <Skeleton className="h-48 w-full rounded-xl" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Career Plan */}
+      <div className="rounded-xl border p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="size-4 text-muted-foreground" />
+          <h2 className="font-semibold">Career Plan</h2>
+        </div>
+
+        {plan ? (
+          <>
+            <div className="flex flex-wrap gap-3 text-sm">
+              <div>
+                <p className="text-xs text-muted-foreground mb-0.5">Current Level</p>
+                <p className="font-medium">{plan.currentLevel}</p>
+              </div>
+              {plan.targetLevel && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Target Level</p>
+                  <p className="font-medium">{plan.targetLevel}</p>
+                </div>
+              )}
+              {plan.currentTrack && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Track</p>
+                  <p className="font-medium">{plan.currentTrack}</p>
+                </div>
+              )}
+              {plan.nextReviewDate && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Next Review</p>
+                  <p className="font-medium">{format(parseISO(plan.nextReviewDate), "d MMM yyyy")}</p>
+                </div>
+              )}
+              <div className="ml-auto">
+                <CareerPlanStatusBadge status={plan.status} />
+              </div>
+            </div>
+
+            {plan.notes && (
+              <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
+                {plan.notes}
+              </div>
+            )}
+
+            {/* Year milestones */}
+            {plan.years && plan.years.length > 0 && (
+              <div className="space-y-3 pt-2">
+                <h3 className="text-sm font-medium">Year Milestones</h3>
+                <div className="relative space-y-4 pl-6 before:absolute before:left-2 before:top-0 before:h-full before:w-px before:bg-border">
+                  {[...plan.years]
+                    .sort((a, b) => a.yearNumber - b.yearNumber)
+                    .map((yr) => (
+                      <div key={yr.id} className="relative">
+                        {/* Timeline dot */}
+                        <span className="absolute -left-6 top-1 flex size-4 items-center justify-center rounded-full border bg-background text-[10px] font-bold">
+                          {yr.yearNumber}
+                        </span>
+                        <div className="rounded-lg border p-3 space-y-1.5 text-sm">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="font-medium">Year {yr.yearNumber}: {yr.title}</p>
+                            <CareerPlanStatusBadge status={yr.status} />
+                          </div>
+                          {yr.goals && yr.goals.length > 0 && (
+                            <ul className="list-disc pl-4 text-muted-foreground space-y-0.5">
+                              {yr.goals.map((g, i) => (
+                                <li key={i}>{g}</li>
+                              ))}
+                            </ul>
+                          )}
+                          {yr.prerequisites && yr.prerequisites.length > 0 && (
+                            <div className="text-xs text-muted-foreground">
+                              <span className="font-medium">Prerequisites: </span>
+                              {yr.prerequisites.join(", ")}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">No career plan on record.</p>
+        )}
+      </div>
+
+      {/* Promotion Recommendations */}
+      <div className="rounded-xl border p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <FileText className="size-4 text-muted-foreground" />
+          <h2 className="font-semibold">Promotion Recommendations</h2>
+        </div>
+
+        {recommendations.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No promotion recommendations on record.</p>
+        ) : (
+          <div className="space-y-2">
+            {recommendations.map((rec) => (
+              <div
+                key={rec.id}
+                className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+              >
+                <div>
+                  <p className="font-medium">
+                    {rec.reason ?? "Promotion recommendation"}
+                  </p>
+                  {rec.submittedAt && (
+                    <p className="text-xs text-muted-foreground">
+                      Submitted {format(new Date(rec.submittedAt), "d MMM yyyy")}
+                    </p>
+                  )}
+                  {!rec.submittedAt && (
+                    <p className="text-xs text-muted-foreground">
+                      Created {format(new Date(rec.createdAt), "d MMM yyyy")}
+                    </p>
+                  )}
+                </div>
+                <PromotionRecommendationStatusBadge status={rec.status} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Performance Journal */}
+      <div className="rounded-xl border p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <BookOpen className="size-4 text-muted-foreground" />
+          <h2 className="font-semibold">Performance Journal</h2>
+        </div>
+
+        {journalYears.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No journal entries on record.</p>
+        ) : (
+          <div className="space-y-6">
+            {journalYears.map((year) => (
+              <div key={year}>
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {year}
+                </p>
+                <div className="relative space-y-3 pl-5 before:absolute before:left-1.5 before:top-0 before:h-full before:w-px before:bg-border">
+                  {(journalByYear[year] ?? []).map((entry) => (
+                    <div key={entry.id} className="relative">
+                      <span className="absolute -left-5 top-1.5 size-3 rounded-full border bg-background" />
+                      <div className="rounded-lg border p-3 text-sm space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-xs text-muted-foreground">
+                            {format(parseISO(entry.entryDate), "d MMM yyyy")}
+                          </p>
+                          <JournalEntryTypeBadge type={entry.entryType} />
+                        </div>
+                        <p className="text-foreground">{entry.body}</p>
+                        {entry.visibleToStaff && (
+                          <p className="text-xs text-muted-foreground italic">Visible to staff member</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Appraisals Tab
+// ---------------------------------------------------------------------------
+
+function AppraisalsTab({ staffProfileId }: { staffProfileId: string }) {
+  const { data: appraisalList, isLoading } = useQuery(
+    orpc.appraisals.getByStaff.queryOptions({ input: { staffProfileId } }),
+  );
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        <Skeleton className="h-10 w-full rounded" />
+        <Skeleton className="h-10 w-full rounded" />
+        <Skeleton className="h-10 w-full rounded" />
+      </div>
+    );
+  }
+
+  if (!appraisalList || appraisalList.length === 0) {
+    return (
+      <div className="rounded-xl border p-8 text-center">
+        <p className="text-sm text-muted-foreground">No appraisals on record.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border overflow-hidden">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b bg-muted/40">
+            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Period</th>
+            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Type of Review</th>
+            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Status</th>
+            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Score</th>
+            <th className="px-4 py-3 text-right font-medium text-muted-foreground">Action</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {appraisalList.map((appraisal) => (
+            <tr key={appraisal.id} className="hover:bg-muted/30 transition-colors">
+              <td className="px-4 py-3">
+                {format(parseISO(appraisal.periodStart), "d MMM yyyy")}
+                {" — "}
+                {format(parseISO(appraisal.periodEnd), "d MMM yyyy")}
+              </td>
+              <td className="px-4 py-3 text-muted-foreground">
+                {appraisal.typeOfReview ?? "—"}
+              </td>
+              <td className="px-4 py-3">
+                <AppraisalStatusBadge status={appraisal.status} />
+              </td>
+              <td className="px-4 py-3">
+                {appraisal.percentageScore != null ? (
+                  <span className="font-mono font-medium">{appraisal.percentageScore}%</span>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                )}
+              </td>
+              <td className="px-4 py-3 text-right">
+                <Link
+                  to="/appraisals/$appraisalId"
+                  params={{ appraisalId: appraisal.id }}
+                  className="text-primary underline-offset-2 hover:underline text-xs font-medium"
+                >
+                  View
+                </Link>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main page
+// ---------------------------------------------------------------------------
+
 function StaffProfilePage() {
   const { staffId } = Route.useParams();
   const [editOpen, setEditOpen] = useState(false);
@@ -260,6 +612,9 @@ function StaffProfilePage() {
             <TabsTrigger value="policy">Policy & Compliance</TabsTrigger>
           </TabsList>
 
+          {/* ----------------------------------------------------------------
+              Overview Tab
+          ---------------------------------------------------------------- */}
           <TabsContent value="overview" className="space-y-6">
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2 space-y-6">
@@ -380,49 +735,23 @@ function StaffProfilePage() {
             </div>
           </TabsContent>
 
+          {/* ----------------------------------------------------------------
+              Career Path Tab
+          ---------------------------------------------------------------- */}
           <TabsContent value="career" className="space-y-4">
-            <div className="rounded-xl border p-5">
-              <h2 className="font-semibold">Career Path</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Use appraisal cycles, promotion letters, and performance journals to define
-                readiness for progression and promotion.
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Link to="/appraisals">
-                  <Button variant="outline" size="sm">
-                    Appraisal History
-                  </Button>
-                </Link>
-                <Link to="/appraisals/inbox">
-                  <Button variant="outline" size="sm">
-                    Reviewer Inbox
-                  </Button>
-                </Link>
-              </div>
-            </div>
+            <CareerPathTab staffProfileId={staffId} />
           </TabsContent>
 
+          {/* ----------------------------------------------------------------
+              Appraisals Tab
+          ---------------------------------------------------------------- */}
           <TabsContent value="appraisals" className="space-y-4">
-            <div className="rounded-xl border p-5">
-              <h2 className="font-semibold">Appraisals</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Review appraisal history, scheduled cycles, and approval status here.
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Link to="/appraisals">
-                  <Button variant="outline" size="sm">
-                    Open Appraisals
-                  </Button>
-                </Link>
-                <Link to="/appraisals/inbox">
-                  <Button variant="outline" size="sm">
-                    Reviewer Inbox
-                  </Button>
-                </Link>
-              </div>
-            </div>
+            <AppraisalsTab staffProfileId={staffId} />
           </TabsContent>
 
+          {/* ----------------------------------------------------------------
+              Operational HR Tab
+          ---------------------------------------------------------------- */}
           <TabsContent value="operational" className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <Link to="/hr/ppe" className="rounded-xl border p-4 hover:bg-accent">
@@ -452,6 +781,9 @@ function StaffProfilePage() {
             </div>
           </TabsContent>
 
+          {/* ----------------------------------------------------------------
+              Policy & Compliance Tab
+          ---------------------------------------------------------------- */}
           <TabsContent value="policy" className="space-y-4">
             <div className="rounded-xl border p-5">
               <h2 className="font-semibold">Policy & Compliance</h2>

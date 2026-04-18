@@ -26,6 +26,7 @@ import { Route as AuthenticatedNotificationsIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedLeaveIndexRouteImport } from './routes/_authenticated/leave/index'
 import { Route as AuthenticatedIncidentsIndexRouteImport } from './routes/_authenticated/incidents/index'
 import { Route as AuthenticatedImportIndexRouteImport } from './routes/_authenticated/import/index'
+import { Route as AuthenticatedHrIndexRouteImport } from './routes/_authenticated/hr/index'
 import { Route as AuthenticatedCyclesIndexRouteImport } from './routes/_authenticated/cycles/index'
 import { Route as AuthenticatedContractsIndexRouteImport } from './routes/_authenticated/contracts/index'
 import { Route as AuthenticatedChangesIndexRouteImport } from './routes/_authenticated/changes/index'
@@ -67,6 +68,7 @@ import { Route as AuthenticatedComplianceItemsRouteImport } from './routes/_auth
 import { Route as AuthenticatedChangesNewRouteImport } from './routes/_authenticated/changes/new'
 import { Route as AuthenticatedChangesChangeIdRouteImport } from './routes/_authenticated/changes/$changeId'
 import { Route as AuthenticatedAppraisalsInboxRouteImport } from './routes/_authenticated/appraisals/inbox'
+import { Route as AuthenticatedAppraisalsAppraisalIdRouteImport } from './routes/_authenticated/appraisals/$appraisalId'
 import { Route as AuthenticatedAccessAccountIdRouteImport } from './routes/_authenticated/access/$accountId'
 import { Route as AuthenticatedRotaWarningsIndexRouteImport } from './routes/_authenticated/rota/warnings/index'
 import { Route as AuthenticatedRotaFairnessIndexRouteImport } from './routes/_authenticated/rota/fairness/index'
@@ -166,6 +168,11 @@ const AuthenticatedImportIndexRoute =
     path: '/import/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHrIndexRoute = AuthenticatedHrIndexRouteImport.update({
+  id: '/hr/',
+  path: '/hr/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCyclesIndexRoute =
   AuthenticatedCyclesIndexRouteImport.update({
     id: '/cycles/',
@@ -405,6 +412,12 @@ const AuthenticatedAppraisalsInboxRoute =
     path: '/appraisals/inbox',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAppraisalsAppraisalIdRoute =
+  AuthenticatedAppraisalsAppraisalIdRouteImport.update({
+    id: '/appraisals/$appraisalId',
+    path: '/appraisals/$appraisalId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAccessAccountIdRoute =
   AuthenticatedAccessAccountIdRouteImport.update({
     id: '/access/$accountId',
@@ -441,6 +454,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/access/$accountId': typeof AuthenticatedAccessAccountIdRoute
+  '/appraisals/$appraisalId': typeof AuthenticatedAppraisalsAppraisalIdRoute
   '/appraisals/inbox': typeof AuthenticatedAppraisalsInboxRoute
   '/changes/$changeId': typeof AuthenticatedChangesChangeIdRoute
   '/changes/new': typeof AuthenticatedChangesNewRoute
@@ -482,6 +496,7 @@ export interface FileRoutesByFullPath {
   '/changes/': typeof AuthenticatedChangesIndexRoute
   '/contracts/': typeof AuthenticatedContractsIndexRoute
   '/cycles/': typeof AuthenticatedCyclesIndexRoute
+  '/hr/': typeof AuthenticatedHrIndexRoute
   '/import/': typeof AuthenticatedImportIndexRoute
   '/incidents/': typeof AuthenticatedIncidentsIndexRoute
   '/leave/': typeof AuthenticatedLeaveIndexRoute
@@ -505,6 +520,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/': typeof AuthenticatedIndexRoute
   '/access/$accountId': typeof AuthenticatedAccessAccountIdRoute
+  '/appraisals/$appraisalId': typeof AuthenticatedAppraisalsAppraisalIdRoute
   '/appraisals/inbox': typeof AuthenticatedAppraisalsInboxRoute
   '/changes/$changeId': typeof AuthenticatedChangesChangeIdRoute
   '/changes/new': typeof AuthenticatedChangesNewRoute
@@ -546,6 +562,7 @@ export interface FileRoutesByTo {
   '/changes': typeof AuthenticatedChangesIndexRoute
   '/contracts': typeof AuthenticatedContractsIndexRoute
   '/cycles': typeof AuthenticatedCyclesIndexRoute
+  '/hr': typeof AuthenticatedHrIndexRoute
   '/import': typeof AuthenticatedImportIndexRoute
   '/incidents': typeof AuthenticatedIncidentsIndexRoute
   '/leave': typeof AuthenticatedLeaveIndexRoute
@@ -571,6 +588,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/access/$accountId': typeof AuthenticatedAccessAccountIdRoute
+  '/_authenticated/appraisals/$appraisalId': typeof AuthenticatedAppraisalsAppraisalIdRoute
   '/_authenticated/appraisals/inbox': typeof AuthenticatedAppraisalsInboxRoute
   '/_authenticated/changes/$changeId': typeof AuthenticatedChangesChangeIdRoute
   '/_authenticated/changes/new': typeof AuthenticatedChangesNewRoute
@@ -612,6 +630,7 @@ export interface FileRoutesById {
   '/_authenticated/changes/': typeof AuthenticatedChangesIndexRoute
   '/_authenticated/contracts/': typeof AuthenticatedContractsIndexRoute
   '/_authenticated/cycles/': typeof AuthenticatedCyclesIndexRoute
+  '/_authenticated/hr/': typeof AuthenticatedHrIndexRoute
   '/_authenticated/import/': typeof AuthenticatedImportIndexRoute
   '/_authenticated/incidents/': typeof AuthenticatedIncidentsIndexRoute
   '/_authenticated/leave/': typeof AuthenticatedLeaveIndexRoute
@@ -637,6 +656,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/access/$accountId'
+    | '/appraisals/$appraisalId'
     | '/appraisals/inbox'
     | '/changes/$changeId'
     | '/changes/new'
@@ -678,6 +698,7 @@ export interface FileRouteTypes {
     | '/changes/'
     | '/contracts/'
     | '/cycles/'
+    | '/hr/'
     | '/import/'
     | '/incidents/'
     | '/leave/'
@@ -701,6 +722,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/'
     | '/access/$accountId'
+    | '/appraisals/$appraisalId'
     | '/appraisals/inbox'
     | '/changes/$changeId'
     | '/changes/new'
@@ -742,6 +764,7 @@ export interface FileRouteTypes {
     | '/changes'
     | '/contracts'
     | '/cycles'
+    | '/hr'
     | '/import'
     | '/incidents'
     | '/leave'
@@ -766,6 +789,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/'
     | '/_authenticated/access/$accountId'
+    | '/_authenticated/appraisals/$appraisalId'
     | '/_authenticated/appraisals/inbox'
     | '/_authenticated/changes/$changeId'
     | '/_authenticated/changes/new'
@@ -807,6 +831,7 @@ export interface FileRouteTypes {
     | '/_authenticated/changes/'
     | '/_authenticated/contracts/'
     | '/_authenticated/cycles/'
+    | '/_authenticated/hr/'
     | '/_authenticated/import/'
     | '/_authenticated/incidents/'
     | '/_authenticated/leave/'
@@ -950,6 +975,13 @@ declare module '@tanstack/react-router' {
       path: '/import'
       fullPath: '/import/'
       preLoaderRoute: typeof AuthenticatedImportIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr/': {
+      id: '/_authenticated/hr/'
+      path: '/hr'
+      fullPath: '/hr/'
+      preLoaderRoute: typeof AuthenticatedHrIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cycles/': {
@@ -1239,6 +1271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppraisalsInboxRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/appraisals/$appraisalId': {
+      id: '/_authenticated/appraisals/$appraisalId'
+      path: '/appraisals/$appraisalId'
+      fullPath: '/appraisals/$appraisalId'
+      preLoaderRoute: typeof AuthenticatedAppraisalsAppraisalIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/access/$accountId': {
       id: '/_authenticated/access/$accountId'
       path: '/access/$accountId'
@@ -1281,6 +1320,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAccessAccountIdRoute: typeof AuthenticatedAccessAccountIdRoute
+  AuthenticatedAppraisalsAppraisalIdRoute: typeof AuthenticatedAppraisalsAppraisalIdRoute
   AuthenticatedAppraisalsInboxRoute: typeof AuthenticatedAppraisalsInboxRoute
   AuthenticatedChangesChangeIdRoute: typeof AuthenticatedChangesChangeIdRoute
   AuthenticatedChangesNewRoute: typeof AuthenticatedChangesNewRoute
@@ -1322,6 +1362,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedChangesIndexRoute: typeof AuthenticatedChangesIndexRoute
   AuthenticatedContractsIndexRoute: typeof AuthenticatedContractsIndexRoute
   AuthenticatedCyclesIndexRoute: typeof AuthenticatedCyclesIndexRoute
+  AuthenticatedHrIndexRoute: typeof AuthenticatedHrIndexRoute
   AuthenticatedImportIndexRoute: typeof AuthenticatedImportIndexRoute
   AuthenticatedIncidentsIndexRoute: typeof AuthenticatedIncidentsIndexRoute
   AuthenticatedLeaveIndexRoute: typeof AuthenticatedLeaveIndexRoute
@@ -1345,6 +1386,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAccessAccountIdRoute: AuthenticatedAccessAccountIdRoute,
+  AuthenticatedAppraisalsAppraisalIdRoute:
+    AuthenticatedAppraisalsAppraisalIdRoute,
   AuthenticatedAppraisalsInboxRoute: AuthenticatedAppraisalsInboxRoute,
   AuthenticatedChangesChangeIdRoute: AuthenticatedChangesChangeIdRoute,
   AuthenticatedChangesNewRoute: AuthenticatedChangesNewRoute,
@@ -1387,6 +1430,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChangesIndexRoute: AuthenticatedChangesIndexRoute,
   AuthenticatedContractsIndexRoute: AuthenticatedContractsIndexRoute,
   AuthenticatedCyclesIndexRoute: AuthenticatedCyclesIndexRoute,
+  AuthenticatedHrIndexRoute: AuthenticatedHrIndexRoute,
   AuthenticatedImportIndexRoute: AuthenticatedImportIndexRoute,
   AuthenticatedIncidentsIndexRoute: AuthenticatedIncidentsIndexRoute,
   AuthenticatedLeaveIndexRoute: AuthenticatedLeaveIndexRoute,

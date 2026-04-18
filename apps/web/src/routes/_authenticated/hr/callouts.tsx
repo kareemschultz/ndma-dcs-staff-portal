@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
-import { PhoneCall, Plus } from "lucide-react";
+import { Download, PhoneCall, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Header } from "@/components/layout/header";
@@ -21,6 +21,22 @@ import { Textarea } from "@ndma-dcs-staff-portal/ui/components/textarea";
 export const Route = createFileRoute("/_authenticated/hr/callouts")({
   component: CalloutsPage,
 });
+
+function exportCsv(filename: string, rows: Record<string, string | number | null | undefined>[]) {
+  if (rows.length === 0) return;
+  const headers = Object.keys(rows[0]!);
+  const csv = [
+    headers.join(","),
+    ...rows.map((r) => headers.map((h) => JSON.stringify(r[h] ?? "")).join(",")),
+  ].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function CreateCalloutDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const queryClient = useQueryClient();
@@ -149,6 +165,27 @@ function CalloutsPage() {
         </div>
         <div className="ms-auto flex items-center gap-2">
           <ThemeSwitch />
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              exportCsv(
+                "callouts.csv",
+                (data ?? []).map((row) => ({
+                  staffName: row.staffProfile?.user?.name ?? "",
+                  calloutAt: row.calloutAt ? format(new Date(row.calloutAt), "yyyy-MM-dd HH:mm") : "",
+                  calloutType: row.calloutType,
+                  reason: row.reason ?? "",
+                  outcome: row.outcome ?? "",
+                  status: row.status,
+                })),
+              )
+            }
+            disabled={isLoading}
+          >
+            <Download className="mr-2 size-4" />
+            Export CSV
+          </Button>
           <Button size="sm" onClick={() => setCreateOpen(true)}>
             <Plus className="mr-2 size-4" />
             New Callout

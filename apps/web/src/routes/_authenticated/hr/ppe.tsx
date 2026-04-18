@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, isPast, parseISO } from "date-fns";
 import { useState } from "react";
-import { HardHat, Plus } from "lucide-react";
+import { Download, HardHat, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Header } from "@/components/layout/header";
@@ -21,6 +21,22 @@ import { Textarea } from "@ndma-dcs-staff-portal/ui/components/textarea";
 export const Route = createFileRoute("/_authenticated/hr/ppe")({
   component: PPEOpsPage,
 });
+
+function exportCsv(filename: string, rows: Record<string, string | number | null | undefined>[]) {
+  if (rows.length === 0) return;
+  const headers = Object.keys(rows[0]!);
+  const csv = [
+    headers.join(","),
+    ...rows.map((r) => headers.map((h) => JSON.stringify(r[h] ?? "")).join(",")),
+  ].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function CreatePpeDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const queryClient = useQueryClient();
@@ -166,6 +182,22 @@ function PPEOpsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const { data, isLoading } = useQuery(orpc.ppe.issuances.list.queryOptions({ input: {} }));
 
+  function handleExport() {
+    if (!data?.length) { toast.error("No data to export."); return; }
+    exportCsv(
+      "ppe-issuances.csv",
+      data.map((row) => ({
+        staffName: row.staffProfile?.user?.name ?? "",
+        ppeItemCode: row.ppeItem?.name ?? row.ppeItemId,
+        status: row.status,
+        issuedDate: row.issuedDate ?? "",
+        serialNumber: row.serialNumber ?? "",
+        size: row.size ?? "",
+        notes: row.notes ?? "",
+      })),
+    );
+  }
+
   return (
     <>
       <Header fixed>
@@ -175,6 +207,10 @@ function PPEOpsPage() {
         </div>
         <div className="ms-auto flex items-center gap-2">
           <ThemeSwitch />
+          <Button size="sm" variant="outline" onClick={handleExport} disabled={isLoading}>
+            <Download className="mr-2 size-4" />
+            Export CSV
+          </Button>
           <Button size="sm" onClick={() => setCreateOpen(true)}>
             <Plus className="mr-2 size-4" />
             Issue PPE

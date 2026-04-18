@@ -34,6 +34,11 @@ export const contracts = pgTable(
     endDate: date("end_date"),
     // Days before endDate to trigger expiry reminder
     renewalReminderDays: integer("renewal_reminder_days").notNull().default(60),
+    renewalStatus: text("renewal_status", {
+      enum: ["not_due", "due_soon", "letter_drafted", "submitted_to_hr", "renewed", "not_renewing"],
+    })
+      .notNull()
+      .default("not_due"),
     status: contractStatusEnum("status").notNull().default("active"),
     documentUrl: text("document_url"),
     notes: text("notes"),
