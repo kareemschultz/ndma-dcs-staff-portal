@@ -5,6 +5,7 @@ import {
   leaveTypes,
   leaveBalances,
   leaveRequests,
+  leavePolicies,
   staffProfiles,
 } from "@ndma-dcs-staff-portal/db";
 import { and, eq, gte, lte, sql } from "drizzle-orm";
@@ -15,7 +16,33 @@ const MAX_DEPT_LEAVE_OVERLAP = 2;
 
 import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
+import { evaluateLeavePolicy } from "../lib/leave-policy";
 import { createNotification } from "../lib/notify";
+
+function canOverrideLeavePolicy(role: string | null | undefined) {
+  return Boolean(role && ["admin", "hrAdminOps", "manager"].includes(role));
+}
+
+async function loadApplicableLeavePolicy(staffProfileId: string, leaveTypeId: string) {
+  const staff = await db.query.staffProfiles.findFirst({
+    where: eq(staffProfiles.id, staffProfileId),
+  });
+  if (!staff) {
+    return null;
+  }
+
+  const policies = await db.query.leavePolicies.findMany({
+    where: eq(leavePolicies.isActive, true),
+  });
+
+  return (
+    policies.find((policy) => policy.departmentId === staff.departmentId && policy.leaveTypeId === leaveTypeId) ??
+    policies.find((policy) => policy.departmentId === staff.departmentId && !policy.leaveTypeId) ??
+    policies.find((policy) => !policy.departmentId && policy.leaveTypeId === leaveTypeId) ??
+    policies.find((policy) => !policy.departmentId && !policy.leaveTypeId) ??
+    null
+  );
+}
 
 export const leaveRouter = {
   // ── Leave Types ───────────────────────────────────────────────────────────
@@ -220,6 +247,7 @@ export const leaveRouter = {
           endDate: z.string(),
           totalDays: z.number().min(1),
           reason: z.string().optional(),
+          overlapOverride: z.boolean().default(false),
         }),
       )
       .handler(async ({ input, context }) => {
@@ -234,6 +262,32 @@ export const leaveRouter = {
             throw new ORPCError("FORBIDDEN", { message: "You can only submit leave for yourself." });
           }
         }
+
+        if (input.overlapOverride && !canOverrideLeavePolicy(role)) {
+          throw new ORPCError("FORBIDDEN", {
+            message: "Only managers and HR/admin can use leave override.",
+          });
+        }
+
+        const targetProfile = await db.query.staffProfiles.findFirst({
+          where: eq(staffProfiles.id, input.staffProfileId),
+        });
+        if (!targetProfile) {
+          throw new ORPCError("NOT_FOUND", { message: "Staff profile not found." });
+        }
+
+        const policy = await loadApplicableLeavePolicy(input.staffProfileId, input.leaveTypeId);
+        const policyLimits = policy
+          ? {
+              maxConcurrentAbsences: policy.maxConcurrentAbsences,
+              maxRequestsPerYear: policy.maxRequestsPerYear,
+              requiresHrOverrideForSplit: policy.requiresHrOverrideForSplit,
+            }
+          : {
+              maxConcurrentAbsences: MAX_DEPT_LEAVE_OVERLAP,
+              maxRequestsPerYear: null,
+              requiresHrOverrideForSplit: false,
+            };
 
         // Check sufficient leave balance
         const balance = await db.query.leaveBalances.findFirst({
@@ -257,25 +311,77 @@ export const leaveRouter = {
           }
         }
 
-        // Check for overlapping approved/pending requests
-        const overlapping = await db.query.leaveRequests.findFirst({
-          where: and(
-            eq(leaveRequests.staffProfileId, input.staffProfileId),
-            sql`${leaveRequests.status} IN ('pending', 'approved')`,
-            lte(leaveRequests.startDate, input.endDate),
-            gte(leaveRequests.endDate, input.startDate),
-          ),
+        const [ownOverlap] = await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(leaveRequests)
+          .where(
+            and(
+              eq(leaveRequests.staffProfileId, input.staffProfileId),
+              sql`${leaveRequests.status} IN ('pending', 'approved')`,
+              lte(leaveRequests.startDate, input.endDate),
+              gte(leaveRequests.endDate, input.startDate),
+            ),
+          );
+        if ((ownOverlap?.count ?? 0) > 0) {
+          throw new ORPCError("CONFLICT", {
+            message: "Overlapping leave request already exists for this staff member.",
+          });
+        }
+
+        const yearStart = `${input.startDate.slice(0, 4)}-01-01`;
+        const yearEnd = `${input.startDate.slice(0, 4)}-12-31`;
+
+        const [requestsThisYearResult] = await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(leaveRequests)
+          .where(
+            and(
+              eq(leaveRequests.staffProfileId, input.staffProfileId),
+              eq(leaveRequests.leaveTypeId, input.leaveTypeId),
+              sql`${leaveRequests.startDate} >= ${yearStart}`,
+              sql`${leaveRequests.startDate} <= ${yearEnd}`,
+              sql`${leaveRequests.status} IN ('pending', 'approved')`,
+            ),
+          );
+
+        let concurrentAbsences = 0;
+        if (targetProfile.departmentId) {
+          const [departmentOverlap] = await db
+            .select({ count: sql<number>`count(*)::int` })
+            .from(leaveRequests)
+            .innerJoin(staffProfiles, eq(leaveRequests.staffProfileId, staffProfiles.id))
+            .where(
+              and(
+                eq(staffProfiles.departmentId, targetProfile.departmentId),
+                sql`${leaveRequests.status} IN ('pending', 'approved')`,
+                lte(leaveRequests.startDate, input.endDate),
+                gte(leaveRequests.endDate, input.startDate),
+                sql`${leaveRequests.staffProfileId} != ${input.staffProfileId}`,
+              ),
+            );
+          concurrentAbsences = departmentOverlap?.count ?? 0;
+        }
+
+        const policyEvaluation = evaluateLeavePolicy({
+          policy: policyLimits,
+          concurrentAbsences,
+          requestsThisYear: requestsThisYearResult?.count ?? 0,
+          requestedParts: input.totalDays > 1 ? 2 : 1,
+          overrideRequested: input.overlapOverride,
+          callerCanOverride: canOverrideLeavePolicy(role),
         });
 
-        if (overlapping) {
-          throw new ORPCError("CONFLICT", {
-            message: `Overlapping leave request exists (${overlapping.startDate} to ${overlapping.endDate})`,
-          });
+        if (!policyEvaluation.allowed) {
+          throw new ORPCError("CONFLICT", { message: policyEvaluation.reason });
         }
 
         const [request] = await db
           .insert(leaveRequests)
-          .values({ ...input, reason: input.reason ?? null })
+          .values({
+            ...input,
+            reason: input.reason ?? null,
+            overlapOverride: input.overlapOverride,
+          })
           .returning();
         if (!request) throw new ORPCError("INTERNAL_SERVER_ERROR");
 
@@ -299,57 +405,62 @@ export const leaveRouter = {
     approve: requireRole("leave", "approve")
       .input(z.object({ id: z.string() }))
       .handler(async ({ input, context }) => {
-        const before = await db.query.leaveRequests.findFirst({
-          where: eq(leaveRequests.id, input.id),
-          with: { staffProfile: true },
-        });
-        if (!before) throw new ORPCError("NOT_FOUND");
-        if (before.status !== "pending")
-          throw new ORPCError("CONFLICT", { message: "Request is not pending" });
+        const { before, updated } = await db.transaction(async (tx) => {
+          const beforeRequest = await tx.query.leaveRequests.findFirst({
+            where: eq(leaveRequests.id, input.id),
+            with: { staffProfile: true },
+          });
+          if (!beforeRequest) throw new ORPCError("NOT_FOUND");
+          if (beforeRequest.status !== "pending") {
+            throw new ORPCError("CONFLICT", { message: "Request is not pending" });
+          }
 
-        // Team overlap cap — prevent too many from same department on leave simultaneously
-        if (before.staffProfile.departmentId) {
-          const [overlapResult] = await db
-            .select({ count: sql<number>`count(*)::int` })
-            .from(leaveRequests)
-            .innerJoin(staffProfiles, eq(leaveRequests.staffProfileId, staffProfiles.id))
+          if (beforeRequest.staffProfile.departmentId) {
+            const [overlapResult] = await tx
+              .select({ count: sql<number>`count(*)::int` })
+              .from(leaveRequests)
+              .innerJoin(staffProfiles, eq(leaveRequests.staffProfileId, staffProfiles.id))
+              .where(
+                and(
+                  eq(staffProfiles.departmentId, beforeRequest.staffProfile.departmentId),
+                  eq(leaveRequests.status, "approved"),
+                  lte(leaveRequests.startDate, beforeRequest.endDate),
+                  gte(leaveRequests.endDate, beforeRequest.startDate),
+                  sql`${leaveRequests.staffProfileId} != ${beforeRequest.staffProfileId}`,
+                ),
+              );
+            const overlapCount = overlapResult?.count ?? 0;
+            if (overlapCount >= MAX_DEPT_LEAVE_OVERLAP) {
+              throw new ORPCError("CONFLICT", {
+                message: `Cannot approve: ${overlapCount} colleague(s) from the same department are already on approved leave during this period (department cap: ${MAX_DEPT_LEAVE_OVERLAP})`,
+              });
+            }
+          }
+
+          const [nextRequest] = await tx
+            .update(leaveRequests)
+            .set({
+              status: "approved",
+              approvedById: context.session.user.id,
+              approvedAt: new Date(),
+            })
+            .where(eq(leaveRequests.id, input.id))
+            .returning();
+
+          if (!nextRequest) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
+          await tx
+            .update(leaveBalances)
+            .set({ used: sql`${leaveBalances.used} + ${beforeRequest.totalDays}` })
             .where(
               and(
-                eq(staffProfiles.departmentId, before.staffProfile.departmentId),
-                eq(leaveRequests.status, "approved"),
-                lte(leaveRequests.startDate, before.endDate),
-                gte(leaveRequests.endDate, before.startDate),
-                sql`${leaveRequests.staffProfileId} != ${before.staffProfileId}`,
+                eq(leaveBalances.staffProfileId, beforeRequest.staffProfileId),
+                eq(leaveBalances.leaveTypeId, beforeRequest.leaveTypeId),
               ),
             );
-          const overlapCount = overlapResult?.count ?? 0;
-          if (overlapCount >= MAX_DEPT_LEAVE_OVERLAP) {
-            throw new ORPCError("CONFLICT", {
-              message: `Cannot approve: ${overlapCount} colleague(s) from the same department are already on approved leave during this period (department cap: ${MAX_DEPT_LEAVE_OVERLAP})`,
-            });
-          }
-        }
 
-        const [updated] = await db
-          .update(leaveRequests)
-          .set({
-            status: "approved",
-            approvedById: context.session.user.id,
-            approvedAt: new Date(),
-          })
-          .where(eq(leaveRequests.id, input.id))
-          .returning();
-
-        // Update used balance
-        await db
-          .update(leaveBalances)
-          .set({ used: sql`${leaveBalances.used} + ${before.totalDays}` })
-          .where(
-            and(
-              eq(leaveBalances.staffProfileId, before.staffProfileId),
-              eq(leaveBalances.leaveTypeId, before.leaveTypeId),
-            ),
-          );
+          return { before: beforeRequest, updated: nextRequest };
+        });
 
         await createNotification({
           recipientId: before.staffProfile.userId,
@@ -382,24 +493,30 @@ export const leaveRouter = {
     reject: requireRole("leave", "reject")
       .input(z.object({ id: z.string(), rejectionReason: z.string().optional() }))
       .handler(async ({ input, context }) => {
-        const before = await db.query.leaveRequests.findFirst({
-          where: eq(leaveRequests.id, input.id),
-          with: { staffProfile: true },
-        });
-        if (!before) throw new ORPCError("NOT_FOUND");
-        if (before.status !== "pending")
-          throw new ORPCError("CONFLICT", { message: "Request is not pending" });
+        const { before, updated } = await db.transaction(async (tx) => {
+          const beforeRequest = await tx.query.leaveRequests.findFirst({
+            where: eq(leaveRequests.id, input.id),
+            with: { staffProfile: true },
+          });
+          if (!beforeRequest) throw new ORPCError("NOT_FOUND");
+          if (beforeRequest.status !== "pending") {
+            throw new ORPCError("CONFLICT", { message: "Request is not pending" });
+          }
 
-        const [updated] = await db
-          .update(leaveRequests)
-          .set({
-            status: "rejected",
-            approvedById: context.session.user.id,
-            approvedAt: new Date(),
-            rejectionReason: input.rejectionReason ?? null,
-          })
-          .where(eq(leaveRequests.id, input.id))
-          .returning();
+          const [nextRequest] = await tx
+            .update(leaveRequests)
+            .set({
+              status: "rejected",
+              approvedById: context.session.user.id,
+              approvedAt: new Date(),
+              rejectionReason: input.rejectionReason ?? null,
+            })
+            .where(eq(leaveRequests.id, input.id))
+            .returning();
+
+          if (!nextRequest) throw new ORPCError("INTERNAL_SERVER_ERROR");
+          return { before: beforeRequest, updated: nextRequest };
+        });
 
         await createNotification({
           recipientId: before.staffProfile.userId,
@@ -431,31 +548,37 @@ export const leaveRouter = {
     cancel: requireRole("leave", "cancel")
       .input(z.object({ id: z.string() }))
       .handler(async ({ input, context }) => {
-        const before = await db.query.leaveRequests.findFirst({
-          where: eq(leaveRequests.id, input.id),
+        const { before, updated } = await db.transaction(async (tx) => {
+          const beforeRequest = await tx.query.leaveRequests.findFirst({
+            where: eq(leaveRequests.id, input.id),
+          });
+          if (!beforeRequest) throw new ORPCError("NOT_FOUND");
+          if (!["pending", "approved"].includes(beforeRequest.status)) {
+            throw new ORPCError("CONFLICT", { message: "Cannot cancel this request" });
+          }
+
+          const [nextRequest] = await tx
+            .update(leaveRequests)
+            .set({ status: "cancelled" })
+            .where(eq(leaveRequests.id, input.id))
+            .returning();
+
+          if (!nextRequest) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
+          if (beforeRequest.status === "approved") {
+            await tx
+              .update(leaveBalances)
+              .set({ used: sql`GREATEST(0, ${leaveBalances.used} - ${beforeRequest.totalDays})` })
+              .where(
+                and(
+                  eq(leaveBalances.staffProfileId, beforeRequest.staffProfileId),
+                  eq(leaveBalances.leaveTypeId, beforeRequest.leaveTypeId),
+                ),
+              );
+          }
+
+          return { before: beforeRequest, updated: nextRequest };
         });
-        if (!before) throw new ORPCError("NOT_FOUND");
-        if (!["pending", "approved"].includes(before.status))
-          throw new ORPCError("CONFLICT", { message: "Cannot cancel this request" });
-
-        const [updated] = await db
-          .update(leaveRequests)
-          .set({ status: "cancelled" })
-          .where(eq(leaveRequests.id, input.id))
-          .returning();
-
-        // Return days to balance if cancelling an approved request
-        if (before.status === "approved") {
-          await db
-            .update(leaveBalances)
-            .set({ used: sql`GREATEST(0, ${leaveBalances.used} - ${before.totalDays})` })
-            .where(
-              and(
-                eq(leaveBalances.staffProfileId, before.staffProfileId),
-                eq(leaveBalances.leaveTypeId, before.leaveTypeId),
-              ),
-            );
-        }
 
         await logAudit({
           actorId: context.session.user.id,
@@ -495,3 +618,4 @@ export const leaveRouter = {
       });
     }),
 };
+

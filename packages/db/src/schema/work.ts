@@ -100,8 +100,10 @@ export const workItems = pgTable(
     // Follow-up date for external department work (OtherDept sheet)
     followUpDate: date("follow_up_date"),
     // Hierarchy — optional grouping under an initiative or parent task
-    initiativeId: text("initiative_id"),
-    parentId: text("parent_id"), // self-reference — bare text, constraint added by db:push
+    initiativeId: text("initiative_id").references(() => workInitiatives.id, {
+      onDelete: "set null",
+    }),
+    parentId: text("parent_id"), // self-reference kept as bare text to avoid Drizzle circular typing
     // Milestone marker date
     milestoneDate: date("milestone_date"),
     // Audit
@@ -412,3 +414,5 @@ export const workItemTeamAllocationsRelations = relations(
     }),
   }),
 );
+
+

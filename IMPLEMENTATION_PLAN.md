@@ -53,6 +53,12 @@
 - **Files touched:** `packages/db/src/schema/roster.ts`, `packages/api/src/routers/roster.ts`, `packages/api/src/routers/index.ts`, `packages/auth/src/index.ts`, `apps/web/src/components/layout/data/sidebar-data.ts`, `apps/web/src/routes/_authenticated/staff/$staffId.tsx`, `apps/web/src/routes/_authenticated/roster/*`, `apps/web/src/routeTree.gen.ts`, `IMPLEMENTATION_PLAN.md`.
 - **For next session:** continue with remaining Phase 4 polish if desired, then move to the remaining plan phases.
 
+### 2026-04-17 ? Session F (Phase 5 leave policy + contract renewal)
+- **Who:** Codex (current session)
+- **What:** Added `leave_policies` schema + router, extended leave creation with policy evaluation and override gating, wrapped leave approve/reject/cancel in transactions, extended contracts with renewal workflow fields and router actions, added a pure leave-policy evaluator with tests, and hardened FK coverage on work/temp-change schemas where safe.
+- **Files touched:** `packages/db/src/schema/leave-policies.ts`, `packages/db/src/schema/contracts.ts`, `packages/db/src/schema/work.ts`, `packages/db/src/schema/temp-changes.ts`, `packages/db/src/schema/index.ts`, `packages/auth/src/index.ts`, `packages/api/src/lib/leave-policy.ts`, `packages/api/src/lib/leave-policy.test.ts`, `packages/api/src/routers/leave.ts`, `packages/api/src/routers/leave-policies.ts`, `packages/api/src/routers/contracts.ts`, `packages/api/src/routers/index.ts`, `IMPLEMENTATION_PLAN.md`.
+- **For next session:** wire a minimal leave policy admin UI if needed, then continue with the remaining Phase 5 polish items (import transactions, registry UI filters, and any remaining contract/leave UX).
+
 <!-- NEXT SESSION: add your entry here. Use ISO date + a short session ID. Keep it scannable. -->
 
 ---

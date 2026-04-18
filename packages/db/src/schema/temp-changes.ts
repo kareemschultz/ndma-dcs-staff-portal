@@ -11,7 +11,8 @@ import {
 import { relations } from "drizzle-orm";
 
 import { user } from "./auth";
-import { services } from "./incidents";
+import { departments } from "./departments";
+import { incidents, services } from "./incidents";
 import { staffProfiles } from "./staff";
 import { workItems } from "./work";
 
@@ -109,10 +110,14 @@ export const temporaryChanges = pgTable(
     // Requester info
     requestedByType: text("requested_by_type").default("internal_staff"),
     requestedByExternal: text("requested_by_external"),
-    requestedById: text("requested_by_id"), // FK to staffProfiles.id — bare text, no .references() to avoid circular issues
+    requestedById: text("requested_by_id").references(() => staffProfiles.id, {
+      onDelete: "set null",
+    }),
 
     // Department linkage
-    departmentId: text("department_id"), // FK to departments — bare text ref
+    departmentId: text("department_id").references(() => departments.id, {
+      onDelete: "set null",
+    }),
   },
   (table) => [
     index("temp_changes_status_idx").on(table.status),
@@ -160,9 +165,15 @@ export const tempChangeLinks = pgTable("temp_change_links", {
   tempChangeId: text("temp_change_id")
     .notNull()
     .references(() => temporaryChanges.id, { onDelete: "cascade" }),
-  workItemId: text("work_item_id"), // bare FK ref
-  incidentId: text("incident_id"), // bare FK ref
-  serviceId: text("service_id"), // bare FK ref
+  workItemId: text("work_item_id").references(() => workItems.id, {
+    onDelete: "cascade",
+  }),
+  incidentId: text("incident_id").references(() => incidents.id, {
+    onDelete: "cascade",
+  }),
+  serviceId: text("service_id").references(() => services.id, {
+    onDelete: "cascade",
+  }),
   linkType: text("link_type").default("related"), // related | caused_by | resolves
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -203,3 +214,5 @@ export const temporaryChangesRelations = relations(
     links: many(tempChangeLinks),
   }),
 );
+
+

@@ -4,6 +4,7 @@ export * from "./imports";
 export * from "./appraisals";
 export * from "./appraisal-cycles";
 export * from "./appraisal-followups";
+export * from "./leave-policies";
 export * from "./hr-docs";
 export * from "./audit";
 export * from "./compliance";

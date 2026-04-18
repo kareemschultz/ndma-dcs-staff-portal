@@ -8,6 +8,7 @@ import { appraisalCyclesRouter } from "./appraisal-cycles";
 import { auditRouter } from "./audit";
 import { complianceRouter } from "./compliance";
 import { contractsRouter } from "./contracts";
+import { leavePoliciesRouter } from "./leave-policies";
 import { attendanceExceptionsRouter } from "./attendance-exceptions";
 import { departmentAssignmentsRouter } from "./department-assignments";
 import { departmentsRouter } from "./departments";
@@ -53,6 +54,7 @@ export const appRouter = {
   hrDocs: hrDocsRouter,
   incidents: incidentsRouter,
   leave: leaveRouter,
+  leavePolicies: leavePoliciesRouter,
   notifications: notificationsRouter,
   ppe: ppeRouter,
   procurement: procurementRouter,

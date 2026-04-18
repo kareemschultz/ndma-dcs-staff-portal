@@ -144,4 +144,139 @@ export const contractsRouter = {
         with: { staffProfile: { with: { user: true, department: true } } },
       });
     }),
+
+  requestRenewal: requireRole("contract", "update")
+    .input(
+      z.object({
+        id: z.string(),
+        renewalLetterRequiredBy: z.string().optional(),
+        notes: z.string().optional(),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      const before = await db.query.contracts.findFirst({
+        where: eq(contracts.id, input.id),
+      });
+      if (!before) throw new ORPCError("NOT_FOUND");
+      if (!["active", "expiring_soon"].includes(before.status)) {
+        throw new ORPCError("CONFLICT", { message: "Only active or expiring contracts can enter renewal." });
+      }
+
+      const [updated] = await db
+        .update(contracts)
+        .set({
+          renewalStatus: "requested",
+          renewalRequestedAt: new Date(),
+          renewalRequestedById: context.session.user.id,
+          renewalLetterRequiredBy:
+            input.renewalLetterRequiredBy ?? before.renewalLetterRequiredBy ?? before.endDate,
+          notes: input.notes ?? before.notes,
+        })
+        .where(eq(contracts.id, input.id))
+        .returning();
+      if (!updated) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
+      await logAudit({
+        actorId: context.session.user.id,
+        actorName: context.session.user.name,
+        action: "contract.renewal.request",
+        module: "staff",
+        resourceType: "contract",
+        resourceId: input.id,
+        beforeValue: before as Record<string, unknown>,
+        afterValue: updated as Record<string, unknown>,
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
+      });
+
+      return updated;
+    }),
+
+  completeRenewal: requireRole("contract", "update")
+    .input(
+      z.object({
+        id: z.string(),
+        newEndDate: z.string().optional(),
+        documentUrl: z.string().optional(),
+        notes: z.string().optional(),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      const before = await db.query.contracts.findFirst({
+        where: eq(contracts.id, input.id),
+      });
+      if (!before) throw new ORPCError("NOT_FOUND");
+      if (!["requested", "approved", "issued"].includes(before.renewalStatus)) {
+        throw new ORPCError("CONFLICT", { message: "Contract renewal has not been requested." });
+      }
+
+      const [updated] = await db
+        .update(contracts)
+        .set({
+          status: "renewed",
+          renewalStatus: "completed",
+          renewalCompletedAt: new Date(),
+          endDate: input.newEndDate ?? before.endDate,
+          documentUrl: input.documentUrl ?? before.documentUrl,
+          notes: input.notes ?? before.notes,
+        })
+        .where(eq(contracts.id, input.id))
+        .returning();
+      if (!updated) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
+      await logAudit({
+        actorId: context.session.user.id,
+        actorName: context.session.user.name,
+        action: "contract.renewal.complete",
+        module: "staff",
+        resourceType: "contract",
+        resourceId: input.id,
+        beforeValue: before as Record<string, unknown>,
+        afterValue: updated as Record<string, unknown>,
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
+      });
+
+      return updated;
+    }),
+
+  declineRenewal: requireRole("contract", "update")
+    .input(z.object({ id: z.string(), notes: z.string().optional() }))
+    .handler(async ({ input, context }) => {
+      const before = await db.query.contracts.findFirst({
+        where: eq(contracts.id, input.id),
+      });
+      if (!before) throw new ORPCError("NOT_FOUND");
+
+      const [updated] = await db
+        .update(contracts)
+        .set({
+          renewalStatus: "declined",
+          notes: input.notes ?? before.notes,
+        })
+        .where(eq(contracts.id, input.id))
+        .returning();
+      if (!updated) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
+      await logAudit({
+        actorId: context.session.user.id,
+        actorName: context.session.user.name,
+        action: "contract.renewal.decline",
+        module: "staff",
+        resourceType: "contract",
+        resourceId: input.id,
+        beforeValue: before as Record<string, unknown>,
+        afterValue: updated as Record<string, unknown>,
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+        actorRole: context.userRole ?? undefined,
+        correlationId: context.requestId,
+      });
+
+      return updated;
+    }),
 };

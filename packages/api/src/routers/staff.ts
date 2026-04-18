@@ -1,7 +1,7 @@
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import { db, staffProfiles, departments } from "@ndma-dcs-staff-portal/db";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, ilike, or } from "drizzle-orm";
 
 import { protectedProcedure, requireRole } from "../index";
 import { logAudit } from "../lib/audit";
@@ -259,6 +259,26 @@ export const staffRouter = {
 
     return getDirectReports(context);
   }),
+
+  search: requireRole("staff", "read")
+    .input(
+      z.object({
+        q: z.string().min(1),
+        limit: z.number().min(1).max(50).default(20),
+      }),
+    )
+    .handler(async ({ input }) => {
+      return db.query.staffProfiles.findMany({
+        where: or(
+          ilike(staffProfiles.employeeId, `%${input.q}%`),
+          ilike(staffProfiles.jobTitle, `%${input.q}%`),
+          ilike(staffProfiles.id, `%${input.q}%`),
+        ),
+        with: { user: true, department: true },
+        orderBy: desc(staffProfiles.updatedAt),
+        limit: input.limit,
+      });
+    }),
 
   getDepartments: protectedProcedure.handler(async () => {
     return db.query.departments.findMany({
